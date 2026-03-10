@@ -1,0 +1,33 @@
+{
+  "name": "Favorites",
+  "description": "Your favorite movies and shows.",
+  "is_public": true,
+  "movies": [],
+  "shows": [
+    {
+      "id": {
+        "imdb": "tt15677150",
+        "tvdb": 411364
+      },
+      "title": "Shrinking",
+      "uuid": "5fd7786d-45f4-4e53-b67f-97f55602f91a",
+      "added_at": "2024-03-28T22:59:26Z"
+    },
+    {
+      "id": {
+        "imdb": "tt0944947"
+      },
+      "title": "Game of Thrones",
+      "uuid": "abc123",
+      "added_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": {
+        "imdb": "tt5491994"
+      },
+      "title": "Planet Earth II",
+      "uuid": "def456",
+      "added_at": "2024-02-15T10:00:00Z"
+    }
+  ]
+}

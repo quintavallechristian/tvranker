@@ -1,0 +1,107 @@
+{
+  "common": {
+    "loading": "Caricamento...",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "create": "Crea",
+    "search": "Cerca",
+    "back": "Indietro",
+    "confirm": "Conferma",
+    "public": "Pubblico",
+    "private": "Privato",
+    "noResults": "Nessun risultato trovato"
+  },
+  "auth": {
+    "login": "Accedi",
+    "register": "Registrati",
+    "logout": "Esci",
+    "email": "Email",
+    "password": "Password",
+    "username": "Username",
+    "confirmPassword": "Conferma Password",
+    "forgotPassword": "Password dimenticata?",
+    "noAccount": "Non hai un account?",
+    "hasAccount": "Hai già un account?",
+    "continueWithGoogle": "Continua con Google",
+    "orContinueWith": "oppure continua con",
+    "welcomeBack": "Bentornato",
+    "createAccount": "Crea il tuo account",
+    "signInDescription": "Accedi per gestire le tue classifiche di serie TV",
+    "signUpDescription": "Inizia a classificare le tue serie TV preferite"
+  },
+  "nav": {
+    "myLists": "Le mie Liste",
+    "explore": "Esplora",
+    "profile": "Profilo",
+    "settings": "Impostazioni"
+  },
+  "lists": {
+    "title": "Le mie Liste",
+    "newList": "Nuova Lista",
+    "importJson": "Importa da JSON",
+    "emptyState": "Nessuna lista. Creane una o importa da JSON!",
+    "showCount": "{count, plural, =0 {Nessuna serie} =1 {1 serie} other {# serie}}",
+    "deleteConfirm": "Sei sicuro di voler eliminare questa lista?",
+    "nameLabel": "Nome lista",
+    "descriptionLabel": "Descrizione",
+    "namePlaceholder": "Le mie serie preferite",
+    "descriptionPlaceholder": "Una raccolta di...",
+    "addToMyList": "Aggiungi alla mia lista",
+    "selectList": "Seleziona una lista",
+    "addedToList": "Aggiunto a {list}",
+    "alreadyInList": "Già presente in questa lista",
+    "duplicateList": "Duplica lista",
+    "duplicating": "Duplicazione...",
+    "duplicateSuccess": "Lista duplicata con successo!",
+    "noOwnLists": "Crea prima una lista",
+    "copyOf": "Copia di {name}"
+  },
+  "shows": {
+    "addShow": "Aggiungi Serie",
+    "searchShows": "Cerca serie TV...",
+    "rating": "Voto",
+    "noRating": "Non votato",
+    "removeFromList": "Rimuovi dalla lista",
+    "position": "#",
+    "title": "Titolo",
+    "dragToReorder": "Trascina per riordinare"
+  },
+  "import": {
+    "title": "Importa Serie",
+    "description": "Carica un file JSON (formato Trakt.tv) per importare le tue serie",
+    "selectFile": "Seleziona file JSON",
+    "preview": "Anteprima",
+    "importing": "Importazione...",
+    "success": "Importate con successo {count} serie!",
+    "error": "Errore durante l'importazione",
+    "invalidFormat": "Formato JSON non valido",
+    "cancel": "Annulla"
+  },
+  "explore": {
+    "title": "Esplora",
+    "searchUsers": "Cerca utenti...",
+    "searchPlaceholder": "Cerca per username",
+    "publicLists": "Liste pubbliche",
+    "noPublicLists": "Nessuna lista pubblica"
+  },
+  "showDetail": {
+    "overview": "Trama",
+    "firstAired": "Prima messa in onda",
+    "rating": "Voto TMDB",
+    "inLists": "{count, plural, =1 {In 1 lista} other {In # liste}}",
+    "avgRating": "Voto medio utenti",
+    "noOverview": "Nessuna descrizione disponibile. Visita questa pagina per caricare le info da TMDB.",
+    "loadingInfo": "Caricamento info serie da TMDB...",
+    "notFound": "Serie non trovata",
+    "publicListsTitle": "Liste pubbliche con questa serie"
+  },
+  "profile": {
+    "title": "Profilo",
+    "editProfile": "Modifica Profilo",
+    "changeAvatar": "Cambia avatar",
+    "usernamePlaceholder": "Scegli un username",
+    "publicLists": "Liste Pubbliche"
+  }
+}

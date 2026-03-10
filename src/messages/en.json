@@ -1,0 +1,107 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "back": "Back",
+    "confirm": "Confirm",
+    "public": "Public",
+    "private": "Private",
+    "noResults": "No results found"
+  },
+  "auth": {
+    "login": "Sign In",
+    "register": "Sign Up",
+    "logout": "Sign Out",
+    "email": "Email",
+    "password": "Password",
+    "username": "Username",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "continueWithGoogle": "Continue with Google",
+    "orContinueWith": "or continue with",
+    "welcomeBack": "Welcome back",
+    "createAccount": "Create your account",
+    "signInDescription": "Sign in to manage your TV show rankings",
+    "signUpDescription": "Start ranking your favorite TV shows"
+  },
+  "nav": {
+    "myLists": "My Lists",
+    "explore": "Explore",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "lists": {
+    "title": "My Lists",
+    "newList": "New List",
+    "importJson": "Import from JSON",
+    "emptyState": "No lists yet. Create one or import from JSON!",
+    "showCount": "{count, plural, =0 {No shows} =1 {1 show} other {# shows}}",
+    "deleteConfirm": "Are you sure you want to delete this list?",
+    "nameLabel": "List name",
+    "descriptionLabel": "Description",
+    "namePlaceholder": "My favorite shows",
+    "descriptionPlaceholder": "A collection of...",
+    "addToMyList": "Add to my list",
+    "selectList": "Select a list",
+    "addedToList": "Added to {list}",
+    "alreadyInList": "Already in this list",
+    "duplicateList": "Duplicate list",
+    "duplicating": "Duplicating...",
+    "duplicateSuccess": "List duplicated successfully!",
+    "noOwnLists": "Create a list first",
+    "copyOf": "Copy of {name}"
+  },
+  "shows": {
+    "addShow": "Add Show",
+    "searchShows": "Search TV shows...",
+    "rating": "Rating",
+    "noRating": "Not rated",
+    "removeFromList": "Remove from list",
+    "position": "#",
+    "title": "Title",
+    "dragToReorder": "Drag to reorder"
+  },
+  "import": {
+    "title": "Import Shows",
+    "description": "Upload a JSON file (Trakt.tv format) to import your shows",
+    "selectFile": "Select JSON file",
+    "preview": "Preview",
+    "importing": "Importing...",
+    "success": "Successfully imported {count} shows!",
+    "error": "Error importing file",
+    "invalidFormat": "Invalid JSON format",
+    "cancel": "Cancel"
+  },
+  "explore": {
+    "title": "Explore",
+    "searchUsers": "Search users...",
+    "searchPlaceholder": "Search by username",
+    "publicLists": "Public lists",
+    "noPublicLists": "No public lists"
+  },
+  "showDetail": {
+    "overview": "Overview",
+    "firstAired": "First aired",
+    "rating": "TMDB Rating",
+    "inLists": "{count, plural, =1 {In 1 list} other {In # lists}}",
+    "avgRating": "Average user rating",
+    "noOverview": "No description available yet. Visit this page to load info from TMDB.",
+    "loadingInfo": "Loading show info from TMDB...",
+    "notFound": "Show not found",
+    "publicListsTitle": "Public lists with this show"
+  },
+  "profile": {
+    "title": "Profile",
+    "editProfile": "Edit Profile",
+    "changeAvatar": "Change avatar",
+    "usernamePlaceholder": "Choose a username",
+    "publicLists": "Public Lists"
+  }
+}
