@@ -510,7 +510,7 @@ export function ListDetailClient({
       </div>
 
       {/* Toolbar: add show + import + filters toggle + copy */}
-      <div className="mb-4 flex items-center gap-2">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
         {isOwner && (
           <button
             onClick={() => setShowAddDialog(true)}

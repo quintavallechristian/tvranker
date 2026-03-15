@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { getPosterUrl } from "@/lib/tmdb/client";
 import {
@@ -72,114 +73,136 @@ export function ShowRow({
     transition,
   };
 
+  const [mobileRatingOpen, setMobileRatingOpen] = useState(false);
+
   const posterUrl = getPosterUrl(posterPath, "w92");
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-3 rounded-[var(--radius-md)] border border-border bg-bg-surface p-3 transition-colors hover:border-border-hover ${
+      className={`rounded-[var(--radius-md)] border border-border bg-bg-surface p-2.5 md:p-3 transition-colors hover:border-border-hover ${
         isDragging ? "opacity-50 shadow-lg" : ""
       }`}
     >
-      {/* Drag handle */}
-      {!readOnly && (
-        <button
-          {...attributes}
-          {...listeners}
-          className="cursor-grab touch-none text-text-faint hover:text-text-muted active:cursor-grabbing"
-          aria-label="Drag to reorder"
-        >
-          <DotsSixVertical size={20} weight="bold" />
-        </button>
-      )}
-
-      {/* Position */}
-      <span className="w-6 text-center font-mono text-xs font-bold text-text-muted tabular-nums">
-        {position}
-      </span>
-
-      {/* Poster */}
-      <div className="relative h-12 w-8 shrink-0 overflow-hidden rounded-[var(--radius-sm)] bg-bg-elevated">
-        {posterUrl ? (
-          <Image
-            src={posterUrl}
-            alt={title}
-            fill
-            className="object-cover"
-            sizes="32px"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <Television size={14} className="text-text-faint" />
-          </div>
-        )}
-      </div>
-
-      {/* Title + Tags */}
-      <div className="min-w-0 flex-1">
-        {showId ? (
-          <Link
-            href={`/shows/${showId}`}
-            className="block truncate text-sm font-medium text-text-primary hover:text-accent transition-colors"
+      {/* Top row: drag + position + poster + title + rating (desktop) */}
+      <div className="flex items-center gap-2 md:gap-3">
+        {/* Drag handle */}
+        {!readOnly && (
+          <button
+            {...attributes}
+            {...listeners}
+            className="cursor-grab touch-none text-text-faint hover:text-text-muted active:cursor-grabbing"
+            aria-label="Drag to reorder"
           >
-            {title}
-          </Link>
-        ) : (
-          <span className="block truncate text-sm font-medium text-text-primary">
-            {title}
-          </span>
+            <DotsSixVertical size={20} weight="bold" />
+          </button>
         )}
-        {/* Tags */}
-        {allTags && onTagAdd && onTagRemove && onTagCreate ? (
-          <div className="mt-1">
-            <TagPicker
-              showId={showId ?? id}
-              allTags={allTags}
-              selectedTagIds={selectedTagIds ?? []}
-              onAdd={onTagAdd}
-              onRemove={onTagRemove}
-              onCreateTag={onTagCreate}
-            />
-          </div>
-        ) : selectedTagIds && selectedTagIds.length > 0 && allTags ? (
-          /* Read-only tag badges */
-          <div className="mt-1 flex flex-wrap gap-1">
-            {allTags
-              .filter((t) => selectedTagIds.includes(t.id))
-              .map((tag) => (
-                <span
-                  key={tag.id}
-                  style={tagBadgeStyle(tag.color)}
-                  className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium"
-                >
-                  <span
-                    className="inline-block h-1.5 w-1.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: tagDotColor(tag.color) }}
-                  />
-                  {tag.name}
-                </span>
-              ))}
-          </div>
-        ) : null}
-      </div>
 
-      {/* Rating */}
-      <div className="flex items-center gap-2">
-        {onRatingChange ? (
-          <RatingBar
-            value={rating}
-            onChange={onRatingChange}
-            labels={ratingLabels}
-          />
-        ) : rating ? (
-          <span className="whitespace-nowrap font-mono text-xs tabular-nums text-accent">
-            {rating} · {getRatingLabel(rating, ratingLabels)}
-          </span>
-        ) : (
-          <span className="text-xs text-text-faint">—</span>
-        )}
-      </div>
+        {/* Position */}
+        <span className="w-5 md:w-6 text-center font-mono text-xs font-bold text-text-muted tabular-nums">
+          {position}
+        </span>
+
+        {/* Poster */}
+        <div className="relative h-12 w-8 shrink-0 overflow-hidden rounded-[var(--radius-sm)] bg-bg-elevated">
+          {posterUrl ? (
+            <Image
+              src={posterUrl}
+              alt={title}
+              fill
+              className="object-cover"
+              sizes="32px"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <Television size={14} className="text-text-faint" />
+            </div>
+          )}
+        </div>
+
+        {/* Title */}
+        <div className="min-w-0 flex-1">
+          {showId ? (
+            <Link
+              href={`/shows/${showId}`}
+              className="block truncate text-sm font-medium text-text-primary hover:text-accent transition-colors"
+            >
+              {title}
+            </Link>
+          ) : (
+            <span className="block truncate text-sm font-medium text-text-primary">
+              {title}
+            </span>
+          )}
+
+          {/* Tags — mobile: solo pallini colorati */}
+          {selectedTagIds && selectedTagIds.length > 0 && allTags && (
+            <div className="md:hidden mt-1 flex items-center gap-1">
+              {allTags
+                .filter((t) => selectedTagIds.includes(t.id))
+                .map((tag) => (
+                  <span
+                    key={tag.id}
+                    className="inline-block h-2 w-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: tagDotColor(tag.color) }}
+                    title={tag.name}
+                  />
+                ))}
+            </div>
+          )}
+
+          {/* Tags — desktop: full badges / picker */}
+          <div className="hidden md:block">
+            {allTags && onTagAdd && onTagRemove && onTagCreate ? (
+              <div className="mt-1">
+                <TagPicker
+                  showId={showId ?? id}
+                  allTags={allTags}
+                  selectedTagIds={selectedTagIds ?? []}
+                  onAdd={onTagAdd}
+                  onRemove={onTagRemove}
+                  onCreateTag={onTagCreate}
+                />
+              </div>
+            ) : selectedTagIds && selectedTagIds.length > 0 && allTags ? (
+              <div className="mt-1 flex flex-wrap gap-1">
+                {allTags
+                  .filter((t) => selectedTagIds.includes(t.id))
+                  .map((tag) => (
+                    <span
+                      key={tag.id}
+                      style={tagBadgeStyle(tag.color)}
+                      className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium"
+                    >
+                      <span
+                        className="inline-block h-1.5 w-1.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: tagDotColor(tag.color) }}
+                      />
+                      {tag.name}
+                    </span>
+                  ))}
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        {/* Rating — desktop inline */}
+        <div className="hidden md:flex items-center gap-2 shrink-0">
+          {onRatingChange ? (
+            <RatingBar
+              value={rating}
+              onChange={onRatingChange}
+              labels={ratingLabels}
+            />
+          ) : rating ? (
+            <span className="whitespace-nowrap font-mono text-xs tabular-nums text-accent">
+              {rating} · {getRatingLabel(rating, ratingLabels)}
+            </span>
+          ) : (
+            <span className="text-xs text-text-faint">—</span>
+          )}
+        </div>
 
       {/* Quick-add to own list */}
       {onQuickAdd && (
@@ -193,16 +216,53 @@ export function ShowRow({
         </button>
       )}
 
-      {/* Remove */}
-      {onRemove && (
-        <button
-          onClick={onRemove}
-          className="rounded-[var(--radius-sm)] p-1.5 text-text-faint transition-colors hover:bg-error/10 hover:text-error"
-          aria-label="Remove from list"
-        >
-          <Trash size={16} />
-        </button>
-      )}
+        {/* Remove */}
+        {onRemove && (
+          <button
+            onClick={onRemove}
+            className="rounded-[var(--radius-sm)] p-1.5 text-text-faint transition-colors hover:bg-error/10 hover:text-error"
+            aria-label="Remove from list"
+          >
+            <Trash size={16} />
+          </button>
+        )}
+      </div>
+
+      {/* Bottom row — mobile only */}
+      <div className="md:hidden mt-2 pl-7">
+        {onRatingChange ? (
+          mobileRatingOpen ? (
+            <RatingBar
+              value={rating}
+              onChange={(n) => {
+                onRatingChange(n);
+                setMobileRatingOpen(false);
+              }}
+              labels={ratingLabels}
+              fullWidth
+            />
+          ) : (
+            <button
+              onClick={() => setMobileRatingOpen(true)}
+              className="font-mono text-xs tabular-nums"
+            >
+              {rating ? (
+                <span className="text-accent">
+                  {rating} · {getRatingLabel(rating, ratingLabels)}
+                </span>
+              ) : (
+                <span className="text-text-faint">—</span>
+              )}
+            </button>
+          )
+        ) : rating ? (
+          <span className="font-mono text-xs tabular-nums text-accent">
+            {rating}/10 · {getRatingLabel(rating, ratingLabels)}
+          </span>
+        ) : (
+          <span className="text-xs text-text-faint">—</span>
+        )}
+      </div>
     </div>
   );
 }

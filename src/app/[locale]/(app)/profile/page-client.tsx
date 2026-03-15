@@ -146,8 +146,8 @@ export function ProfilePageClient({
       </h1>
 
       {/* Profile card */}
-      <div className="rounded-[var(--radius-lg)] border border-border bg-bg-surface p-6">
-        <div className="flex items-start gap-6">
+      <div className="rounded-[var(--radius-lg)] border border-border bg-bg-surface p-4 md:p-6">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
           {/* Avatar */}
           <div className="relative">
             <UserAvatar
@@ -167,9 +167,9 @@ export function ProfilePageClient({
           </div>
 
           {/* Info */}
-          <div className="flex-1">
+          <div className="flex-1 text-center sm:text-left">
             {editing ? (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-start">
                 <input
                   type="text"
                   value={username}
@@ -220,8 +220,8 @@ export function ProfilePageClient({
       </div>
 
       {/* Rating labels card */}
-      <div className="rounded-[var(--radius-lg)] border border-border bg-bg-surface p-6">
-        <div className="mb-4 flex items-center justify-between">
+      <div className="rounded-[var(--radius-lg)] border border-border bg-bg-surface p-4 md:p-6">
+        <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h3 className="text-sm font-semibold text-text-primary">
               Rating labels
@@ -293,7 +293,7 @@ export function ProfilePageClient({
       </div>
 
       {/* Tags card */}
-      <div className="rounded-[var(--radius-lg)] border border-border bg-bg-surface p-6">
+      <div className="rounded-[var(--radius-lg)] border border-border bg-bg-surface p-4 md:p-6">
         <div className="mb-4 flex items-center gap-2">
           <Tag size={16} className="text-text-muted" />
           <div>
@@ -419,7 +419,7 @@ export function ProfilePageClient({
       </div>
 
       {/* Settings card */}
-      <div className="rounded-[var(--radius-lg)] border border-border bg-bg-surface p-6">
+      <div className="rounded-[var(--radius-lg)] border border-border bg-bg-surface p-4 md:p-6">
         <div className="mb-4 flex items-center gap-2">
           <GlobeSimple size={16} className="text-text-muted" />
           <div>

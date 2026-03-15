@@ -99,6 +99,7 @@ type RatingBarProps = {
   onChange: (rating: number) => void;
   className?: string;
   labels?: string[] | null;
+  fullWidth?: boolean;
 };
 
 function RatingBar({
@@ -106,6 +107,7 @@ function RatingBar({
   onChange,
   className = "",
   labels,
+  fullWidth = false,
 }: RatingBarProps) {
   const [hovered, setHovered] = useState<number | null>(null);
   const active = hovered ?? value;
@@ -114,11 +116,11 @@ function RatingBar({
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       {active && label && (
-        <span className="whitespace-nowrap font-mono text-xs tabular-nums text-text-muted">
+        <span className="hidden sm:inline whitespace-nowrap font-mono text-xs tabular-nums text-text-muted">
           {active} · {label}
         </span>
       )}
-      <div className="flex gap-1">
+      <div className={fullWidth ? "grid grid-cols-10 w-full gap-1" : "flex gap-0.5 sm:gap-1"}>
         {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
           <button
             key={n}
@@ -128,7 +130,7 @@ function RatingBar({
             }}
             onMouseEnter={() => setHovered(n)}
             onMouseLeave={() => setHovered(null)}
-            className={`size-3.5 rounded-full transition-colors ${
+            className={`${fullWidth ? "w-full aspect-square" : "size-4 sm:size-3.5"} rounded-full transition-colors ${
               active && n <= active
                 ? "bg-accent"
                 : "bg-text-faint/30 hover:bg-accent/50"

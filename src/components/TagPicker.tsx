@@ -117,7 +117,7 @@ export function TagPicker({
       {/* Dropdown */}
       {open && (
         <div
-          className="absolute left-0 top-full z-50 mt-1 w-56 rounded-[var(--radius-md)] border border-border bg-bg-surface shadow-lg"
+          className="absolute left-0 top-full z-50 mt-1 w-56 max-w-[calc(100vw-2rem)] rounded-[var(--radius-md)] border border-border bg-bg-surface shadow-lg"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="max-h-48 overflow-y-auto p-1">

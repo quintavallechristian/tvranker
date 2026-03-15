@@ -84,7 +84,7 @@ export default async function UserProfilePage({
   return (
     <div>
       {/* User header */}
-      <div className="mb-8 flex items-center gap-4">
+      <div className="mb-8 flex flex-wrap items-center gap-4">
         <UserAvatar
           url={profile.avatar_url}
           username={profile.username}

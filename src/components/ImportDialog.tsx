@@ -71,8 +71,8 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="relative w-full max-w-md rounded-[var(--radius-lg)] border border-border bg-bg-surface p-6">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className="relative w-full sm:mx-4 sm:max-w-md rounded-t-[16px] sm:rounded-[var(--radius-lg)] border border-border bg-bg-surface p-6">
         {/* Close button */}
         <button
           onClick={onClose}

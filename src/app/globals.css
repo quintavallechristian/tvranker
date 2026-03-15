@@ -85,6 +85,30 @@ body {
   background: var(--text-muted);
 }
 
+/* Mobile: prevent zoom on input focus (iOS) */
+@media (max-width: 767px) {
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/* Safe area for bottom nav on iPhones with notch */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Tap highlight reset for mobile */
+@media (pointer: coarse) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
 /* Focus ring */
 :focus-visible {
   outline: 2px solid var(--accent);
