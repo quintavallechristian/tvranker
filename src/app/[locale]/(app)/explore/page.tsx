@@ -10,7 +10,12 @@ import { EmptyState } from "@/components/EmptyState";
 import { createClient } from "@/lib/supabase/client";
 import { computeListSimilarity } from "@/lib/similarity";
 import { getPosterUrl } from "@/lib/tmdb/client";
-import { Television, PlusCircle, Check, SpinnerGap } from "@phosphor-icons/react";
+import {
+  Television,
+  PlusCircle,
+  Check,
+  SpinnerGap,
+} from "@phosphor-icons/react";
 import { getRecommendations, type RecommendedShow } from "./actions";
 import { addShowToMyList } from "../lists/actions";
 
@@ -52,35 +57,34 @@ export default function ExplorePage() {
       .finally(() => {
         if (!cancelled) setRecsLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const handleAddToList = useCallback(
-    (show: RecommendedShow) => {
-      setAddingShowId(show.id);
-      startTransition(async () => {
-        try {
-          const result = await addShowToMyList({
-            id: show.id,
-            tmdb_id: show.tmdb_id,
-            imdb_id: null,
-            title: show.title,
-            poster_path: show.poster_path,
-            first_air_date: show.first_air_date,
-            overview: show.overview,
-          });
-          if (!result.alreadyExists) {
-            setAddedShowIds((prev) => new Set(prev).add(show.id));
-          }
-        } catch {
-          // silently fail
-        } finally {
-          setAddingShowId(null);
+  const handleAddToList = useCallback((show: RecommendedShow) => {
+    setAddingShowId(show.id);
+    startTransition(async () => {
+      try {
+        const result = await addShowToMyList({
+          id: show.id,
+          tmdb_id: show.tmdb_id,
+          imdb_id: null,
+          title: show.title,
+          poster_path: show.poster_path,
+          first_air_date: show.first_air_date,
+          overview: show.overview,
+        });
+        if (!result.alreadyExists) {
+          setAddedShowIds((prev) => new Set(prev).add(show.id));
         }
-      });
-    },
-    [],
-  );
+      } catch {
+        // silently fail
+      } finally {
+        setAddingShowId(null);
+      }
+    });
+  }, []);
 
   const handleSearch = useCallback(async (query: string) => {
     if (query.length < 2) {
@@ -373,7 +377,10 @@ export default function ExplorePage() {
                               className="flex w-full items-center justify-center gap-1 rounded-[var(--radius-sm)] bg-accent px-2 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
                             >
                               {isAdding ? (
-                                <SpinnerGap size={14} className="animate-spin" />
+                                <SpinnerGap
+                                  size={14}
+                                  className="animate-spin"
+                                />
                               ) : (
                                 <PlusCircle size={14} weight="bold" />
                               )}

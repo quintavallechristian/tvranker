@@ -115,6 +115,22 @@
     "english": "English",
     "italian": "Italiano"
   },
+  "landing": {
+    "hero": "Le tue serie TV,\nclassificate a modo tuo",
+    "subtitle": "Crea la tua classifica personale, vota ogni serie e scopri cosa guardare grazie a utenti con gusti simili ai tuoi.",
+    "cta": "Inizia gratis",
+    "loginCta": "Hai già un account? Accedi",
+    "features": "Come funziona",
+    "feature1Title": "Crea la tua lista",
+    "feature1Desc": "Cerca qualsiasi serie TV e aggiungila alla tua lista personale. Importa da Trakt.tv in formato JSON per iniziare subito.",
+    "feature2Title": "Vota e ordina",
+    "feature2Desc": "Vota ogni serie da 1 a 10 con etichette personalizzate. Trascina per riordinare. La tua lista, le tue regole.",
+    "feature3Title": "Trova i tuoi simili",
+    "feature3Desc": "Scopri quanto sei compatibile con altri utenti. Il nostro algoritmo confronta voti, posizioni e serie in comune.",
+    "feature4Title": "Suggerimenti intelligenti",
+    "feature4Desc": "Il collaborative filtering trova serie amate da utenti simili a te — più voti, migliori saranno i suggerimenti.",
+    "footerTagline": "Smetti di scorrere. Inizia a guardare."
+  },
   "faq": {
     "title": "FAQ",
     "subtitle": "Tutto quello che devi sapere su TV Ranker",

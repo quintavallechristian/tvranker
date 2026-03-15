@@ -1,5 +1,16 @@
+import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { LandingPage } from "./landing";
 
-export default function RootPage() {
-  redirect("/lists");
+export default async function RootPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    redirect("/lists");
+  }
+
+  return <LandingPage />;
 }

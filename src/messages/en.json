@@ -115,6 +115,22 @@
     "english": "English",
     "italian": "Italian"
   },
+  "landing": {
+    "hero": "Your TV shows,\nranked your way",
+    "subtitle": "Create your personal ranking, rate every show, and discover what to watch next through users with similar taste.",
+    "cta": "Get started — it's free",
+    "loginCta": "Already have an account? Sign in",
+    "features": "How it works",
+    "feature1Title": "Build your list",
+    "feature1Desc": "Search any TV show and add it to your personal list. Import from Trakt.tv JSON to get started quickly.",
+    "feature2Title": "Rate & rank",
+    "feature2Desc": "Rate each show from 1 to 10 with custom labels. Drag to reorder. Your list, your rules.",
+    "feature3Title": "Find your people",
+    "feature3Desc": "See how compatible you are with other users. Our algorithm compares ratings, rankings, and overlap.",
+    "feature4Title": "Smart recommendations",
+    "feature4Desc": "Collaborative filtering finds shows loved by users similar to you — the more you rate, the better it gets.",
+    "footerTagline": "Stop scrolling. Start watching."
+  },
   "faq": {
     "title": "FAQ",
     "subtitle": "Everything you need to know about TV Ranker",
