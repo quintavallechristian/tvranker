@@ -2,7 +2,12 @@
 
 import Image from "next/image";
 import { getPosterUrl } from "@/lib/tmdb/client";
-import { DotsSixVertical, Trash, Television, PlusCircle } from "@phosphor-icons/react";
+import {
+  DotsSixVertical,
+  Trash,
+  Television,
+  PlusCircle,
+} from "@phosphor-icons/react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { RatingBar } from "./ShowCard";

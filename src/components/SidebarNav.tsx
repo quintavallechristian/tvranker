@@ -27,7 +27,7 @@ export function SidebarNav({ username, avatarUrl, locale }: SidebarNavProps) {
   const router = useRouter();
 
   const links = [
-    { href: "/lists", label: t("myLists"), icon: ListBullets },
+    { href: "/lists", label: t("myList"), icon: ListBullets },
     { href: "/explore", label: t("explore"), icon: Compass },
     { href: "/profile", label: t("profile"), icon: UserCircle },
   ];

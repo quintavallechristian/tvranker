@@ -94,15 +94,24 @@ export default async function ListDetailPage({
     allTags = (tagsResult ?? []) as TagResult[];
   }
 
-  // Fetch user's own lists for quick-add (when viewing someone else's list)
+  // Fetch user's own list info when viewing someone else's list
   let userLists: { id: string; name: string }[] = [];
+  let viewerListEmpty = false;
   if (user && !isOwner) {
-    const { data: ownLists } = await supabase
+    const { data: ownList } = await supabase
       .from("lists")
       .select("id, name")
       .eq("user_id", user.id)
-      .order("position", { ascending: true });
-    userLists = (ownLists ?? []) as { id: string; name: string }[];
+      .single();
+    if (ownList) {
+      userLists = [ownList];
+      // Check if viewer's list is empty
+      const { count } = await supabase
+        .from("list_items")
+        .select("*", { count: "exact", head: true })
+        .eq("list_id", ownList.id);
+      viewerListEmpty = (count ?? 0) === 0;
+    }
   }
 
   return (
@@ -123,6 +132,7 @@ export default async function ListDetailPage({
       hasMore={hasMore}
       listId={id}
       userLists={userLists}
+      viewerListEmpty={viewerListEmpty}
     />
   );
 }

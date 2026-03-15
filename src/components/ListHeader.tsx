@@ -11,6 +11,7 @@ type ListHeaderProps = {
   onDescriptionChange?: (description: string) => void;
   onTogglePublic?: () => void;
   readOnly?: boolean;
+  saveStatus?: "idle" | "saving" | "saved";
 };
 
 export function ListHeader({
@@ -21,6 +22,7 @@ export function ListHeader({
   onDescriptionChange,
   onTogglePublic,
   readOnly = false,
+  saveStatus,
 }: ListHeaderProps) {
   const t = useTranslations("common");
 
@@ -69,6 +71,17 @@ export function ListHeader({
           >
             {isPublic ? <Globe size={12} /> : <LockSimple size={12} />}
             {isPublic ? t("public") : t("private")}
+          </span>
+        )}
+
+        {/* Save status indicator */}
+        {saveStatus && saveStatus !== "idle" && (
+          <span
+            className={`ml-1 text-xs transition-opacity ${
+              saveStatus === "saving" ? "text-text-faint" : "text-text-muted"
+            }`}
+          >
+            {saveStatus === "saving" ? "Saving…" : "Saved"}
           </span>
         )}
       </div>

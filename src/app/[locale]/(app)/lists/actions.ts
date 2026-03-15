@@ -3,40 +3,16 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
-export async function createList(formData: FormData) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const name = formData.get("name") as string;
-  const description = (formData.get("description") as string) || null;
-
-  // Get max position
-  const { data: lists } = await supabase
+// Helper: get the user's single list
+async function getUserList(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+) {
+  const { data } = await supabase
     .from("lists")
-    .select("position")
-    .eq("user_id", user.id)
-    .order("position", { ascending: false })
-    .limit(1);
-
-  const nextPosition = (lists?.[0]?.position ?? -1) + 1;
-
-  const { data, error } = await supabase
-    .from("lists")
-    .insert({
-      user_id: user.id,
-      name,
-      description,
-      position: nextPosition,
-    })
-    .select()
+    .select("id")
+    .eq("user_id", userId)
     .single();
-
-  if (error) throw new Error(error.message);
-
-  revalidatePath("/lists");
   return data;
 }
 
@@ -53,24 +29,6 @@ export async function updateList(
   const { error } = await supabase
     .from("lists")
     .update(updates)
-    .eq("id", listId)
-    .eq("user_id", user.id);
-
-  if (error) throw new Error(error.message);
-
-  revalidatePath("/lists");
-}
-
-export async function deleteList(listId: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const { error } = await supabase
-    .from("lists")
-    .delete()
     .eq("id", listId)
     .eq("user_id", user.id);
 
@@ -194,43 +152,30 @@ export async function reorderListItems(listId: string, itemIds: string[]) {
   revalidatePath(`/lists/${listId}`);
 }
 
-export async function importFromJson(jsonData: unknown) {
+export async function importToMyList(jsonData: unknown) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
 
+  const myList = await getUserList(supabase, user.id);
+  if (!myList) throw new Error("List not found");
+
   const { parseTraktJson } = await import("@/lib/import/trakt-parser");
   const parsed = parseTraktJson(jsonData);
 
-  // Create the list
-  const { data: lists } = await supabase
-    .from("lists")
+  // Get current max position in the user's list
+  const { data: existingItems } = await supabase
+    .from("list_items")
     .select("position")
-    .eq("user_id", user.id)
+    .eq("list_id", myList.id)
     .order("position", { ascending: false })
     .limit(1);
 
-  const nextPosition = (lists?.[0]?.position ?? -1) + 1;
+  let position = (existingItems?.[0]?.position ?? -1) + 1;
+  let importedCount = 0;
 
-  const { data: list, error: listError } = await supabase
-    .from("lists")
-    .insert({
-      user_id: user.id,
-      name: parsed.name,
-      description: parsed.description || null,
-      is_public: parsed.is_public,
-      position: nextPosition,
-    })
-    .select()
-    .single();
-
-  if (listError) throw new Error(listError.message);
-
-  // Insert shows directly without TMDB resolution.
-  // TMDB data will be fetched lazily when visiting the show detail page.
-  let position = 0;
   for (const show of parsed.shows) {
     try {
       let dbShowId: string | null = null;
@@ -258,9 +203,6 @@ export async function importFromJson(jsonData: unknown) {
 
       // Insert new show if not found
       if (!dbShowId) {
-        // Use a negative title hash as placeholder tmdb_id until TMDB data is fetched.
-        // TMDB only uses positive IDs, so negatives are safe as placeholders.
-        // If tmdb_id column is nullable (after migration), null would be used here instead.
         const placeholderTmdbId = -(
           Math.abs(
             show.title.split("").reduce((a, c) => a + c.charCodeAt(0) * 31, 0),
@@ -282,10 +224,14 @@ export async function importFromJson(jsonData: unknown) {
       }
 
       if (dbShowId) {
-        await supabase
+        // Skip if show already in list (unique constraint)
+        const { error } = await supabase
           .from("list_items")
-          .insert({ list_id: list.id, show_id: dbShowId, position });
-        position++;
+          .insert({ list_id: myList.id, show_id: dbShowId, position });
+        if (!error) {
+          position++;
+          importedCount++;
+        }
       }
     } catch (e) {
       console.error(`Failed to save show: ${show.title}`, e);
@@ -293,7 +239,7 @@ export async function importFromJson(jsonData: unknown) {
   }
 
   revalidatePath("/lists");
-  return { listId: list.id, importedCount: position };
+  return { importedCount };
 }
 
 export type ListItemWithShow = {
@@ -376,33 +322,23 @@ export async function getListItemsPage(
   return { items, hasMore, showTagsMap };
 }
 
-export async function addShowToMyList(
-  targetListId: string,
-  show: {
-    id: string;
-    tmdb_id: number | null;
-    imdb_id: string | null;
-    title: string;
-    poster_path: string | null;
-    first_air_date: string | null;
-    overview: string | null;
-  },
-) {
+export async function addShowToMyList(show: {
+  id: string;
+  tmdb_id: number | null;
+  imdb_id: string | null;
+  title: string;
+  poster_path: string | null;
+  first_air_date: string | null;
+  overview: string | null;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
 
-  // Verify the target list belongs to the current user
-  const { data: targetList } = await supabase
-    .from("lists")
-    .select("id, user_id")
-    .eq("id", targetListId)
-    .eq("user_id", user.id)
-    .single();
-
-  if (!targetList) throw new Error("List not found or not owned by you");
+  const myList = await getUserList(supabase, user.id);
+  if (!myList) throw new Error("List not found");
 
   // Ensure the show exists in our DB (reuse existing or create)
   let showId = show.id;
@@ -413,11 +349,18 @@ export async function addShowToMyList(
     .single();
 
   if (!existingShow) {
-    // Show might not exist if the DB is in a weird state — create it
     const { data: newShow, error: showError } = await supabase
       .from("shows")
       .insert({
-        tmdb_id: show.tmdb_id ?? -(Math.abs(show.title.split("").reduce((a, c) => a + c.charCodeAt(0) * 31, 0)) % 2000000000),
+        tmdb_id:
+          show.tmdb_id ??
+          -(
+            Math.abs(
+              show.title
+                .split("")
+                .reduce((a, c) => a + c.charCodeAt(0) * 31, 0),
+            ) % 2000000000
+          ),
         imdb_id: show.imdb_id,
         title: show.title,
         poster_path: show.poster_path,
@@ -430,11 +373,11 @@ export async function addShowToMyList(
     showId = newShow!.id;
   }
 
-  // Check if already in target list
+  // Check if already in list
   const { data: existing } = await supabase
     .from("list_items")
     .select("id")
-    .eq("list_id", targetListId)
+    .eq("list_id", myList.id)
     .eq("show_id", showId)
     .single();
 
@@ -444,25 +387,25 @@ export async function addShowToMyList(
   const { data: items } = await supabase
     .from("list_items")
     .select("position")
-    .eq("list_id", targetListId)
+    .eq("list_id", myList.id)
     .order("position", { ascending: false })
     .limit(1);
 
   const nextPosition = (items?.[0]?.position ?? -1) + 1;
 
   const { error } = await supabase.from("list_items").insert({
-    list_id: targetListId,
+    list_id: myList.id,
     show_id: showId,
     position: nextPosition,
   });
 
   if (error) throw new Error(error.message);
 
-  revalidatePath(`/lists/${targetListId}`);
+  revalidatePath("/lists");
   return { alreadyExists: false };
 }
 
-export async function duplicateList(sourceListId: string, newName: string) {
+export async function copyListToMine(sourceListId: string) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -472,7 +415,7 @@ export async function duplicateList(sourceListId: string, newName: string) {
   // Verify source list is public (or owned by user)
   const { data: sourceList } = await supabase
     .from("lists")
-    .select("id, name, description, is_public, user_id")
+    .select("id, is_public, user_id")
     .eq("id", sourceListId)
     .single();
 
@@ -480,30 +423,16 @@ export async function duplicateList(sourceListId: string, newName: string) {
   if (!sourceList.is_public && sourceList.user_id !== user.id)
     throw new Error("Unauthorized");
 
-  // Get max position for user's lists
-  const { data: userLists } = await supabase
-    .from("lists")
-    .select("position")
-    .eq("user_id", user.id)
-    .order("position", { ascending: false })
-    .limit(1);
+  const myList = await getUserList(supabase, user.id);
+  if (!myList) throw new Error("Own list not found");
 
-  const nextPosition = (userLists?.[0]?.position ?? -1) + 1;
+  // Verify own list is empty
+  const { count } = await supabase
+    .from("list_items")
+    .select("*", { count: "exact", head: true })
+    .eq("list_id", myList.id);
 
-  // Create the new list
-  const { data: newList, error: listError } = await supabase
-    .from("lists")
-    .insert({
-      user_id: user.id,
-      name: newName,
-      description: sourceList.description,
-      position: nextPosition,
-      is_public: false,
-    })
-    .select()
-    .single();
-
-  if (listError) throw new Error(listError.message);
+  if ((count ?? 0) > 0) throw new Error("Can only copy to an empty list");
 
   // Fetch all items from source list
   const { data: sourceItems } = await supabase
@@ -514,7 +443,7 @@ export async function duplicateList(sourceListId: string, newName: string) {
 
   if (sourceItems && sourceItems.length > 0) {
     const inserts = sourceItems.map((item) => ({
-      list_id: newList.id,
+      list_id: myList.id,
       show_id: item.show_id,
       rating: item.rating,
       position: item.position,
@@ -529,5 +458,4 @@ export async function duplicateList(sourceListId: string, newName: string) {
   }
 
   revalidatePath("/lists");
-  return { listId: newList.id, itemCount: sourceItems?.length ?? 0 };
 }

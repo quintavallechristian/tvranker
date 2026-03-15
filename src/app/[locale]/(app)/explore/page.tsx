@@ -7,12 +7,14 @@ import { SearchInput } from "@/components/SearchInput";
 import { UserAvatar } from "@/components/UserAvatar";
 import { EmptyState } from "@/components/EmptyState";
 import { createClient } from "@/lib/supabase/client";
+import { computeListSimilarity } from "@/lib/similarity";
 
 type UserResult = {
   id: string;
   username: string;
   avatar_url: string | null;
-  public_list_count: number;
+  show_count: number;
+  similarity: number | null;
 };
 
 export default function ExplorePage() {
@@ -30,6 +32,11 @@ export default function ExplorePage() {
     setSearched(true);
     const supabase = createClient();
 
+    // Get current user
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     const { data: profiles } = await supabase
       .from("profiles")
       .select("id, username, avatar_url")
@@ -41,18 +48,72 @@ export default function ExplorePage() {
       return;
     }
 
-    // Get public list counts for each user
+    // Get viewer's list items for similarity computation
+    let viewerItems: { show_id: string; rating: number | null }[] = [];
+    if (user) {
+      const { data: viewerList } = await supabase
+        .from("lists")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+      if (viewerList) {
+        const { data } = await supabase
+          .from("list_items")
+          .select("show_id, rating")
+          .eq("list_id", viewerList.id);
+        viewerItems = data ?? [];
+      }
+    }
+
+    const viewerListData = viewerItems.map((i) => ({
+      showId: i.show_id,
+      rating: i.rating,
+    }));
+
+    // Get each user's list info + similarity
     const userResults: UserResult[] = [];
     for (const p of profiles) {
-      const { count } = await supabase
+      // Skip self
+      if (user && p.id === user.id) continue;
+
+      const { data: userList } = await supabase
         .from("lists")
-        .select("*", { count: "exact", head: true })
+        .select("id, is_public")
         .eq("user_id", p.id)
-        .eq("is_public", true);
+        .single();
+
+      if (!userList?.is_public) {
+        userResults.push({
+          ...p,
+          show_count: 0,
+          similarity: null,
+        });
+        continue;
+      }
+
+      const { data: listItems, count } = await supabase
+        .from("list_items")
+        .select("show_id, rating", { count: "exact" })
+        .eq("list_id", userList.id);
+
+      let similarity: number | null = null;
+      if (
+        user &&
+        viewerListData.length > 0 &&
+        listItems &&
+        listItems.length > 0
+      ) {
+        const otherListData = listItems.map((i) => ({
+          showId: i.show_id,
+          rating: i.rating,
+        }));
+        similarity = computeListSimilarity(viewerListData, otherListData);
+      }
 
       userResults.push({
         ...p,
-        public_list_count: count ?? 0,
+        show_count: count ?? 0,
+        similarity,
       });
     }
 
@@ -71,9 +132,7 @@ export default function ExplorePage() {
         className="mb-6"
       />
 
-      {searched && results.length === 0 && (
-        <EmptyState title={t("noPublicLists") || "No users found"} />
-      )}
+      {searched && results.length === 0 && <EmptyState title={t("noUsers")} />}
 
       <div className="grid gap-2">
         {results.map((user) => (
@@ -87,14 +146,19 @@ export default function ExplorePage() {
               username={user.username}
               size={40}
             />
-            <div>
+            <div className="flex-1">
               <p className="text-sm font-medium text-text-primary">
                 @{user.username}
               </p>
               <p className="text-xs text-text-muted">
-                {user.public_list_count} {t("publicLists").toLowerCase()}
+                {t("showsInList", { count: user.show_count })}
               </p>
             </div>
+            {user.similarity !== null && user.similarity > 0 && (
+              <span className="rounded-full border border-accent/30 bg-accent-muted px-2.5 py-1 text-xs font-semibold text-accent">
+                {user.similarity}%
+              </span>
+            )}
           </Link>
         ))}
       </div>

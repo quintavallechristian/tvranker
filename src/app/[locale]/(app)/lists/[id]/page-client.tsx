@@ -23,7 +23,14 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Plus, ArrowLeft, X, FunnelSimple, CopySimple } from "@phosphor-icons/react";
+import {
+  Plus,
+  ArrowLeft,
+  X,
+  FunnelSimple,
+  CopySimple,
+  FileArrowUp,
+} from "@phosphor-icons/react";
 import { Link, useRouter as useI18nRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { tagBadgeStyle } from "@/lib/tag-colors";
@@ -32,6 +39,7 @@ import { ListHeader } from "@/components/ListHeader";
 import { ShowRow } from "@/components/ShowRow";
 import { AddShowDialog } from "@/components/AddShowDialog";
 import { EmptyState } from "@/components/EmptyState";
+import { ImportDialog } from "@/components/ImportDialog";
 import { getRatingLabel } from "@/lib/rating-labels";
 import {
   updateList,
@@ -41,7 +49,7 @@ import {
   reorderListItems,
   getListItemsPage,
   addShowToMyList,
-  duplicateList,
+  copyListToMine,
   type ListItemWithShow,
 } from "../actions";
 import {
@@ -71,6 +79,7 @@ type ListDetailClientProps = {
   hasMore: boolean;
   listId: string;
   userLists?: { id: string; name: string }[];
+  viewerListEmpty?: boolean;
 };
 
 // Thin wrapper that fires a callback once when the element enters the viewport.
@@ -124,6 +133,7 @@ export function ListDetailClient({
   hasMore: initialHasMore,
   listId,
   userLists = [],
+  viewerListEmpty = false,
 }: ListDetailClientProps) {
   const router = useRouter();
   const i18nRouter = useI18nRouter();
@@ -132,6 +142,18 @@ export function ListDetailClient({
   const [isPending, startTransition] = useTransition();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [items, setItems] = useState<ListItem[]>(list.list_items);
+
+  // Local state for debounced name/description edits
+  const [listName, setListName] = useState(list.name);
+  const [listDescription, setListDescription] = useState(
+    list.description ?? "",
+  );
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">(
+    "idle",
+  );
+  const nameDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const descDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showTagsMap, setShowTagsMap] =
     useState<Record<string, string[]>>(initialShowTagsMap);
   const [filterTagIds, setFilterTagIds] = useState<string[]>([]);
@@ -140,11 +162,15 @@ export function ListDetailClient({
   );
   const [showFilters, setShowFilters] = useState(false);
 
-  // Quick-add: which show is being picked for
-  const [quickAddShowId, setQuickAddShowId] = useState<string | null>(null);
-  const [quickAddFeedback, setQuickAddFeedback] = useState<Record<string, string>>({});
-  // Duplicate list
-  const [isDuplicating, setIsDuplicating] = useState(false);
+  // Quick-add feedback
+  const [quickAddFeedback, setQuickAddFeedback] = useState<
+    Record<string, string>
+  >({});
+
+  // Import dialog
+  const [showImport, setShowImport] = useState(false);
+  // Copy list (only available when viewer's list is empty)
+  const [isCopying, setIsCopying] = useState(false);
 
   // Pagination state
   const [hasMore, setHasMore] = useState(initialHasMore);
@@ -296,18 +322,34 @@ export function ListDetailClient({
 
   const handleNameChange = useCallback(
     (name: string) => {
-      startTransition(async () => {
-        await updateList(list.id, { name });
-      });
+      setListName(name);
+      if (nameDebounceRef.current) clearTimeout(nameDebounceRef.current);
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+      setSaveStatus("saving");
+      nameDebounceRef.current = setTimeout(() => {
+        startTransition(async () => {
+          await updateList(list.id, { name });
+          setSaveStatus("saved");
+          savedTimerRef.current = setTimeout(() => setSaveStatus("idle"), 2000);
+        });
+      }, 800);
     },
     [list.id, startTransition],
   );
 
   const handleDescriptionChange = useCallback(
     (description: string) => {
-      startTransition(async () => {
-        await updateList(list.id, { description });
-      });
+      setListDescription(description);
+      if (descDebounceRef.current) clearTimeout(descDebounceRef.current);
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+      setSaveStatus("saving");
+      descDebounceRef.current = setTimeout(() => {
+        startTransition(async () => {
+          await updateList(list.id, { description });
+          setSaveStatus("saved");
+          savedTimerRef.current = setTimeout(() => setSaveStatus("idle"), 2000);
+        });
+      }, 800);
     },
     [list.id, startTransition],
   );
@@ -390,12 +432,12 @@ export function ListDetailClient({
     [],
   );
 
-  // Quick-add a show to one of the user's own lists
-  const handleQuickAddToList = useCallback(
-    async (targetListId: string, show: ListItem["shows"]) => {
+  // Quick-add a show to the viewer's own list
+  const handleQuickAdd = useCallback(
+    async (show: ListItem["shows"]) => {
       const showKey = show.id;
       try {
-        const result = await addShowToMyList(targetListId, {
+        const result = await addShowToMyList({
           id: show.id,
           tmdb_id: show.tmdb_id,
           imdb_id: show.imdb_id,
@@ -404,16 +446,20 @@ export function ListDetailClient({
           first_air_date: show.first_air_date,
           overview: show.overview,
         });
-        const targetName = userLists.find((l) => l.id === targetListId)?.name ?? "";
         if (result.alreadyExists) {
-          setQuickAddFeedback((prev) => ({ ...prev, [showKey]: t("alreadyInList") }));
+          setQuickAddFeedback((prev) => ({
+            ...prev,
+            [showKey]: t("alreadyInList"),
+          }));
         } else {
-          setQuickAddFeedback((prev) => ({ ...prev, [showKey]: t("addedToList", { list: targetName }) }));
+          setQuickAddFeedback((prev) => ({
+            ...prev,
+            [showKey]: t("addedToMyList"),
+          }));
         }
       } catch {
         setQuickAddFeedback((prev) => ({ ...prev, [showKey]: "Error" }));
       }
-      setQuickAddShowId(null);
       setTimeout(() => {
         setQuickAddFeedback((prev) => {
           const next = { ...prev };
@@ -422,46 +468,48 @@ export function ListDetailClient({
         });
       }, 2000);
     },
-    [userLists, t],
+    [t],
   );
 
-  // Duplicate entire list
-  const handleDuplicateList = useCallback(async () => {
-    setIsDuplicating(true);
+  // Copy entire list into viewer's own (empty) list
+  const handleCopyList = useCallback(async () => {
+    setIsCopying(true);
     try {
-      const newName = t("copyOf", { name: list.name });
-      const result = await duplicateList(list.id, newName);
-      i18nRouter.push(`/lists/${result.listId}`);
+      await copyListToMine(list.id);
+      i18nRouter.push("/lists");
     } catch {
-      setIsDuplicating(false);
+      setIsCopying(false);
     }
-  }, [list.id, list.name, t, i18nRouter]);
+  }, [list.id, i18nRouter]);
 
   return (
     <div>
-      {/* Back link */}
-      <Link
-        href="/lists"
-        className="mb-4 inline-flex items-center gap-1 text-xs text-text-muted transition-colors hover:text-text-secondary"
-      >
-        <ArrowLeft size={12} />
-        Back to lists
-      </Link>
+      {/* Back link (only when viewing someone else's list) */}
+      {!isOwner && (
+        <button
+          onClick={() => window.history.back()}
+          className="mb-4 inline-flex items-center gap-1 text-xs text-text-muted transition-colors hover:text-text-secondary"
+        >
+          <ArrowLeft size={12} />
+          {tCommon("back")}
+        </button>
+      )}
 
       {/* List header */}
       <div className="mb-6">
         <ListHeader
-          name={list.name}
-          description={list.description}
+          name={listName}
+          description={listDescription}
           isPublic={list.is_public}
           onNameChange={isOwner ? handleNameChange : undefined}
           onDescriptionChange={isOwner ? handleDescriptionChange : undefined}
           onTogglePublic={isOwner ? handleTogglePublic : undefined}
           readOnly={!isOwner}
+          saveStatus={isOwner ? saveStatus : undefined}
         />
       </div>
 
-      {/* Toolbar: add show + filters toggle + duplicate */}
+      {/* Toolbar: add show + import + filters toggle + copy */}
       <div className="mb-4 flex items-center gap-2">
         {isOwner && (
           <button
@@ -472,14 +520,23 @@ export function ListDetailClient({
             Add show
           </button>
         )}
-        {!isOwner && isLoggedIn && (
+        {isOwner && (
           <button
-            onClick={handleDuplicateList}
-            disabled={isDuplicating}
+            onClick={() => setShowImport(true)}
+            className="flex items-center gap-1.5 rounded-[var(--radius-md)] border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary"
+          >
+            <FileArrowUp size={14} />
+            {t("importJson")}
+          </button>
+        )}
+        {!isOwner && isLoggedIn && viewerListEmpty && (
+          <button
+            onClick={handleCopyList}
+            disabled={isCopying}
             className="flex items-center gap-1.5 rounded-[var(--radius-md)] border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary disabled:opacity-50"
           >
             <CopySimple size={14} />
-            {isDuplicating ? t("duplicating") : t("duplicateList")}
+            {isCopying ? t("copying") : t("copyList")}
           </button>
         )}
         {(allTags.length > 0 || items.length > 0) && (
@@ -604,6 +661,7 @@ export function ListDetailClient({
         />
       ) : (
         <DndContext
+          id="list-dnd-context"
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
@@ -675,8 +733,8 @@ export function ListDetailClient({
                                 isOwner ? handleTagCreate : undefined
                               }
                               onQuickAdd={
-                                !isOwner && isLoggedIn && userLists.length > 0
-                                  ? () => setQuickAddShowId(item.shows.id)
+                                !isOwner && isLoggedIn
+                                  ? () => handleQuickAdd(item.shows)
                                   : undefined
                               }
                               quickAddLabel={t("addToMyList")}
@@ -685,33 +743,6 @@ export function ListDetailClient({
                             {quickAddFeedback[item.shows.id] && (
                               <div className="mt-1 text-xs text-accent animate-in fade-in">
                                 {quickAddFeedback[item.shows.id]}
-                              </div>
-                            )}
-                            {/* List picker dropdown */}
-                            {quickAddShowId === item.shows.id && (
-                              <div className="mt-1 rounded-[var(--radius-md)] border border-border bg-bg-surface p-2 shadow-lg animate-in fade-in slide-in-from-top-1">
-                                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-text-faint">
-                                  {t("selectList")}
-                                </p>
-                                <div className="space-y-1">
-                                  {userLists.map((ul) => (
-                                    <button
-                                      key={ul.id}
-                                      onClick={() =>
-                                        handleQuickAddToList(ul.id, item.shows)
-                                      }
-                                      className="w-full rounded-[var(--radius-sm)] px-2 py-1.5 text-left text-xs text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary"
-                                    >
-                                      {ul.name}
-                                    </button>
-                                  ))}
-                                </div>
-                                <button
-                                  onClick={() => setQuickAddShowId(null)}
-                                  className="mt-1.5 w-full text-center text-[10px] text-text-faint hover:text-text-muted"
-                                >
-                                  {tCommon("cancel")}
-                                </button>
                               </div>
                             )}
                           </ShowRowObserver>
@@ -741,6 +772,17 @@ export function ListDetailClient({
         onClose={() => setShowAddDialog(false)}
         onAdd={handleAddShow}
         existingTmdbIds={existingTmdbIds}
+      />
+
+      {/* Import dialog */}
+      <ImportDialog
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onImport={async (data) => {
+          const { importToMyList } = await import("../actions");
+          await importToMyList(data);
+          router.refresh();
+        }}
       />
     </div>
   );

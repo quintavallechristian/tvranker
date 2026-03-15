@@ -32,31 +32,26 @@
     "signUpDescription": "Start ranking your favorite TV shows"
   },
   "nav": {
-    "myLists": "My Lists",
+    "myList": "My List",
     "explore": "Explore",
     "profile": "Profile",
     "settings": "Settings"
   },
   "lists": {
-    "title": "My Lists",
-    "newList": "New List",
+    "title": "My List",
     "importJson": "Import from JSON",
-    "emptyState": "No lists yet. Create one or import from JSON!",
+    "emptyState": "Your list is empty. Add a show or import from JSON!",
     "showCount": "{count, plural, =0 {No shows} =1 {1 show} other {# shows}}",
-    "deleteConfirm": "Are you sure you want to delete this list?",
     "nameLabel": "List name",
     "descriptionLabel": "Description",
     "namePlaceholder": "My favorite shows",
     "descriptionPlaceholder": "A collection of...",
     "addToMyList": "Add to my list",
-    "selectList": "Select a list",
-    "addedToList": "Added to {list}",
-    "alreadyInList": "Already in this list",
-    "duplicateList": "Duplicate list",
-    "duplicating": "Duplicating...",
-    "duplicateSuccess": "List duplicated successfully!",
-    "noOwnLists": "Create a list first",
-    "copyOf": "Copy of {name}"
+    "addedToMyList": "Added to your list",
+    "alreadyInList": "Already in your list",
+    "copyList": "Copy list",
+    "copying": "Copying...",
+    "copySuccess": "List copied successfully!"
   },
   "shows": {
     "addShow": "Add Show",
@@ -83,8 +78,9 @@
     "title": "Explore",
     "searchUsers": "Search users...",
     "searchPlaceholder": "Search by username",
-    "publicLists": "Public lists",
-    "noPublicLists": "No public lists"
+    "showsInList": "{count, plural, =0 {No shows} =1 {1 show} other {# shows}}",
+    "noUsers": "No users found",
+    "compatibility": "{score}% compatible"
   },
   "showDetail": {
     "overview": "Overview",

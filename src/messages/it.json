@@ -32,31 +32,26 @@
     "signUpDescription": "Inizia a classificare le tue serie TV preferite"
   },
   "nav": {
-    "myLists": "Le mie Liste",
+    "myList": "La mia Lista",
     "explore": "Esplora",
     "profile": "Profilo",
     "settings": "Impostazioni"
   },
   "lists": {
-    "title": "Le mie Liste",
-    "newList": "Nuova Lista",
+    "title": "La mia Lista",
     "importJson": "Importa da JSON",
-    "emptyState": "Nessuna lista. Creane una o importa da JSON!",
+    "emptyState": "La tua lista è vuota. Aggiungi una serie o importa da JSON!",
     "showCount": "{count, plural, =0 {Nessuna serie} =1 {1 serie} other {# serie}}",
-    "deleteConfirm": "Sei sicuro di voler eliminare questa lista?",
     "nameLabel": "Nome lista",
     "descriptionLabel": "Descrizione",
     "namePlaceholder": "Le mie serie preferite",
     "descriptionPlaceholder": "Una raccolta di...",
     "addToMyList": "Aggiungi alla mia lista",
-    "selectList": "Seleziona una lista",
-    "addedToList": "Aggiunto a {list}",
-    "alreadyInList": "Già presente in questa lista",
-    "duplicateList": "Duplica lista",
-    "duplicating": "Duplicazione...",
-    "duplicateSuccess": "Lista duplicata con successo!",
-    "noOwnLists": "Crea prima una lista",
-    "copyOf": "Copia di {name}"
+    "addedToMyList": "Aggiunto alla tua lista",
+    "alreadyInList": "Già presente nella tua lista",
+    "copyList": "Copia lista",
+    "copying": "Copia in corso...",
+    "copySuccess": "Lista copiata con successo!"
   },
   "shows": {
     "addShow": "Aggiungi Serie",
@@ -83,8 +78,9 @@
     "title": "Esplora",
     "searchUsers": "Cerca utenti...",
     "searchPlaceholder": "Cerca per username",
-    "publicLists": "Liste pubbliche",
-    "noPublicLists": "Nessuna lista pubblica"
+    "showsInList": "{count, plural, =0 {Nessuna serie} =1 {1 serie} other {# serie}}",
+    "noUsers": "Nessun utente trovato",
+    "compatibility": "{score}% compatibile"
   },
   "showDetail": {
     "overview": "Trama",

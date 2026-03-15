@@ -233,7 +233,3 @@ export type ShowTag = Database["public"]["Tables"]["show_tags"]["Row"];
 export type ListWithItems = List & {
   list_items: (ListItem & { shows: Show })[];
 };
-
-export type ListWithCount = List & {
-  item_count: number;
-};
