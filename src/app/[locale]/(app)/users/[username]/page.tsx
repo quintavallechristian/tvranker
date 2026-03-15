@@ -1,9 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { UserAvatar } from "@/components/UserAvatar";
-import { Link } from "@/i18n/navigation";
-import { Globe, Television } from "@phosphor-icons/react/dist/ssr";
+import { FollowButton } from "@/components/FollowButton";
 import { computeListSimilarity } from "@/lib/similarity";
+import type { ListItemWithShow } from "../lists/actions";
+import { UserListClient } from "./user-list-client";
 
 export default async function UserProfilePage({
   params,
@@ -28,14 +29,21 @@ export default async function UserProfilePage({
     .eq("user_id", profile.id)
     .single();
 
-  // Get item count
+  // Fetch list items (first 50, sorted by rating desc then position)
+  let listItems: ListItemWithShow[] = [];
   let itemCount = 0;
+  let hasMore = false;
   if (list) {
-    const { count } = await supabase
+    const { data: itemsData, count } = await supabase
       .from("list_items")
-      .select("*", { count: "exact", head: true })
-      .eq("list_id", list.id);
-    itemCount = count ?? 0;
+      .select("*, shows(*)", { count: "exact" })
+      .eq("list_id", list.id)
+      .order("rating", { ascending: false, nullsFirst: false })
+      .order("position", { ascending: true })
+      .range(0, 49);
+    listItems = (itemsData ?? []) as unknown as ListItemWithShow[];
+    itemCount = count ?? listItems.length;
+    hasMore = listItems.length === 50 && itemCount > 50;
   }
 
   // Compute similarity with current user
@@ -81,6 +89,36 @@ export default async function UserProfilePage({
     }
   }
 
+  // Check if current user follows this profile
+  let isFollowing = false;
+  const isOwnProfile = user?.id === profile.id;
+  if (user && !isOwnProfile) {
+    const { data: follow } = await supabase
+      .from("follows")
+      .select("id")
+      .eq("follower_id", user.id)
+      .eq("following_id", profile.id)
+      .maybeSingle();
+    isFollowing = !!follow;
+  }
+
+  // Fetch the viewer's own show IDs so we can mark already-added shows
+  let viewerShowIds: string[] = [];
+  if (user && !isOwnProfile && list?.is_public) {
+    const { data: viewerList } = await supabase
+      .from("lists")
+      .select("id")
+      .eq("user_id", user.id)
+      .single();
+    if (viewerList) {
+      const { data: viewerItems } = await supabase
+        .from("list_items")
+        .select("show_id")
+        .eq("list_id", viewerList.id);
+      viewerShowIds = (viewerItems ?? []).map((i) => i.show_id);
+    }
+  }
+
   return (
     <div>
       {/* User header */}
@@ -96,40 +134,49 @@ export default async function UserProfilePage({
           </h1>
           <p className="text-sm text-text-muted">{itemCount} shows</p>
         </div>
-        {similarityScore !== null && (
-          <div className="ml-auto flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent-muted px-3 py-1.5">
-            <span className="text-sm font-semibold text-accent">
-              {similarityScore}%
-            </span>
-            <span className="text-xs text-text-muted">compatible</span>
-          </div>
-        )}
+        <div className="ml-auto flex items-center gap-3">
+          {similarityScore !== null && (
+            <div className="flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent-muted px-3 py-1.5">
+              <span className="text-sm font-semibold text-accent">
+                {similarityScore}%
+              </span>
+              <span className="text-xs text-text-muted">compatible</span>
+            </div>
+          )}
+          {user && !isOwnProfile && (
+            <FollowButton
+              profileId={profile.id}
+              initialFollowing={isFollowing}
+            />
+          )}
+        </div>
       </div>
 
-      {/* Single list link */}
+      {/* List */}
       {list?.is_public ? (
-        <Link
-          href={`/lists/${list.id}`}
-          className="flex items-center justify-between rounded-[var(--radius-lg)] border border-border bg-bg-surface p-4 transition-colors hover:border-border-hover"
-        >
-          <div className="flex items-center gap-3">
-            <Television size={20} className="text-accent" />
+        <div>
+          <div className="mb-3 flex items-center justify-between">
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-medium text-text-primary">
-                  {list.name}
-                </h3>
-                <Globe size={12} className="text-accent" />
-              </div>
+              <h2 className="text-sm font-semibold text-text-primary">{list.name}</h2>
               {list.description && (
-                <p className="mt-0.5 text-xs text-text-muted">
-                  {list.description}
-                </p>
+                <p className="mt-0.5 text-xs text-text-muted">{list.description}</p>
               )}
             </div>
+            <span className="text-xs text-text-faint">{itemCount} shows</span>
           </div>
-          <span className="text-xs text-text-faint">{itemCount} shows</span>
-        </Link>
+
+          {listItems.length === 0 ? (
+            <p className="text-sm text-text-muted">No shows yet.</p>
+          ) : (
+            <UserListClient
+              listId={list.id}
+              initialItems={listItems}
+              initialHasMore={hasMore}
+              isLoggedIn={!!user && !isOwnProfile}
+              viewerShowIds={viewerShowIds}
+            />
+          )}
+        </div>
       ) : (
         <p className="text-sm text-text-muted">
           This user&apos;s list is private.

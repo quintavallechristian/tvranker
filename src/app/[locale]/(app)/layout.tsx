@@ -30,7 +30,7 @@ export default async function AppLayout({
         username={profile?.username ?? "user"}
         avatarUrl={profile?.avatar_url ?? null}
       />
-      <main className="flex-1 overflow-y-auto pt-12 md:pt-0">
+      <main className="flex-1 overflow-x-hidden overflow-y-auto pt-12 md:pt-0">
         <div className="mx-auto max-w-4xl px-4 py-4 md:px-6 md:py-8">
           {children}
         </div>

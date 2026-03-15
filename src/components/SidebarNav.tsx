@@ -13,6 +13,7 @@ import {
   Question,
   List as HamburgerIcon,
   X,
+  UsersThree,
 } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -48,6 +49,7 @@ export function SidebarNav({ username, avatarUrl }: SidebarNavProps) {
   const links = [
     { href: "/lists", label: t("myList"), icon: ListBullets },
     { href: "/explore", label: t("explore"), icon: Compass },
+    { href: "/seguiti", label: t("seguiti"), icon: UsersThree },
     { href: "/faq", label: t("faq"), icon: Question },
   ];
 

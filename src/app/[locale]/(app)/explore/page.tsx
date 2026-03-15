@@ -252,7 +252,7 @@ export default function ExplorePage() {
                       username={user.username}
                       size={40}
                     />
-                    <div className="flex-1">
+                    <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-text-primary">
                         @{user.username}
                       </p>

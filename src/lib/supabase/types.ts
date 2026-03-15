@@ -206,6 +206,37 @@ export type Database = {
           },
         ];
       };
+      follows: {
+        Row: {
+          id: string;
+          follower_id: string;
+          following_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          follower_id: string;
+          following_id: string;
+          created_at?: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [
+          {
+            foreignKeyName: "follows_follower_id_fkey";
+            columns: ["follower_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "follows_following_id_fkey";
+            columns: ["following_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -229,6 +260,7 @@ export type Show = Database["public"]["Tables"]["shows"]["Row"];
 export type ListItem = Database["public"]["Tables"]["list_items"]["Row"];
 export type Tag = Database["public"]["Tables"]["tags"]["Row"];
 export type ShowTag = Database["public"]["Tables"]["show_tags"]["Row"];
+export type Follow = Database["public"]["Tables"]["follows"]["Row"];
 
 export type ListWithItems = List & {
   list_items: (ListItem & { shows: Show })[];

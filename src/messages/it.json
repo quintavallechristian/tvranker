@@ -34,9 +34,18 @@
   "nav": {
     "myList": "La mia Lista",
     "explore": "Esplora",
+    "seguiti": "Seguiti",
     "profile": "Profilo",
     "faq": "FAQ",
     "settings": "Impostazioni"
+  },
+  "follows": {
+    "title": "Seguiti",
+    "follow": "Segui",
+    "unfollow": "Smetti di seguire",
+    "emptyTitle": "Non segui ancora nessuno",
+    "emptyDescription": "Visita il profilo di un utente e clicca Segui per aggiungerlo qui",
+    "showsInList": "{count, plural, =0 {Nessuna serie} =1 {1 serie} other {# serie}}"
   },
   "lists": {
     "title": "La mia Lista",

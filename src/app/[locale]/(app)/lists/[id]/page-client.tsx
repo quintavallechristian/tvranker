@@ -681,7 +681,9 @@ export function ListDetailClient({
       ) : filteredItems.length === 0 ? (
         <EmptyState
           title={searchQuery ? t("noSearchResults") : t("noFilterResults")}
-          description={searchQuery ? t("noSearchResultsHint") : t("noFilterResultsHint")}
+          description={
+            searchQuery ? t("noSearchResultsHint") : t("noFilterResultsHint")
+          }
         />
       ) : (
         <DndContext
