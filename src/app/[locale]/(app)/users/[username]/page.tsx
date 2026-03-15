@@ -56,21 +56,25 @@ export default async function UserProfilePage({
       const [viewerItems, profileItems] = await Promise.all([
         supabase
           .from("list_items")
-          .select("show_id, rating")
-          .eq("list_id", viewerList.id),
+          .select("show_id, rating, position")
+          .eq("list_id", viewerList.id)
+          .order("position", { ascending: true }),
         supabase
           .from("list_items")
-          .select("show_id, rating")
-          .eq("list_id", list.id),
+          .select("show_id, rating, position")
+          .eq("list_id", list.id)
+          .order("position", { ascending: true }),
       ]);
 
-      const listA = (viewerItems.data ?? []).map((i) => ({
+      const listA = (viewerItems.data ?? []).map((i, idx) => ({
         showId: i.show_id,
         rating: i.rating,
+        position: i.position ?? idx,
       }));
-      const listB = (profileItems.data ?? []).map((i) => ({
+      const listB = (profileItems.data ?? []).map((i, idx) => ({
         showId: i.show_id,
         rating: i.rating,
+        position: i.position ?? idx,
       }));
 
       similarityScore = computeListSimilarity(listA, listB);

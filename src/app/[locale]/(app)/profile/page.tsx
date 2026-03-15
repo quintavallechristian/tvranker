@@ -2,18 +2,13 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { ProfilePageClient } from "./page-client";
 
-export default async function ProfilePage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
+export default async function ProfilePage() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect(`/${locale}/login`);
+  if (!user) redirect("/login");
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -21,7 +16,7 @@ export default async function ProfilePage({
     .eq("id", user.id)
     .single();
 
-  if (!profile) redirect(`/${locale}/login`);
+  if (!profile) redirect("/login");
 
   const { count } = await supabase
     .from("lists")

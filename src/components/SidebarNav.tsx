@@ -7,21 +7,19 @@ import { UserAvatar } from "./UserAvatar";
 import {
   ListBullets,
   Compass,
-  UserCircle,
   SignOut,
   Television,
+  Question,
 } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { LanguageSwitcher } from "./LanguageSwitcher";
 
 type SidebarNavProps = {
   username: string;
   avatarUrl: string | null;
-  locale: string;
 };
 
-export function SidebarNav({ username, avatarUrl, locale }: SidebarNavProps) {
+export function SidebarNav({ username, avatarUrl }: SidebarNavProps) {
   const t = useTranslations("nav");
   const pathname = usePathname();
   const router = useRouter();
@@ -29,13 +27,13 @@ export function SidebarNav({ username, avatarUrl, locale }: SidebarNavProps) {
   const links = [
     { href: "/lists", label: t("myList"), icon: ListBullets },
     { href: "/explore", label: t("explore"), icon: Compass },
-    { href: "/profile", label: t("profile"), icon: UserCircle },
+    { href: "/faq", label: t("faq"), icon: Question },
   ];
 
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push(`/${locale}/login`);
+    router.push("/login");
   }
 
   return (
@@ -70,13 +68,17 @@ export function SidebarNav({ username, avatarUrl, locale }: SidebarNavProps) {
       </nav>
 
       {/* Bottom */}
-      <div className="border-t border-border p-3 space-y-2">
-        <LanguageSwitcher />
+      <div className="border-t border-border p-3">
         <div className="flex items-center gap-2">
-          <UserAvatar url={avatarUrl} username={username} size={28} />
-          <span className="flex-1 truncate text-xs font-medium text-text-secondary">
-            {username}
-          </span>
+          <Link
+            href="/profile"
+            className="flex min-w-0 flex-1 items-center gap-2 rounded-[var(--radius-md)] py-1 pr-1 transition-colors hover:opacity-80"
+          >
+            <UserAvatar url={avatarUrl} username={username} size={28} />
+            <span className="flex-1 truncate text-xs font-medium text-text-secondary">
+              {username}
+            </span>
+          </Link>
           <button
             onClick={handleLogout}
             className="rounded-[var(--radius-sm)] p-1 text-text-faint transition-colors hover:text-error"

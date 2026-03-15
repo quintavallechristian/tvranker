@@ -1,12 +1,20 @@
 import { getRequestConfig } from "next-intl/server";
+import { cookies } from "next/headers";
 import { routing } from "./routing";
 
 export default getRequestConfig(async ({ requestLocale }) => {
+  // Try requestLocale first (set by next-intl middleware via internal rewrite)
   let locale = await requestLocale;
 
-  // Ensure that a valid locale is used
+  // Fall back to NEXT_LOCALE cookie if requestLocale is not set
   if (!locale || !routing.locales.includes(locale as "en" | "it")) {
-    locale = routing.defaultLocale;
+    const cookieStore = await cookies();
+    const cookieLocale = cookieStore.get("NEXT_LOCALE")?.value;
+    if (cookieLocale && routing.locales.includes(cookieLocale as "en" | "it")) {
+      locale = cookieLocale;
+    } else {
+      locale = routing.defaultLocale;
+    }
   }
 
   return {

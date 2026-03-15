@@ -5,15 +5,10 @@ import { routing } from "@/i18n/routing";
 
 const intlMiddleware = createMiddleware(routing);
 
-// Auth-protected routes (locale-prefixed)
+// Auth-protected routes
 const protectedPatterns = ["/lists", "/profile", "/import"];
 // Auth routes (redirect to /lists if already logged in)
 const authPatterns = ["/login", "/register"];
-
-function getPathWithoutLocale(pathname: string): string {
-  const localePattern = /^\/(en|it)/;
-  return pathname.replace(localePattern, "") || "/";
-}
 
 export async function middleware(request: NextRequest) {
   // First, handle i18n
@@ -27,24 +22,18 @@ export async function middleware(request: NextRequest) {
     response.cookies.set(cookie.name, cookie.value);
   });
 
-  const pathWithoutLocale = getPathWithoutLocale(request.nextUrl.pathname);
+  const pathname = request.nextUrl.pathname;
 
   // Protect routes: redirect to /login if not authenticated
-  if (protectedPatterns.some((p) => pathWithoutLocale.startsWith(p)) && !user) {
-    const locale =
-      request.nextUrl.pathname.match(/^\/(en|it)/)?.[1] ||
-      routing.defaultLocale;
-    const loginUrl = new URL(`/${locale}/login`, request.url);
-    loginUrl.searchParams.set("redirectTo", request.nextUrl.pathname);
+  if (protectedPatterns.some((p) => pathname.startsWith(p)) && !user) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("redirectTo", pathname);
     return Response.redirect(loginUrl);
   }
 
   // Redirect authenticated users away from auth pages
-  if (authPatterns.some((p) => pathWithoutLocale.startsWith(p)) && user) {
-    const locale =
-      request.nextUrl.pathname.match(/^\/(en|it)/)?.[1] ||
-      routing.defaultLocale;
-    return Response.redirect(new URL(`/${locale}/lists`, request.url));
+  if (authPatterns.some((p) => pathname.startsWith(p)) && user) {
+    return Response.redirect(new URL("/lists", request.url));
   }
 
   return response;

@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { UserAvatar } from "@/components/UserAvatar";
 import { createClient } from "@/lib/supabase/client";
-import { PencilSimple, Check, Tag, Plus, X } from "@phosphor-icons/react";
+import { PencilSimple, Check, Tag, Plus, X, GlobeSimple } from "@phosphor-icons/react";
 import { DEFAULT_RATING_LABELS } from "@/lib/rating-labels";
 import {
   createTag,
@@ -21,6 +21,7 @@ import {
   tagDotColor,
   type TagColor,
 } from "@/lib/tag-colors";
+import { setLocale } from "./actions";
 
 type ProfilePageClientProps = {
   profile: {
@@ -39,6 +40,8 @@ export function ProfilePageClient({
   initialTags = [],
 }: ProfilePageClientProps) {
   const t = useTranslations("profile");
+  const tSettings = useTranslations("settings");
+  const currentLocale = useLocale();
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [username, setUsername] = useState(profile.username);
@@ -412,6 +415,49 @@ export function ProfilePageClient({
               Aggiungi
             </button>
           </form>
+        </div>
+      </div>
+
+      {/* Settings card */}
+      <div className="rounded-[var(--radius-lg)] border border-border bg-bg-surface p-6">
+        <div className="mb-4 flex items-center gap-2">
+          <GlobeSimple size={16} className="text-text-muted" />
+          <div>
+            <h3 className="text-sm font-semibold text-text-primary">{tSettings("title")}</h3>
+          </div>
+        </div>
+
+        <div>
+          <p className="mb-3 text-xs font-medium text-text-secondary">{tSettings("language")}</p>
+          <p className="mb-3 text-xs text-text-muted">{tSettings("languageDescription")}</p>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                await setLocale("en");
+                router.refresh();
+              }}
+              className={`rounded-[var(--radius-md)] px-4 py-2 text-xs font-medium transition-colors ${
+                currentLocale === "en"
+                  ? "bg-accent text-bg-primary"
+                  : "border border-border bg-bg-elevated text-text-secondary hover:bg-bg-surface-hover hover:text-text-primary"
+              }`}
+            >
+              {tSettings("english")}
+            </button>
+            <button
+              onClick={async () => {
+                await setLocale("it");
+                router.refresh();
+              }}
+              className={`rounded-[var(--radius-md)] px-4 py-2 text-xs font-medium transition-colors ${
+                currentLocale === "it"
+                  ? "bg-accent text-bg-primary"
+                  : "border border-border bg-bg-elevated text-text-secondary hover:bg-bg-surface-hover hover:text-text-primary"
+              }`}
+            >
+              {tSettings("italian")}
+            </button>
+          </div>
         </div>
       </div>
     </div>

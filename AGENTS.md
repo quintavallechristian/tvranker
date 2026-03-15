@@ -156,3 +156,22 @@ I componenti chiave sono:
 - `src/components/Manage/Collections/` - Form wrapper per ogni collection
 - `src/components/Manage/Fields/` - Definizioni campi riutilizzabili
 - `src/app/manage/(private)/` - Route e pagine del pannello
+
+## Pagina FAQ
+
+La pagina FAQ (`src/app/[locale]/(app)/faq/page.tsx`) documenta il funzionamento dell'app per gli utenti. I testi vivono nei file i18n (`src/messages/en.json` e `src/messages/it.json`) sotto la chiave `"faq"`.
+
+**Regola fondamentale**: Quando modifichi una delle seguenti funzionalità, aggiorna ANCHE i testi FAQ corrispondenti in entrambe le lingue:
+
+1. **Aggiunta serie alla lista** → `faq.addShow`
+2. **Import da JSON** → `faq.importJson`
+3. **Visualizzazione profilo utente** → `faq.viewProfile`
+4. **Copia lista di un altro utente** → `faq.copyList`
+5. **Votazione serie** → `faq.rateShow`
+6. **Riordinamento serie** → `faq.reorder`
+7. **Algoritmo di similarità** → `faq.similarity`
+
+Quando aggiungi **nuove funzionalità significative** all'app, aggiungi una nuova voce FAQ:
+
+- Aggiungi la chiave i18n in `en.json` e `it.json` sotto `"faq"` (con `title` e `body`)
+- Aggiungi la chiave nell'array `FAQ_KEYS` in `faq/page.tsx`

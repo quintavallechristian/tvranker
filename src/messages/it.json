@@ -35,6 +35,7 @@
     "myList": "La mia Lista",
     "explore": "Esplora",
     "profile": "Profilo",
+    "faq": "FAQ",
     "settings": "Impostazioni"
   },
   "lists": {
@@ -76,11 +77,18 @@
   },
   "explore": {
     "title": "Esplora",
-    "searchUsers": "Cerca utenti...",
-    "searchPlaceholder": "Cerca per username",
+    "searchPlaceholder": "Cerca utenti o serie...",
+    "usersSection": "Utenti",
+    "showsSection": "Serie TV",
     "showsInList": "{count, plural, =0 {Nessuna serie} =1 {1 serie} other {# serie}}",
-    "noUsers": "Nessun utente trovato",
-    "compatibility": "{score}% compatibile"
+    "noResults": "Nessun risultato trovato",
+    "compatibility": "{score}% compatibile",
+    "suggestedTitle": "Suggeriti per te",
+    "suggestedEmpty": "Aggiungi più serie per ricevere suggerimenti personalizzati",
+    "suggestedLoading": "Cerchiamo serie che potrebbero piacerti...",
+    "addedToList": "Aggiunto alla tua lista",
+    "alreadyInList": "Già presente nella tua lista",
+    "recommendedBy": "{count, plural, =1 {1 utente simile} other {# utenti simili}}"
   },
   "showDetail": {
     "overview": "Trama",
@@ -99,5 +107,48 @@
     "changeAvatar": "Cambia avatar",
     "usernamePlaceholder": "Scegli un username",
     "publicLists": "Liste Pubbliche"
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "language": "Lingua",
+    "languageDescription": "Scegli la lingua per l'interfaccia dell'app",
+    "english": "English",
+    "italian": "Italiano"
+  },
+  "faq": {
+    "title": "FAQ",
+    "subtitle": "Tutto quello che devi sapere su TV Ranker",
+    "addShow": {
+      "title": "Come aggiungo una serie alla mia lista?",
+      "body": "Apri **La mia Lista** dalla barra laterale. Clicca il pulsante **Aggiungi Serie** in alto. Apparirà una finestra — cerca la serie TV per nome, poi clicca sul risultato per aggiungerla. La serie comparirà in fondo alla tua lista."
+    },
+    "importJson": {
+      "title": "Come importo una lista da JSON?",
+      "body": "Dalla tua lista, clicca il pulsante **Importa da JSON** nella barra degli strumenti. Seleziona un file JSON in formato Trakt.tv. Vedrai un'anteprima delle serie da importare — conferma per aggiungerle. Le serie già presenti nella tua lista verranno saltate automaticamente."
+    },
+    "viewProfile": {
+      "title": "Come visualizzo il profilo di un altro utente?",
+      "body": "Vai alla pagina **Esplora** dalla barra laterale e cerca un username. Clicca su un utente per visitare il suo profilo, dove puoi vedere la sua lista pubblica e il vostro punteggio di compatibilità."
+    },
+    "copyList": {
+      "title": "Come copio la lista di un altro utente?",
+      "body": "Visita la lista di un altro utente. Se la tua lista è vuota, vedrai un pulsante **Copia lista**. Cliccandolo, tutte le sue serie verranno copiate nella tua lista. Questa opzione è disponibile solo quando la tua lista non ha serie — è un modo rapido per partire dalla collezione di un amico."
+    },
+    "rateShow": {
+      "title": "Come voto una serie?",
+      "body": "Nella tua lista, ogni serie ha una colonna per il voto. Cliccaci sopra per selezionare un voto da 1 a 10. Puoi personalizzare l'etichetta di ogni livello di voto nelle impostazioni del **Profilo** (es. 1 = \"Terribile\", 10 = \"Capolavoro\")."
+    },
+    "reorder": {
+      "title": "Come riordino le serie nella mia lista?",
+      "body": "Ogni serie ha una maniglia di trascinamento sul lato sinistro (l'icona a puntini). Cliccala e tieni premuto, poi trascina la serie in alto o in basso nella posizione desiderata. Il nuovo ordine viene salvato automaticamente."
+    },
+    "similarity": {
+      "title": "Come funziona l'algoritmo di similarità?",
+      "body": "Il punteggio di compatibilità (0–100%) è calcolato combinando tre fattori:\n\n**Sovrapposizione** — Quante serie avete in comune, rispetto alla lista più piccola. Se condividete 8 serie su 10, la sovrapposizione è dell'80%.\n\n**Accordo sui voti** — Per le serie che entrambi gli utenti hanno votato, quanto sono vicini i voti? Una differenza di 1 punto su una scala 1–10 è quasi impercettibile, mentre un divario di 9 punti indica disaccordo totale.\n\n**Accordo sulla posizione** — Quanto sono simili le posizioni delle serie nelle vostre liste. Se entrambi mettete una serie in cima, è un forte segnale di accordo — anche se uno la vota 10 e l'altro 7 (alcune persone sono semplicemente più conservative con i voti).\n\nLa formula: `punteggio = sovrapposizione × (50% vicinanza voti + 50% vicinanza posizione) × 100`\n\nLe serie che uno o entrambi gli utenti non hanno votato contano comunque per la sovrapposizione e la posizione, ma non influenzano l'accordo sui voti."
+    },
+    "recommendations": {
+      "title": "Come funzionano i suggerimenti di serie?",
+      "body": "La sezione **Suggeriti per te** nella pagina Esplora usa il collaborative filtering — la stessa tecnica usata da Netflix e Spotify.\n\nEcco come funziona:\n\n**1. Trova utenti simili** — Confrontiamo la tua lista con tutte le liste pubbliche usando l'algoritmo di similarità. I 20 utenti più simili diventano i tuoi \"vicini\".\n\n**2. Valuta le serie candidate** — Per ogni serie che i tuoi vicini hanno e tu no, calcoliamo un punteggio basato su quanto l'utente è simile a te e quanto apprezza quella serie (tramite voto o posizione in lista).\n\n**3. Classifica e suggerisci** — Le 10 serie con i punteggi combinati più alti vengono mostrate come suggerimenti.\n\nPiù serie aggiungi e voti, migliori saranno i tuoi suggerimenti. Le serie su cui più utenti simili concordano avranno un punteggio più alto rispetto a quelle raccomandate da un singolo utente."
+    }
   }
 }
