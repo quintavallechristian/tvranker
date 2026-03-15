@@ -120,7 +120,11 @@ function RatingBar({
           {active} · {label}
         </span>
       )}
-      <div className={fullWidth ? "grid grid-cols-10 w-full gap-1" : "flex gap-0.5 sm:gap-1"}>
+      <div
+        className={
+          fullWidth ? "grid grid-cols-10 w-full gap-1" : "flex gap-0.5 sm:gap-1"
+        }
+      >
         {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
           <button
             key={n}

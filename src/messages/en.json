@@ -52,7 +52,12 @@
     "alreadyInList": "Already in your list",
     "copyList": "Copy list",
     "copying": "Copying...",
-    "copySuccess": "List copied successfully!"
+    "copySuccess": "List copied successfully!",
+    "searchPlaceholder": "Search in this list...",
+    "noSearchResults": "No shows match your search",
+    "noSearchResultsHint": "Try a different search term",
+    "noFilterResults": "No shows match the selected filters",
+    "noFilterResultsHint": "Try removing some filters"
   },
   "shows": {
     "addShow": "Add Show",

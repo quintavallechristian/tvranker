@@ -93,7 +93,11 @@ export function SidebarNav({ username, avatarUrl }: SidebarNavProps) {
             {/* Logo row */}
             <div className="flex items-center justify-between px-4 h-12 border-b border-border">
               <div className="flex items-center gap-2">
-                <Television size={20} weight="duotone" className="text-accent" />
+                <Television
+                  size={20}
+                  weight="duotone"
+                  className="text-accent"
+                />
                 <span className="text-sm font-bold tracking-tight text-text-primary">
                   TV Ranker
                 </span>

@@ -204,17 +204,17 @@ export function ShowRow({
           )}
         </div>
 
-      {/* Quick-add to own list */}
-      {onQuickAdd && (
-        <button
-          onClick={onQuickAdd}
-          className="rounded-[var(--radius-sm)] p-1.5 text-accent transition-colors hover:bg-accent/10 hover:text-accent-hover"
-          aria-label={quickAddLabel || "Add to my list"}
-          title={quickAddLabel || "Add to my list"}
-        >
-          <PlusCircle size={18} weight="bold" />
-        </button>
-      )}
+        {/* Quick-add to own list */}
+        {onQuickAdd && (
+          <button
+            onClick={onQuickAdd}
+            className="rounded-[var(--radius-sm)] p-1.5 text-accent transition-colors hover:bg-accent/10 hover:text-accent-hover"
+            aria-label={quickAddLabel || "Add to my list"}
+            title={quickAddLabel || "Add to my list"}
+          >
+            <PlusCircle size={18} weight="bold" />
+          </button>
+        )}
 
         {/* Remove */}
         {onRemove && (

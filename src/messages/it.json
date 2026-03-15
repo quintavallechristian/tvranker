@@ -52,7 +52,12 @@
     "alreadyInList": "Già presente nella tua lista",
     "copyList": "Copia lista",
     "copying": "Copia in corso...",
-    "copySuccess": "Lista copiata con successo!"
+    "copySuccess": "Lista copiata con successo!",
+    "searchPlaceholder": "Cerca in questa lista...",
+    "noSearchResults": "Nessuna serie corrisponde alla ricerca",
+    "noSearchResultsHint": "Prova con un termine diverso",
+    "noFilterResults": "Nessuna serie corrisponde ai filtri selezionati",
+    "noFilterResultsHint": "Prova a rimuovere alcuni filtri"
   },
   "shows": {
     "addShow": "Aggiungi Serie",

@@ -5,7 +5,14 @@ import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { UserAvatar } from "@/components/UserAvatar";
 import { createClient } from "@/lib/supabase/client";
-import { PencilSimple, Check, Tag, Plus, X, GlobeSimple } from "@phosphor-icons/react";
+import {
+  PencilSimple,
+  Check,
+  Tag,
+  Plus,
+  X,
+  GlobeSimple,
+} from "@phosphor-icons/react";
 import { DEFAULT_RATING_LABELS } from "@/lib/rating-labels";
 import {
   createTag,
@@ -423,13 +430,19 @@ export function ProfilePageClient({
         <div className="mb-4 flex items-center gap-2">
           <GlobeSimple size={16} className="text-text-muted" />
           <div>
-            <h3 className="text-sm font-semibold text-text-primary">{tSettings("title")}</h3>
+            <h3 className="text-sm font-semibold text-text-primary">
+              {tSettings("title")}
+            </h3>
           </div>
         </div>
 
         <div>
-          <p className="mb-3 text-xs font-medium text-text-secondary">{tSettings("language")}</p>
-          <p className="mb-3 text-xs text-text-muted">{tSettings("languageDescription")}</p>
+          <p className="mb-3 text-xs font-medium text-text-secondary">
+            {tSettings("language")}
+          </p>
+          <p className="mb-3 text-xs text-text-muted">
+            {tSettings("languageDescription")}
+          </p>
           <div className="flex gap-2">
             <button
               onClick={async () => {

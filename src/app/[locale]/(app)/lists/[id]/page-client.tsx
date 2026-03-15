@@ -161,6 +161,7 @@ export function ListDetailClient({
     new Set(),
   );
   const [showFilters, setShowFilters] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Quick-add feedback
   const [quickAddFeedback, setQuickAddFeedback] = useState<
@@ -184,9 +185,11 @@ export function ListDetailClient({
   // All possible rating tiers (1-10 + null for Unrated)
   const allRatings: (number | null)[] = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, null];
 
-  // Items filtered by selected tag + rating filters
+  // Items filtered by search query + selected tag + rating filters
   const filteredItems = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
     return items.filter((item) => {
+      if (q && !item.shows.title.toLowerCase().includes(q)) return false;
       if (filterTagIds.length > 0) {
         const itemTagIds = showTagsMap[item.shows.id] ?? [];
         if (!filterTagIds.every((id) => itemTagIds.includes(id))) return false;
@@ -195,7 +198,7 @@ export function ListDetailClient({
         return false;
       return true;
     });
-  }, [items, showTagsMap, filterTagIds, filterRatings]);
+  }, [items, showTagsMap, filterTagIds, filterRatings, searchQuery]);
 
   const activeFilterCount = filterTagIds.length + filterRatings.size;
 
@@ -509,6 +512,27 @@ export function ListDetailClient({
         />
       </div>
 
+      {/* Search bar */}
+      {items.length > 0 && (
+        <div className="mb-4 relative">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t("searchPlaceholder")}
+            className="w-full rounded-[var(--radius-md)] border border-border bg-transparent px-3 py-2 text-sm text-text-primary placeholder:text-text-faint focus:border-border-hover focus:outline-none transition-colors"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-faint hover:text-text-secondary transition-colors"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Toolbar: add show + import + filters toggle + copy */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
         {isOwner && (
@@ -656,8 +680,8 @@ export function ListDetailClient({
         />
       ) : filteredItems.length === 0 ? (
         <EmptyState
-          title="No shows match the selected filters"
-          description="Try removing some filters"
+          title={searchQuery ? t("noSearchResults") : t("noFilterResults")}
+          description={searchQuery ? t("noSearchResultsHint") : t("noFilterResultsHint")}
         />
       ) : (
         <DndContext
