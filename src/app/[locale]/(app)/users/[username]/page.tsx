@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import { UserAvatar } from "@/components/UserAvatar";
 import { FollowButton } from "@/components/FollowButton";
 import { computeListSimilarity } from "@/lib/similarity";
-import type { ListItemWithShow } from "../lists/actions";
 import { UserListClient } from "./user-list-client";
+import { ListItemWithShow } from "../../lists/actions";
 
 export default async function UserProfilePage({
   params,
@@ -157,9 +157,13 @@ export default async function UserProfilePage({
         <div>
           <div className="mb-3 flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-semibold text-text-primary">{list.name}</h2>
+              <h2 className="text-sm font-semibold text-text-primary">
+                {list.name}
+              </h2>
               {list.description && (
-                <p className="mt-0.5 text-xs text-text-muted">{list.description}</p>
+                <p className="mt-0.5 text-xs text-text-muted">
+                  {list.description}
+                </p>
               )}
             </div>
             <span className="text-xs text-text-faint">{itemCount} shows</span>

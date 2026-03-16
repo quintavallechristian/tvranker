@@ -218,9 +218,15 @@ export function UserListClient({
                         onClick={() => handleQuickAdd(item.shows)}
                         disabled={alreadyAdded || feedback === "adding"}
                         className="shrink-0 ml-1 text-text-faint transition-colors hover:text-accent disabled:cursor-default"
-                        title={alreadyAdded ? "Already in your list" : "Add to my list"}
+                        title={
+                          alreadyAdded
+                            ? "Already in your list"
+                            : "Add to my list"
+                        }
                       >
-                        {alreadyAdded || feedback === "added" || feedback === "exists" ? (
+                        {alreadyAdded ||
+                        feedback === "added" ||
+                        feedback === "exists" ? (
                           <Check size={18} className="text-accent" />
                         ) : (
                           <PlusCircle size={18} />
