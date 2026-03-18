@@ -77,6 +77,16 @@ export async function addShowToList(
     existingShow = newShow;
   }
 
+  // Check if already in list
+  const { data: duplicate } = await supabase
+    .from("list_items")
+    .select("id")
+    .eq("list_id", listId)
+    .eq("show_id", existingShow!.id)
+    .single();
+
+  if (duplicate) return;
+
   // Get max position in list
   const { data: items } = await supabase
     .from("list_items")
