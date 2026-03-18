@@ -40,11 +40,13 @@ export default function RegisterPage() {
       return;
     }
 
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin;
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { username },
+        emailRedirectTo: `${siteUrl}/auth/callback`,
       },
     });
 
