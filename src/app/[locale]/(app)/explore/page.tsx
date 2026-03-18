@@ -11,12 +11,7 @@ import { FollowButton } from "@/components/FollowButton";
 import { createClient } from "@/lib/supabase/client";
 import { computeListSimilarity } from "@/lib/similarity";
 import { getPosterUrl } from "@/lib/tmdb/client";
-import {
-  Television,
-  PlusCircle,
-  Check,
-  SpinnerGap,
-} from "@phosphor-icons/react";
+import { Television, Plus, Check, SpinnerGap } from "@phosphor-icons/react";
 import {
   getRecommendations,
   getSimilarUsers,
@@ -463,30 +458,30 @@ export default function ExplorePage() {
                       )}
 
                       {/* Add to list overlay */}
-                      <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100">
-                        <div className="w-full p-2">
-                          {isAdded ? (
-                            <span className="flex items-center justify-center gap-1 rounded-[var(--radius-sm)] bg-accent/20 px-2 py-1.5 text-xs font-medium text-accent">
-                              <Check size={14} weight="bold" />
-                              {t("addedToList")}
-                            </span>
+                      <div
+                        className={`absolute inset-0 flex items-center justify-center bg-black/60 transition-opacity ${
+                          isAdded
+                            ? "opacity-100"
+                            : "opacity-0 group-hover:opacity-100"
+                        }`}
+                      >
+                        <button
+                          onClick={() => !isAdded && handleAddToList(show)}
+                          disabled={isAdding || isAdded}
+                          className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                            isAdded
+                              ? "border-accent/50 bg-accent/20 text-accent"
+                              : "border-white/30 bg-white/10 text-white hover:bg-white/20"
+                          }`}
+                        >
+                          {isAdding ? (
+                            <SpinnerGap size={16} className="animate-spin" />
+                          ) : isAdded ? (
+                            <Check size={16} weight="bold" />
                           ) : (
-                            <button
-                              onClick={() => handleAddToList(show)}
-                              disabled={isAdding}
-                              className="flex w-full items-center justify-center gap-1 rounded-[var(--radius-sm)] bg-accent px-2 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
-                            >
-                              {isAdding ? (
-                                <SpinnerGap
-                                  size={14}
-                                  className="animate-spin"
-                                />
-                              ) : (
-                                <PlusCircle size={14} weight="bold" />
-                              )}
-                            </button>
+                            <Plus size={16} weight="bold" />
                           )}
-                        </div>
+                        </button>
                       </div>
                     </div>
 
@@ -546,30 +541,33 @@ export default function ExplorePage() {
                           )}
 
                           {/* Add to list overlay */}
-                          <div className="absolute inset-0 flex items-end bg-linear-to-t from-black/80 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100">
-                            <div className="w-full p-2">
-                              {isAdded ? (
-                                <span className="flex items-center justify-center gap-1 rounded-sm bg-accent/20 px-2 py-1.5 text-xs font-medium text-accent">
-                                  <Check size={14} weight="bold" />
-                                  {t("addedToList")}
-                                </span>
+                          <div
+                            className={`absolute inset-0 flex items-center justify-center bg-black/60 transition-opacity ${
+                              isAdded
+                                ? "opacity-100"
+                                : "opacity-0 group-hover:opacity-100"
+                            }`}
+                          >
+                            <button
+                              onClick={() => !isAdded && handleAddToList(show)}
+                              disabled={isAdding || isAdded}
+                              className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                                isAdded
+                                  ? "border-accent/50 bg-accent/20 text-accent"
+                                  : "border-white/30 bg-white/10 text-white hover:bg-white/20"
+                              }`}
+                            >
+                              {isAdding ? (
+                                <SpinnerGap
+                                  size={16}
+                                  className="animate-spin"
+                                />
+                              ) : isAdded ? (
+                                <Check size={16} weight="bold" />
                               ) : (
-                                <button
-                                  onClick={() => handleAddToList(show)}
-                                  disabled={isAdding}
-                                  className="flex w-full items-center justify-center gap-1 rounded-sm bg-accent px-2 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
-                                >
-                                  {isAdding ? (
-                                    <SpinnerGap
-                                      size={14}
-                                      className="animate-spin"
-                                    />
-                                  ) : (
-                                    <PlusCircle size={14} weight="bold" />
-                                  )}
-                                </button>
+                                <Plus size={16} weight="bold" />
                               )}
-                            </div>
+                            </button>
                           </div>
                         </div>
 
