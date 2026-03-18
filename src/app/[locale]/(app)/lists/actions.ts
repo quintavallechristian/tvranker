@@ -283,6 +283,9 @@ export type AnalyticsData = {
   avgRating: number | null;
   ratingCounts: { rating: number; count: number }[];
   tagCounts: { id: string; name: string; color: string; count: number }[];
+  tagAvgRatings: { id: string; name: string; color: string; avgRating: number; count: number }[];
+  monthlyAdded: { month: string; count: number }[];
+  decadeCounts: { decade: string; count: number }[];
 };
 
 const EMPTY_ANALYTICS: AnalyticsData = {
@@ -294,6 +297,9 @@ const EMPTY_ANALYTICS: AnalyticsData = {
     count: 0,
   })),
   tagCounts: [],
+  tagAvgRatings: [],
+  monthlyAdded: [],
+  decadeCounts: [],
 };
 
 /**
@@ -333,13 +339,19 @@ export async function getListAnalytics(
     ownerId = user.id;
   }
 
-  // Fetch all items (no pagination) — just rating + show_id
-  const { data: allItems } = await supabase
+  // Fetch all items (no pagination) — rating, show_id, added_at, first_air_date via join
+  type RawItem = {
+    rating: number | null;
+    show_id: string;
+    added_at: string | null;
+    shows: { first_air_date: string | null } | null;
+  };
+  const { data: rawItems } = await supabase
     .from("list_items")
-    .select("rating, show_id")
+    .select("rating, show_id, added_at, shows(first_air_date)")
     .eq("list_id", resolvedListId);
 
-  const items = allItems ?? [];
+  const items = (rawItems ?? []) as RawItem[];
   const totalCount = items.length;
   const ratedRows = items.filter((r) => r.rating !== null);
   const ratedCount = ratedRows.length;
@@ -365,12 +377,13 @@ export async function getListAnalytics(
   // Tag distribution — use the list owner's tags
   const showIds = items.map((i) => i.show_id);
   const tagCounts: AnalyticsData["tagCounts"] = [];
+  const tagAvgRatings: AnalyticsData["tagAvgRatings"] = [];
 
   if (showIds.length > 0) {
     const [{ data: showTagRows }, { data: tagDefs }] = await Promise.all([
       supabase
         .from("show_tags")
-        .select("tag_id")
+        .select("tag_id, show_id")
         .eq("user_id", ownerId)
         .in("show_id", showIds),
       supabase
@@ -380,28 +393,94 @@ export async function getListAnalytics(
     ]);
 
     const tagMap = new Map((tagDefs ?? []).map((t) => [t.id, t]));
+    const showRatingMap = new Map(items.map((i) => [i.show_id, i.rating]));
+
     const tagCountMap: Record<
       string,
       { id: string; name: string; color: string; count: number }
     > = {};
-    for (const { tag_id } of showTagRows ?? []) {
-      const tag = tagMap.get(tag_id);
-      if (tag) {
-        tagCountMap[tag_id] ??= {
+    const tagRatingAcc: Record<
+      string,
+      { id: string; name: string; color: string; sum: number; count: number }
+    > = {};
+
+    for (const row of showTagRows ?? []) {
+      const tag = tagMap.get(row.tag_id);
+      if (!tag) continue;
+
+      tagCountMap[row.tag_id] ??= {
+        id: tag.id,
+        name: tag.name,
+        color: tag.color,
+        count: 0,
+      };
+      tagCountMap[row.tag_id].count++;
+
+      const rating = showRatingMap.get(row.show_id);
+      if (rating != null) {
+        tagRatingAcc[row.tag_id] ??= {
           id: tag.id,
           name: tag.name,
           color: tag.color,
+          sum: 0,
           count: 0,
         };
-        tagCountMap[tag_id].count++;
+        tagRatingAcc[row.tag_id].sum += rating;
+        tagRatingAcc[row.tag_id].count++;
       }
     }
+
     tagCounts.push(
       ...Object.values(tagCountMap).sort((a, b) => b.count - a.count),
     );
+    tagAvgRatings.push(
+      ...Object.values(tagRatingAcc)
+        .map((t) => ({
+          id: t.id,
+          name: t.name,
+          color: t.color,
+          avgRating: Math.round((t.sum / t.count) * 10) / 10,
+          count: t.count,
+        }))
+        .sort((a, b) => b.avgRating - a.avgRating),
+    );
   }
 
-  return { totalCount, ratedCount, avgRating, ratingCounts, tagCounts };
+  // Timeline: group by added_at month (YYYY-MM)
+  const monthlyMap: Record<string, number> = {};
+  for (const item of items) {
+    if (!item.added_at) continue;
+    const month = item.added_at.slice(0, 7);
+    monthlyMap[month] = (monthlyMap[month] ?? 0) + 1;
+  }
+  const monthlyAdded = Object.entries(monthlyMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, count]) => ({ month, count }));
+
+  // Decade distribution: group by decade of first_air_date
+  const decadeMap: Record<string, number> = {};
+  for (const item of items) {
+    const firstAirDate = item.shows?.first_air_date;
+    if (!firstAirDate) continue;
+    const year = parseInt(firstAirDate.slice(0, 4), 10);
+    if (isNaN(year) || year < 1900) continue;
+    const decade = `${Math.floor(year / 10) * 10}s`;
+    decadeMap[decade] = (decadeMap[decade] ?? 0) + 1;
+  }
+  const decadeCounts = Object.entries(decadeMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([decade, count]) => ({ decade, count }));
+
+  return {
+    totalCount,
+    ratedCount,
+    avgRating,
+    ratingCounts,
+    tagCounts,
+    tagAvgRatings,
+    monthlyAdded,
+    decadeCounts,
+  };
 }
 
 export type ListItemWithShow = {

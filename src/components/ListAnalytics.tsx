@@ -10,6 +10,9 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  AreaChart,
+  Area,
+  CartesianGrid,
 } from "recharts";
 import { ArrowLeft } from "@phosphor-icons/react";
 import { Link } from "@/i18n/navigation";
@@ -33,6 +36,10 @@ type Props = {
     noRatings: string;
     shows: string;
     emptyHint: string;
+    avgRatingPerTag: string;
+    addedOverTime: string;
+    releaseDecades: string;
+    noData: string;
   };
 };
 
@@ -115,7 +122,7 @@ export function ListAnalyticsPage({ data, ratingLabels, backHref, labels }: Prop
             />
           </div>
 
-          {/* Charts */}
+          {/* Charts row 1 */}
           <div className="grid gap-6 sm:grid-cols-2">
             {/* Tag distribution */}
             <div className="rounded-lg border border-border bg-bg-surface p-4">
@@ -240,6 +247,163 @@ export function ListAnalyticsPage({ data, ratingLabels, backHref, labels }: Prop
                 </p>
               )}
             </div>
+          </div>
+
+          {/* Charts row 2 */}
+          <div className="grid gap-6 sm:grid-cols-2">
+            {/* Avg rating per tag */}
+            <div className="rounded-lg border border-border bg-bg-surface p-4">
+              <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-text-faint">
+                {labels.avgRatingPerTag}
+              </h3>
+              {data.tagAvgRatings.length > 0 ? (
+                <div className="space-y-3">
+                  {data.tagAvgRatings.map((entry) => (
+                    <div key={entry.id} className="flex items-center gap-3">
+                      <span
+                        className="h-2 w-2 shrink-0 rounded-full"
+                        style={{
+                          backgroundColor:
+                            TAG_COLOR_HEX[entry.color as TagColor] ??
+                            TAG_COLOR_HEX.slate,
+                        }}
+                      />
+                      <span className="w-24 shrink-0 truncate text-[11px] text-text-secondary">
+                        {entry.name}
+                      </span>
+                      <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-bg-elevated">
+                        <div
+                          className="absolute inset-y-0 left-0 rounded-full transition-all"
+                          style={{
+                            width: `${(entry.avgRating / 10) * 100}%`,
+                            backgroundColor:
+                              TAG_COLOR_HEX[entry.color as TagColor] ??
+                              TAG_COLOR_HEX.slate,
+                          }}
+                        />
+                      </div>
+                      <span className="w-8 shrink-0 text-right font-mono text-xs tabular-nums text-text-muted">
+                        {entry.avgRating}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="py-14 text-center text-xs text-text-muted">
+                  {labels.noData}
+                </p>
+              )}
+            </div>
+
+            {/* Decade distribution */}
+            <div className="rounded-lg border border-border bg-bg-surface p-4">
+              <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-text-faint">
+                {labels.releaseDecades}
+              </h3>
+              {data.decadeCounts.length > 0 ? (
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart
+                    data={data.decadeCounts}
+                    margin={{ top: 4, right: 4, bottom: 0, left: -20 }}
+                  >
+                    <XAxis
+                      dataKey="decade"
+                      tick={{ fontSize: 11, fill: "var(--text-muted)" }}
+                      tickLine={false}
+                      axisLine={{ stroke: "var(--border)" }}
+                    />
+                    <YAxis
+                      allowDecimals={false}
+                      tick={{ fontSize: 11, fill: "var(--text-muted)" }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "var(--bg-elevated)",
+                        border: "1px solid var(--border)",
+                        borderRadius: "var(--radius-md)",
+                        fontSize: "12px",
+                        color: "var(--text-primary)",
+                      }}
+                      formatter={(value) => [`${value} ${labels.shows}`]}
+                    />
+                    <Bar
+                      dataKey="count"
+                      fill="#818cf8"
+                      radius={[3, 3, 0, 0]}
+                      maxBarSize={40}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="py-14 text-center text-xs text-text-muted">
+                  {labels.noData}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Timeline: series added over time */}
+          <div className="rounded-lg border border-border bg-bg-surface p-4">
+            <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-text-faint">
+              {labels.addedOverTime}
+            </h3>
+            {data.monthlyAdded.length > 1 ? (
+              <ResponsiveContainer width="100%" height={200}>
+                <AreaChart
+                  data={data.monthlyAdded}
+                  margin={{ top: 4, right: 4, bottom: 0, left: -20 }}
+                >
+                  <defs>
+                    <linearGradient id="timelineGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={RATING_BAR_COLOR} stopOpacity={0.3} />
+                      <stop offset="95%" stopColor={RATING_BAR_COLOR} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="var(--border)"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="month"
+                    tick={{ fontSize: 10, fill: "var(--text-muted)" }}
+                    tickLine={false}
+                    axisLine={{ stroke: "var(--border)" }}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis
+                    allowDecimals={false}
+                    tick={{ fontSize: 11, fill: "var(--text-muted)" }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "var(--bg-elevated)",
+                      border: "1px solid var(--border)",
+                      borderRadius: "var(--radius-md)",
+                      fontSize: "12px",
+                      color: "var(--text-primary)",
+                    }}
+                    formatter={(value) => [`${value} ${labels.shows}`]}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="count"
+                    stroke={RATING_BAR_COLOR}
+                    strokeWidth={2}
+                    fill="url(#timelineGrad)"
+                    dot={false}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="py-14 text-center text-xs text-text-muted">
+                {labels.noData}
+              </p>
+            )}
           </div>
         </>
       )}

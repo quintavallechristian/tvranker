@@ -84,7 +84,11 @@
     "totalShows": "Total shows",
     "ratedShows": "Rated",
     "avgRating": "Avg. rating",
-    "analyticsEmptyHint": "Add and rate shows to see analytics"
+    "analyticsEmptyHint": "Add and rate shows to see analytics",
+    "avgRatingPerTag": "Avg. rating per tag",
+    "addedOverTime": "Shows added over time",
+    "releaseDecades": "Release decade",
+    "noData": "Not enough data yet"
   },
   "shows": {
     "addShow": "Add Show",
@@ -131,7 +135,9 @@
     "recommendedBy": "{count, plural, =1 {1 similar user} other {# similar users}}",
     "similarUsersTitle": "People like you",
     "similarUsersEmpty": "Add more shows to find users with similar taste",
-    "similarUsersLoading": "Finding similar profiles..."
+    "similarUsersLoading": "Finding similar profiles...",
+    "popularFallback": "Add shows to your list to get personalized suggestions. In the meantime, here are the community favorites:",
+    "addedByCount": "{count, plural, =1 {Added by 1 user} other {Added by # users}}"
   },
   "showDetail": {
     "overview": "Overview",

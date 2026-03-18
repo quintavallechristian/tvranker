@@ -39,6 +39,10 @@ export default async function AnalyticsPage() {
         noRatings: t("noRatings"),
         shows: t("shows"),
         emptyHint: t("analyticsEmptyHint"),
+        avgRatingPerTag: t("avgRatingPerTag"),
+        addedOverTime: t("addedOverTime"),
+        releaseDecades: t("releaseDecades"),
+        noData: t("noData"),
       }}
     />
   );

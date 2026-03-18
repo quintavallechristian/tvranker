@@ -84,7 +84,11 @@
     "totalShows": "Serie totali",
     "ratedShows": "Votate",
     "avgRating": "Voto medio",
-    "analyticsEmptyHint": "Aggiungi e vota le serie per vedere gli analytics"
+    "analyticsEmptyHint": "Aggiungi e vota le serie per vedere gli analytics",
+    "avgRatingPerTag": "Voto medio per tag",
+    "addedOverTime": "Serie aggiunte nel tempo",
+    "releaseDecades": "Decade di uscita",
+    "noData": "Dati insufficienti"
   },
   "shows": {
     "addShow": "Aggiungi Serie",
@@ -131,7 +135,9 @@
     "recommendedBy": "{count, plural, =1 {1 utente simile} other {# utenti simili}}",
     "similarUsersTitle": "Profili simili a te",
     "similarUsersEmpty": "Aggiungi più serie per trovare utenti con gusti simili",
-    "similarUsersLoading": "Cerchiamo profili simili..."
+    "similarUsersLoading": "Cerchiamo profili simili...",
+    "popularFallback": "Aggiungi serie alla tua lista per ricevere suggerimenti personalizzati. Nel frattempo, ecco i preferiti della community:",
+    "addedByCount": "{count, plural, =1 {Aggiunto da 1 utente} other {Aggiunto da # utenti}}"
   },
   "showDetail": {
     "overview": "Trama",

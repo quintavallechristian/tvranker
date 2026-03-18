@@ -5,7 +5,10 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { getPosterUrl } from "@/lib/tmdb/client";
-import { getPopularShows, type PopularShow } from "@/app/[locale]/(app)/explore/actions";
+import {
+  getPopularShows,
+  type PopularShow,
+} from "@/app/[locale]/(app)/explore/actions";
 import { addShowToMyList } from "@/app/[locale]/(app)/lists/actions";
 import {
   Plus,
