@@ -209,5 +209,12 @@
       "title": "Come funzionano i suggerimenti di serie?",
       "body": "La sezione **Suggeriti per te** nella pagina Esplora usa il collaborative filtering — la stessa tecnica usata da Netflix e Spotify.\n\nEcco come funziona:\n\n**1. Trova utenti simili** — Confrontiamo la tua lista con tutte le liste pubbliche usando l'algoritmo di similarità. I 20 utenti più simili diventano i tuoi \"vicini\".\n\n**2. Valuta le serie candidate** — Per ogni serie che i tuoi vicini hanno e tu no, calcoliamo un punteggio basato su quanto l'utente è simile a te e quanto apprezza quella serie (tramite voto o posizione in lista).\n\n**3. Classifica e suggerisci** — Le 10 serie con i punteggi combinati più alti vengono mostrate come suggerimenti.\n\nPiù serie aggiungi e voti, migliori saranno i tuoi suggerimenti. Le serie su cui più utenti simili concordano avranno un punteggio più alto rispetto a quelle raccomandate da un singolo utente."
     }
+  },
+  "onboarding": {
+    "title": "Benvenuto nella tua lista!",
+    "subtitle": "Inizia ad aggiungere le serie che hai visto o che vuoi vedere, oppure importa da un servizio esterno.",
+    "addFirst": "Aggiungi una serie",
+    "importExternal": "Importa",
+    "communityFavorites": "Preferiti della community"
   }
 }

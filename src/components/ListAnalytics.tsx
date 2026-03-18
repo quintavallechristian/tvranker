@@ -20,6 +20,7 @@ import type { AnalyticsData } from "@/app/[locale]/(app)/lists/actions";
 type Props = {
   data: AnalyticsData;
   ratingLabels?: string[] | null;
+  backHref: string;
   labels: {
     title: string;
     backToList: string;
@@ -63,7 +64,7 @@ function StatCard({
   );
 }
 
-export function ListAnalyticsPage({ data, ratingLabels, labels }: Props) {
+export function ListAnalyticsPage({ data, ratingLabels, backHref, labels }: Props) {
   const hasTagData = data.tagCounts.length > 0;
   const hasRatingData = data.ratingCounts.some((d) => d.count > 0);
   const ratedPct =
@@ -80,7 +81,7 @@ export function ListAnalyticsPage({ data, ratingLabels, labels }: Props) {
     <div>
       {/* Back link */}
       <Link
-        href="/lists"
+        href={backHref}
         className="mb-6 inline-flex items-center gap-1.5 text-xs text-text-muted transition-colors hover:text-text-secondary"
       >
         <ArrowLeft size={13} />

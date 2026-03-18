@@ -285,31 +285,59 @@ export type AnalyticsData = {
   tagCounts: { id: string; name: string; color: string; count: number }[];
 };
 
-export async function getListAnalytics(): Promise<AnalyticsData> {
+const EMPTY_ANALYTICS: AnalyticsData = {
+  totalCount: 0,
+  ratedCount: 0,
+  avgRating: null,
+  ratingCounts: Array.from({ length: 10 }, (_, i) => ({
+    rating: i + 1,
+    count: 0,
+  })),
+  tagCounts: [],
+};
+
+/**
+ * Returns analytics for a list.
+ * - No listId → the authenticated user's own list.
+ * - With listId → any public list (owner's tags are shown).
+ */
+export async function getListAnalytics(
+  listId?: string,
+): Promise<AnalyticsData> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
 
-  const list = await getUserList(supabase, user.id);
-  if (!list)
-    return {
-      totalCount: 0,
-      ratedCount: 0,
-      avgRating: null,
-      ratingCounts: Array.from({ length: 10 }, (_, i) => ({
-        rating: i + 1,
-        count: 0,
-      })),
-      tagCounts: [],
-    };
+  let resolvedListId: string;
+  let ownerId: string;
 
-  // Fetch all items (no pagination) — just the rating + show_id fields
+  if (listId) {
+    // Viewing someone else's (or own) list by explicit id
+    const { data: listRow } = await supabase
+      .from("lists")
+      .select("id, user_id, is_public")
+      .eq("id", listId)
+      .single();
+    if (!listRow) return EMPTY_ANALYTICS;
+    // Only allow access if public or owned by the logged-in user
+    if (!listRow.is_public && listRow.user_id !== user?.id)
+      return EMPTY_ANALYTICS;
+    resolvedListId = listRow.id;
+    ownerId = listRow.user_id;
+  } else {
+    if (!user) throw new Error("Unauthorized");
+    const list = await getUserList(supabase, user.id);
+    if (!list) return EMPTY_ANALYTICS;
+    resolvedListId = list.id;
+    ownerId = user.id;
+  }
+
+  // Fetch all items (no pagination) — just rating + show_id
   const { data: allItems } = await supabase
     .from("list_items")
     .select("rating, show_id")
-    .eq("list_id", list.id);
+    .eq("list_id", resolvedListId);
 
   const items = allItems ?? [];
   const totalCount = items.length;
@@ -334,7 +362,7 @@ export async function getListAnalytics(): Promise<AnalyticsData> {
     count: ratingMap[i + 1],
   }));
 
-  // Tag distribution — only for shows still in the list
+  // Tag distribution — use the list owner's tags
   const showIds = items.map((i) => i.show_id);
   const tagCounts: AnalyticsData["tagCounts"] = [];
 
@@ -343,12 +371,12 @@ export async function getListAnalytics(): Promise<AnalyticsData> {
       supabase
         .from("show_tags")
         .select("tag_id")
-        .eq("user_id", user.id)
+        .eq("user_id", ownerId)
         .in("show_id", showIds),
       supabase
         .from("tags")
         .select("id, name, color")
-        .or(`is_default.eq.true,user_id.eq.${user.id}`),
+        .or(`is_default.eq.true,user_id.eq.${ownerId}`),
     ]);
 
     const tagMap = new Map((tagDefs ?? []).map((t) => [t.id, t]));

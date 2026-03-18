@@ -227,3 +227,73 @@ export async function getRecommendations(): Promise<RecommendedShow[]> {
     })
     .filter((r): r is RecommendedShow => r !== null);
 }
+
+export type PopularShow = {
+  id: string;
+  tmdb_id: number | null;
+  title: string;
+  poster_path: string | null;
+  first_air_date: string | null;
+  overview: string | null;
+  addedCount: number;
+};
+
+export async function getPopularShows(): Promise<PopularShow[]> {
+  const supabase = await createClient();
+
+  // Get all public list IDs
+  const { data: publicLists } = await supabase
+    .from("lists")
+    .select("id")
+    .eq("is_public", true);
+
+  if (!publicLists || publicLists.length === 0) return [];
+
+  const publicListIds = publicLists.map((l) => l.id);
+
+  // Get all items from public lists
+  const { data: items } = await supabase
+    .from("list_items")
+    .select("show_id")
+    .in("list_id", publicListIds);
+
+  if (!items || items.length === 0) return [];
+
+  // Count occurrences per show
+  const countMap = new Map<string, number>();
+  for (const item of items) {
+    countMap.set(item.show_id, (countMap.get(item.show_id) ?? 0) + 1);
+  }
+
+  // Sort by count, take top 12
+  const topEntries = Array.from(countMap.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 12);
+
+  const showIds = topEntries.map(([id]) => id);
+
+  const { data: shows } = await supabase
+    .from("shows")
+    .select("id, tmdb_id, title, poster_path, first_air_date, overview")
+    .in("id", showIds);
+
+  if (!shows) return [];
+
+  const showMap = new Map(shows.map((s) => [s.id, s]));
+
+  return topEntries
+    .map(([id, count]) => {
+      const show = showMap.get(id);
+      if (!show) return null;
+      return {
+        id: show.id,
+        tmdb_id: show.tmdb_id,
+        title: show.title,
+        poster_path: show.poster_path,
+        first_air_date: show.first_air_date,
+        overview: show.overview,
+        addedCount: count,
+      };
+    })
+    .filter((r): r is PopularShow => r !== null);
+}

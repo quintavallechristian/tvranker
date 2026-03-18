@@ -209,5 +209,12 @@
       "title": "How do show recommendations work?",
       "body": "The **Suggested for you** section on the Explore page uses collaborative filtering — the same technique used by Netflix and Spotify.\n\nHere's how it works:\n\n**1. Find similar users** — We compare your list with all public lists using the similarity algorithm. The top 20 most similar users become your \"neighbors\".\n\n**2. Score candidate shows** — For each show your neighbors have that you don't, we calculate a score based on how similar the neighbor is to you and how highly they value that show (via rating or list position).\n\n**3. Rank and suggest** — The 10 shows with the highest combined scores are shown as recommendations.\n\nThe more shows you add and rate, the better your recommendations become. Shows that multiple similar users agree on will score higher than shows recommended by a single user."
     }
+  },
+  "onboarding": {
+    "title": "Welcome to your list!",
+    "subtitle": "Start adding shows you've watched or want to watch, or import from an external service.",
+    "addFirst": "Add a show",
+    "importExternal": "Import from external",
+    "communityFavorites": "Community favorites"
   }
 }

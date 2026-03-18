@@ -41,6 +41,7 @@ import { ShowRow } from "@/components/ShowRow";
 import { AddShowDialog } from "@/components/AddShowDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { ImportDialog } from "@/components/ImportDialog";
+import { OnboardingEmptyState } from "@/components/OnboardingEmptyState";
 import { getRatingLabel } from "@/lib/rating-labels";
 import {
   updateList,
@@ -692,10 +693,14 @@ export function ListDetailClient({
 
       {/* Items list */}
       {items.length === 0 ? (
-        <EmptyState
-          title="No shows in this list yet"
-          description={isOwner ? "Add a show to get started" : undefined}
-        />
+        isOwner ? (
+          <OnboardingEmptyState
+            onAddShow={() => setShowAddDialog(true)}
+            onImport={() => setShowImport(true)}
+          />
+        ) : (
+          <EmptyState title="No shows in this list yet" />
+        )
       ) : filteredItems.length === 0 ? (
         <EmptyState
           title={searchQuery ? t("noSearchResults") : t("noFilterResults")}
