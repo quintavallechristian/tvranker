@@ -46,6 +46,7 @@ import {
   addShowToList,
   removeShowFromList,
   updateShowRating,
+  updateShowNotes,
   reorderListItems,
   getListItemsPage,
   addShowToMyList,
@@ -451,6 +452,20 @@ export function ListDetailClient({
     [],
   );
 
+  const handleNotesChange = useCallback(
+    (itemId: string, notes: string) => {
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === itemId ? { ...item, notes: notes.trim() || null } : item,
+        ),
+      );
+      startTransition(async () => {
+        await updateShowNotes(list.id, itemId, notes);
+      });
+    },
+    [list.id, startTransition],
+  );
+
   // Quick-add a show to the viewer's own list
   const handleQuickAdd = useCallback(
     async (show: ListItem["shows"]) => {
@@ -780,6 +795,12 @@ export function ListDetailClient({
                                   : undefined
                               }
                               quickAddLabel={t("addToMyList")}
+                              notes={item.notes}
+                              onNotesChange={
+                                isOwner
+                                  ? (notes) => handleNotesChange(item.id, notes)
+                                  : undefined
+                              }
                             />
                             {/* Quick-add feedback */}
                             {quickAddFeedback[item.shows.id] && (

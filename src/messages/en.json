@@ -35,6 +35,7 @@
     "myList": "My List",
     "explore": "Explore",
     "seguiti": "Following",
+    "notifications": "Notifications",
     "profile": "Profile",
     "faq": "FAQ",
     "settings": "Settings"
@@ -46,6 +47,12 @@
     "emptyTitle": "Not following anyone yet",
     "emptyDescription": "Visit a user's profile and click Follow to add them here",
     "showsInList": "{count, plural, =0 {No shows} =1 {1 show} other {# shows}}"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "emptyTitle": "No notifications yet",
+    "emptyDescription": "You'll see notifications here when someone follows you",
+    "newFollower": "started following you"
   },
   "lists": {
     "title": "My List",

@@ -17,7 +17,12 @@ import {
   Check,
   SpinnerGap,
 } from "@phosphor-icons/react";
-import { getRecommendations, getSimilarUsers, type RecommendedShow, type SimilarUser } from "./actions";
+import {
+  getRecommendations,
+  getSimilarUsers,
+  type RecommendedShow,
+  type SimilarUser,
+} from "./actions";
 import { addShowToMyList } from "../lists/actions";
 
 type UserResult = {
@@ -337,7 +342,9 @@ export default function ExplorePage() {
           {similarUsersLoading && (
             <div className="flex items-center gap-2 py-4 justify-center">
               <SpinnerGap size={16} className="animate-spin text-text-muted" />
-              <p className="text-xs text-text-muted">{t("similarUsersLoading")}</p>
+              <p className="text-xs text-text-muted">
+                {t("similarUsersLoading")}
+              </p>
             </div>
           )}
 
@@ -352,18 +359,32 @@ export default function ExplorePage() {
                   key={u.id}
                   className="flex items-center gap-3 rounded-[var(--radius-lg)] border border-border bg-bg-surface p-4 transition-colors hover:border-border-hover"
                 >
-                  <Link href={`/users/${u.username}`} className="flex items-center gap-3 min-w-0 flex-1">
-                    <UserAvatar url={u.avatar_url} username={u.username} size={40} />
+                  <Link
+                    href={`/users/${u.username}`}
+                    className="flex items-center gap-3 min-w-0 flex-1"
+                  >
+                    <UserAvatar
+                      url={u.avatar_url}
+                      username={u.username}
+                      size={40}
+                    />
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-text-primary">@{u.username}</p>
-                      <p className="text-xs text-text-muted">{t("showsInList", { count: u.show_count })}</p>
+                      <p className="text-sm font-medium text-text-primary">
+                        @{u.username}
+                      </p>
+                      <p className="text-xs text-text-muted">
+                        {t("showsInList", { count: u.show_count })}
+                      </p>
                     </div>
                   </Link>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="rounded-full border border-accent/30 bg-accent-muted px-2.5 py-1 text-xs font-semibold text-accent">
                       {u.similarity}%
                     </span>
-                    <FollowButton profileId={u.id} initialFollowing={u.is_following} />
+                    <FollowButton
+                      profileId={u.id}
+                      initialFollowing={u.is_following}
+                    />
                   </div>
                 </div>
               ))}

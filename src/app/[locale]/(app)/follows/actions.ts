@@ -16,6 +16,13 @@ export async function followUser(followingId: string) {
   });
   if (error) throw error;
 
+  // Notify the followed user (best-effort, don't block on failure)
+  await supabase.from("notifications").insert({
+    user_id: followingId,
+    actor_id: user.id,
+    type: "new_follower",
+  });
+
   revalidatePath("/seguiti");
 }
 

@@ -135,6 +135,27 @@ export async function updateShowRating(
   revalidatePath(`/lists/${listId}`);
 }
 
+export async function updateShowNotes(
+  listId: string,
+  itemId: string,
+  notes: string,
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { error } = await supabase
+    .from("list_items")
+    .update({ notes: notes.trim() || null })
+    .eq("id", itemId);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/lists/${listId}`);
+}
+
 export async function reorderListItems(listId: string, itemIds: string[]) {
   const supabase = await createClient();
   const {

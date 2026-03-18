@@ -14,6 +14,7 @@ import {
   List as HamburgerIcon,
   X,
   UsersThree,
+  Bell,
 } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -21,9 +22,10 @@ import { useRouter } from "next/navigation";
 type SidebarNavProps = {
   username: string;
   avatarUrl: string | null;
+  unreadCount: number;
 };
 
-export function SidebarNav({ username, avatarUrl }: SidebarNavProps) {
+export function SidebarNav({ username, avatarUrl, unreadCount }: SidebarNavProps) {
   const t = useTranslations("nav");
   const pathname = usePathname();
   const router = useRouter();
@@ -47,10 +49,16 @@ export function SidebarNav({ username, avatarUrl }: SidebarNavProps) {
   }, [mobileOpen]);
 
   const links = [
-    { href: "/lists", label: t("myList"), icon: ListBullets },
-    { href: "/explore", label: t("explore"), icon: Compass },
-    { href: "/seguiti", label: t("seguiti"), icon: UsersThree },
-    { href: "/faq", label: t("faq"), icon: Question },
+    { href: "/lists", label: t("myList"), icon: ListBullets, badge: 0 },
+    { href: "/explore", label: t("explore"), icon: Compass, badge: 0 },
+    { href: "/seguiti", label: t("seguiti"), icon: UsersThree, badge: 0 },
+    {
+      href: "/notifications",
+      label: t("notifications"),
+      icon: Bell,
+      badge: unreadCount,
+    },
+    { href: "/faq", label: t("faq"), icon: Question, badge: 0 },
   ];
 
   async function handleLogout() {
@@ -115,7 +123,7 @@ export function SidebarNav({ username, avatarUrl }: SidebarNavProps) {
 
             {/* Links */}
             <div className="flex-1 px-2 pt-2">
-              {links.map(({ href, label, icon: Icon }) => {
+              {links.map(({ href, label, icon: Icon, badge }) => {
                 const isActive = pathname.includes(href);
                 return (
                   <Link
@@ -127,7 +135,14 @@ export function SidebarNav({ username, avatarUrl }: SidebarNavProps) {
                         : "text-text-secondary active:bg-bg-surface"
                     }`}
                   >
-                    <Icon size={20} weight={isActive ? "fill" : "regular"} />
+                    <span className="relative shrink-0">
+                      <Icon size={20} weight={isActive ? "fill" : "regular"} />
+                      {badge > 0 && (
+                        <span className="absolute -top-1 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-0.5 text-[10px] font-bold leading-none text-black">
+                          {badge > 9 ? "9+" : badge}
+                        </span>
+                      )}
+                    </span>
                     {label}
                   </Link>
                 );
@@ -169,7 +184,7 @@ export function SidebarNav({ username, avatarUrl }: SidebarNavProps) {
         </div>
 
         <nav className="flex-1 px-2">
-          {links.map(({ href, label, icon: Icon }) => {
+          {links.map(({ href, label, icon: Icon, badge }) => {
             const isActive = pathname.includes(href);
             return (
               <Link
@@ -181,7 +196,14 @@ export function SidebarNav({ username, avatarUrl }: SidebarNavProps) {
                     : "text-text-secondary hover:bg-bg-surface hover:text-text-primary"
                 }`}
               >
-                <Icon size={18} weight={isActive ? "fill" : "regular"} />
+                <span className="relative shrink-0">
+                  <Icon size={18} weight={isActive ? "fill" : "regular"} />
+                  {badge > 0 && (
+                    <span className="absolute -top-1 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-0.5 text-[10px] font-bold leading-none text-black">
+                      {badge > 9 ? "9+" : badge}
+                    </span>
+                  )}
+                </span>
                 {label}
               </Link>
             );

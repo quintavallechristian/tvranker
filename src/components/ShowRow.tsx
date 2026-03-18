@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import { getPosterUrl } from "@/lib/tmdb/client";
 import {
@@ -8,6 +8,7 @@ import {
   Trash,
   Television,
   PlusCircle,
+  NotePencil,
 } from "@phosphor-icons/react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -38,6 +39,9 @@ type ShowRowProps = {
   // Quick-add to own list (when viewing others' lists)
   onQuickAdd?: () => void;
   quickAddLabel?: string;
+  // Notes
+  notes?: string | null;
+  onNotesChange?: (notes: string) => void;
 };
 
 export function ShowRow({
@@ -58,6 +62,8 @@ export function ShowRow({
   onTagCreate,
   onQuickAdd,
   quickAddLabel,
+  notes,
+  onNotesChange,
 }: ShowRowProps) {
   const {
     attributes,
@@ -74,6 +80,23 @@ export function ShowRow({
   };
 
   const [mobileRatingOpen, setMobileRatingOpen] = useState(false);
+  const [editingNote, setEditingNote] = useState(false);
+  const [localNote, setLocalNote] = useState(notes ?? "");
+  const noteInputRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleNoteBlur = () => {
+    setEditingNote(false);
+    if (onNotesChange) {
+      onNotesChange(localNote);
+    }
+  };
+
+  const handleNoteKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Escape") {
+      setLocalNote(notes ?? "");
+      setEditingNote(false);
+    }
+  };
 
   const posterUrl = getPosterUrl(posterPath, "w92");
 
@@ -81,7 +104,7 @@ export function ShowRow({
     <div
       ref={setNodeRef}
       style={style}
-      className={`rounded-[var(--radius-md)] border border-border bg-bg-surface p-2.5 md:p-3 transition-colors hover:border-border-hover ${
+      className={`group rounded-[var(--radius-md)] border border-border bg-bg-surface p-2.5 md:p-3 transition-colors hover:border-border-hover ${
         isDragging ? "opacity-50 shadow-lg" : ""
       }`}
     >
@@ -185,6 +208,47 @@ export function ShowRow({
               </div>
             ) : null}
           </div>
+
+          {/* Notes */}
+          {(onNotesChange !== undefined || (notes && notes.trim())) && (
+            <div className="mt-1.5">
+              {editingNote ? (
+                <textarea
+                  ref={noteInputRef}
+                  autoFocus
+                  value={localNote}
+                  onChange={(e) => setLocalNote(e.target.value)}
+                  onBlur={handleNoteBlur}
+                  onKeyDown={handleNoteKeyDown}
+                  placeholder="Aggiungi una nota..."
+                  aria-label="Nota personale"
+                  rows={2}
+                  className="w-full resize-none bg-transparent text-xs text-text-secondary border-b border-dashed border-border focus:border-border-hover focus:outline-none placeholder:text-text-faint transition-colors leading-relaxed"
+                />
+              ) : localNote.trim() ? (
+                <button
+                  onClick={onNotesChange ? () => setEditingNote(true) : undefined}
+                  className={`flex items-start gap-1 text-left text-xs text-text-muted leading-relaxed line-clamp-2 ${
+                    onNotesChange ? "hover:text-text-secondary cursor-text transition-colors" : "cursor-default"
+                  }`}
+                >
+                  <NotePencil
+                    size={11}
+                    className="mt-0.5 shrink-0 text-text-faint"
+                  />
+                  <span>{localNote}</span>
+                </button>
+              ) : onNotesChange ? (
+                <button
+                  onClick={() => setEditingNote(true)}
+                  className="flex items-center gap-1 text-xs text-text-faint opacity-0 group-hover:opacity-100 transition-opacity hover:text-text-muted"
+                >
+                  <NotePencil size={11} />
+                  Aggiungi una nota...
+                </button>
+              ) : null}
+            </div>
+          )}
         </div>
 
         {/* Rating — desktop inline */}
