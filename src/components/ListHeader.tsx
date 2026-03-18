@@ -4,10 +4,8 @@ import { useTranslations } from "next-intl";
 import { Globe, LockSimple } from "@phosphor-icons/react";
 
 type ListHeaderProps = {
-  name: string;
   description?: string | null;
   isPublic: boolean;
-  onNameChange?: (name: string) => void;
   onDescriptionChange?: (description: string) => void;
   onTogglePublic?: () => void;
   readOnly?: boolean;
@@ -15,33 +13,22 @@ type ListHeaderProps = {
 };
 
 export function ListHeader({
-  name,
   description,
   isPublic,
-  onNameChange,
   onDescriptionChange,
   onTogglePublic,
   readOnly = false,
   saveStatus,
 }: ListHeaderProps) {
   const t = useTranslations("common");
+  const tLists = useTranslations("lists");
 
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-3">
-        {readOnly ? (
-          <h1 className="text-xl font-semibold tracking-tight text-text-primary">
-            {name}
-          </h1>
-        ) : (
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => onNameChange?.(e.target.value)}
-            className="flex-1 bg-transparent text-xl font-semibold tracking-tight text-text-primary outline-none placeholder:text-text-faint"
-            placeholder="List name"
-          />
-        )}
+        <h1 className="text-xl font-semibold tracking-tight text-text-primary">
+          {tLists("title")}
+        </h1>
 
         {/* Public/Private toggle */}
         {onTogglePublic ? (

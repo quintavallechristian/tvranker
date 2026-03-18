@@ -56,8 +56,8 @@
   },
   "lists": {
     "title": "My List",
-    "importJson": "Import from JSON",
-    "emptyState": "Your list is empty. Add a show or import from JSON!",
+    "importExternal": "Import from external services",
+    "emptyState": "Your list is empty. Add a show or import from an external service!",
     "showCount": "{count, plural, =0 {No shows} =1 {1 show} other {# shows}}",
     "nameLabel": "List name",
     "descriptionLabel": "Description",
@@ -87,13 +87,21 @@
   },
   "import": {
     "title": "Import Shows",
-    "description": "Upload a JSON file (Trakt.tv format) to import your shows",
-    "selectFile": "Select JSON file",
+    "chooseService": "Choose the service to import your shows from",
+    "tvtimeDesc": "JSON file (Trakt.tv / TV Time format)",
+    "malDesc": "XML export file from MyAnimeList",
+    "tvtimeTitle": "Import from TV Time",
+    "tvtimeDescription": "Upload a JSON file (Trakt.tv / TV Time format) to import your shows",
+    "malTitle": "Import from MyAnimeList",
+    "malDescription": "Upload the XML file exported from MyAnimeList",
+    "selectFileJson": "Select JSON file",
+    "selectFileXml": "Select XML file",
     "preview": "Preview",
     "importing": "Importing...",
     "success": "Successfully imported {count} shows!",
     "error": "Error importing file",
-    "invalidFormat": "Invalid JSON format",
+    "invalidFormatJson": "Invalid JSON format",
+    "invalidFormatXml": "Invalid XML format",
     "cancel": "Cancel"
   },
   "explore": {
@@ -146,7 +154,7 @@
     "loginCta": "Already have an account? Sign in",
     "features": "How it works",
     "feature1Title": "Build your list",
-    "feature1Desc": "Search any TV show and add it to your personal list. Import from Trakt.tv JSON to get started quickly.",
+    "feature1Desc": "Search any TV show and add it to your personal list. Import from TV Time or MyAnimeList to get started quickly.",
     "feature2Title": "Rate & rank",
     "feature2Desc": "Rate each show from 1 to 10 with custom labels. Drag to reorder. Your list, your rules.",
     "feature3Title": "Find your people",
@@ -162,9 +170,9 @@
       "title": "How do I add a show to my list?",
       "body": "Open **My List** from the sidebar. Click the **Add Show** button at the top. A dialog will appear — search for the TV show by name, then click the result to add it. The show will appear at the bottom of your list."
     },
-    "importJson": {
-      "title": "How do I import a list from JSON?",
-      "body": "From your list, click the **Import from JSON** button in the toolbar. Select a JSON file in Trakt.tv format. You'll see a preview of the shows to import — confirm to add them. Shows already in your list will be skipped automatically."
+    "importExternal": {
+      "title": "How do I import shows from an external service?",
+      "body": "From your list, click the **Import from external services** button in the toolbar. Choose the service you want to import from:\n\n**TV Time** — Select a JSON file in Trakt.tv / TV Time format. You'll see a preview of the shows to import.\n\n**MyAnimeList** — Export your anime list as XML from MyAnimeList (Profile → Export), then upload the XML file. Completed and currently watching anime will be imported.\n\nIn both cases, shows already in your list will be skipped automatically."
     },
     "viewProfile": {
       "title": "How do I view another user's profile?",

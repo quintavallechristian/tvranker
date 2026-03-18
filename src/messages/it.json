@@ -56,8 +56,8 @@
   },
   "lists": {
     "title": "La mia Lista",
-    "importJson": "Importa da JSON",
-    "emptyState": "La tua lista è vuota. Aggiungi una serie o importa da JSON!",
+    "importExternal": "Importa da servizi esterni",
+    "emptyState": "La tua lista è vuota. Aggiungi una serie o importa da un servizio esterno!",
     "showCount": "{count, plural, =0 {Nessuna serie} =1 {1 serie} other {# serie}}",
     "nameLabel": "Nome lista",
     "descriptionLabel": "Descrizione",
@@ -87,13 +87,21 @@
   },
   "import": {
     "title": "Importa Serie",
-    "description": "Carica un file JSON (formato Trakt.tv) per importare le tue serie",
-    "selectFile": "Seleziona file JSON",
+    "chooseService": "Scegli il servizio da cui importare le tue serie",
+    "tvtimeDesc": "File JSON (formato Trakt.tv / TV Time)",
+    "malDesc": "File XML esportato da MyAnimeList",
+    "tvtimeTitle": "Importa da TV Time",
+    "tvtimeDescription": "Carica un file JSON (formato Trakt.tv / TV Time) per importare le tue serie",
+    "malTitle": "Importa da MyAnimeList",
+    "malDescription": "Carica il file XML esportato da MyAnimeList",
+    "selectFileJson": "Seleziona file JSON",
+    "selectFileXml": "Seleziona file XML",
     "preview": "Anteprima",
     "importing": "Importazione...",
     "success": "Importate con successo {count} serie!",
     "error": "Errore durante l'importazione",
-    "invalidFormat": "Formato JSON non valido",
+    "invalidFormatJson": "Formato JSON non valido",
+    "invalidFormatXml": "Formato XML non valido",
     "cancel": "Annulla"
   },
   "explore": {
@@ -146,7 +154,7 @@
     "loginCta": "Hai già un account? Accedi",
     "features": "Come funziona",
     "feature1Title": "Crea la tua lista",
-    "feature1Desc": "Cerca qualsiasi serie TV e aggiungila alla tua lista personale. Importa da Trakt.tv in formato JSON per iniziare subito.",
+    "feature1Desc": "Cerca qualsiasi serie TV e aggiungila alla tua lista personale. Importa da TV Time o MyAnimeList per iniziare subito.",
     "feature2Title": "Vota e ordina",
     "feature2Desc": "Vota ogni serie da 1 a 10 con etichette personalizzate. Trascina per riordinare. La tua lista, le tue regole.",
     "feature3Title": "Trova i tuoi simili",
@@ -162,9 +170,9 @@
       "title": "Come aggiungo una serie alla mia lista?",
       "body": "Apri **La mia Lista** dalla barra laterale. Clicca il pulsante **Aggiungi Serie** in alto. Apparirà una finestra — cerca la serie TV per nome, poi clicca sul risultato per aggiungerla. La serie comparirà in fondo alla tua lista."
     },
-    "importJson": {
-      "title": "Come importo una lista da JSON?",
-      "body": "Dalla tua lista, clicca il pulsante **Importa da JSON** nella barra degli strumenti. Seleziona un file JSON in formato Trakt.tv. Vedrai un'anteprima delle serie da importare — conferma per aggiungerle. Le serie già presenti nella tua lista verranno saltate automaticamente."
+    "importExternal": {
+      "title": "Come importo le serie da un servizio esterno?",
+      "body": "Dalla tua lista, clicca il pulsante **Importa da servizi esterni** nella barra degli strumenti. Scegli il servizio da cui importare:\n\n**TV Time** — Seleziona un file JSON in formato Trakt.tv / TV Time. Vedrai un'anteprima delle serie da importare.\n\n**MyAnimeList** — Esporta la tua lista anime come XML da MyAnimeList (Profilo → Esporta), poi carica il file XML. Verranno importati gli anime completati e quelli in visione.\n\nIn entrambi i casi, le serie già presenti nella tua lista verranno saltate automaticamente."
     },
     "viewProfile": {
       "title": "Come visualizzo il profilo di un altro utente?",

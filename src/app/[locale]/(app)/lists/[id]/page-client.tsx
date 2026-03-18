@@ -148,15 +148,13 @@ export function ListDetailClient({
   );
   const [items, setItems] = useState<ListItem[]>(list.list_items);
 
-  // Local state for debounced name/description edits
-  const [listName, setListName] = useState(list.name);
+  // Local state for debounced description edits
   const [listDescription, setListDescription] = useState(
     list.description ?? "",
   );
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">(
     "idle",
   );
-  const nameDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const descDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showTagsMap, setShowTagsMap] =
@@ -340,23 +338,6 @@ export function ListDetailClient({
     [sortedIds, list.id, startTransition],
   );
 
-  const handleNameChange = useCallback(
-    (name: string) => {
-      setListName(name);
-      if (nameDebounceRef.current) clearTimeout(nameDebounceRef.current);
-      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
-      setSaveStatus("saving");
-      nameDebounceRef.current = setTimeout(() => {
-        startTransition(async () => {
-          await updateList(list.id, { name });
-          setSaveStatus("saved");
-          savedTimerRef.current = setTimeout(() => setSaveStatus("idle"), 2000);
-        });
-      }, 800);
-    },
-    [list.id, startTransition],
-  );
-
   const handleDescriptionChange = useCallback(
     (description: string) => {
       setListDescription(description);
@@ -532,10 +513,8 @@ export function ListDetailClient({
       {/* List header */}
       <div className="mb-6">
         <ListHeader
-          name={listName}
           description={listDescription}
           isPublic={list.is_public}
-          onNameChange={isOwner ? handleNameChange : undefined}
           onDescriptionChange={isOwner ? handleDescriptionChange : undefined}
           onTogglePublic={isOwner ? handleTogglePublic : undefined}
           readOnly={!isOwner}
@@ -581,7 +560,7 @@ export function ListDetailClient({
             className="flex items-center gap-1.5 rounded-[var(--radius-md)] border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary"
           >
             <FileArrowUp size={14} />
-            {t("importJson")}
+            {t("importExternal")}
           </button>
         )}
         {!isOwner && isLoggedIn && viewerListEmpty && (

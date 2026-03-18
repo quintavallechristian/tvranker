@@ -164,7 +164,7 @@ La pagina FAQ (`src/app/[locale]/(app)/faq/page.tsx`) documenta il funzionamento
 **Regola fondamentale**: Quando modifichi una delle seguenti funzionalità, aggiorna ANCHE i testi FAQ corrispondenti in entrambe le lingue:
 
 1. **Aggiunta serie alla lista** → `faq.addShow`
-2. **Import da JSON** → `faq.importJson`
+2. **Import da servizi esterni** → `faq.importExternal`
 3. **Visualizzazione profilo utente** → `faq.viewProfile`
 4. **Copia lista di un altro utente** → `faq.copyList`
 5. **Votazione serie** → `faq.rateShow`

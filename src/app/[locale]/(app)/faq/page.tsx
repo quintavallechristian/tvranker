@@ -6,7 +6,7 @@ import { CaretDown } from "@phosphor-icons/react";
 
 const FAQ_KEYS = [
   "addShow",
-  "importJson",
+  "importExternal",
   "viewProfile",
   "copyList",
   "rateShow",
