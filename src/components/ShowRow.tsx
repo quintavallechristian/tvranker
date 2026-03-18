@@ -227,9 +227,13 @@ export function ShowRow({
                 />
               ) : localNote.trim() ? (
                 <button
-                  onClick={onNotesChange ? () => setEditingNote(true) : undefined}
+                  onClick={
+                    onNotesChange ? () => setEditingNote(true) : undefined
+                  }
                   className={`flex items-start gap-1 text-left text-xs text-text-muted leading-relaxed line-clamp-2 ${
-                    onNotesChange ? "hover:text-text-secondary cursor-text transition-colors" : "cursor-default"
+                    onNotesChange
+                      ? "hover:text-text-secondary cursor-text transition-colors"
+                      : "cursor-default"
                   }`}
                 >
                   <NotePencil

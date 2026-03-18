@@ -54,6 +54,7 @@ export default function LoginPage() {
         </p>
       </div>
 
+      {/* Google login temporarily hidden
       <button
         onClick={handleGoogleLogin}
         className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border border-border bg-bg-surface px-4 py-2.5 text-sm font-medium text-text-primary transition-colors hover:bg-bg-surface-hover"
@@ -67,6 +68,7 @@ export default function LoginPage() {
         <span className="text-xs text-text-muted">{t("orContinueWith")}</span>
         <div className="h-px flex-1 bg-border" />
       </div>
+      */}
 
       <form onSubmit={handleEmailLogin} className="space-y-4">
         <div>
