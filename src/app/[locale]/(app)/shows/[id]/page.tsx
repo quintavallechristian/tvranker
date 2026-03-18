@@ -1,7 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { fetchTmdbData } from "../actions";
 import { ShowDetailClient } from "./page-client";
+import type { ShowAnalyticsData } from "@/components/ShowAnalytics";
 
 export default async function ShowDetailPage({
   params,
@@ -33,7 +35,7 @@ export default async function ShowDetailPage({
   // Aggregate stats: how many lists contain this show + average rating
   const { data: listItems } = await supabase
     .from("list_items")
-    .select("rating, list_id")
+    .select("rating, list_id, added_at")
     .eq("show_id", id);
 
   const listCount = new Set(listItems?.map((i) => i.list_id)).size;
@@ -45,6 +47,27 @@ export default async function ShowDetailPage({
       ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) /
         10
       : null;
+
+  // Build analytics data
+  const ratingCounts = Array.from({ length: 10 }, (_, i) => ({
+    rating: i + 1,
+    count: ratings.filter((r) => r === i + 1).length,
+  }));
+
+  const monthlyMap = new Map<string, number>();
+  for (const item of listItems ?? []) {
+    if (!item.added_at) continue;
+    const d = new Date(item.added_at);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    monthlyMap.set(key, (monthlyMap.get(key) ?? 0) + 1);
+  }
+  const monthlyAdded = Array.from(monthlyMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, count]) => ({ month, count }));
+
+  const analyticsData: ShowAnalyticsData = { ratingCounts, monthlyAdded };
+
+  const [t] = await Promise.all([getTranslations("showDetail")]);
 
   // Fetch public lists that include this show, with owner info
   const { data: publicListItems } = await supabase
@@ -79,6 +102,18 @@ export default async function ShowDetailPage({
       show={finalShow}
       stats={{ listCount, avgRating, ratingCount: ratings.length }}
       publicLists={publicLists}
+      analyticsData={analyticsData}
+      analyticsLabels={{
+        title: t("analyticsTitle"),
+        inLists: t("inLists", { count: listCount }),
+        ratedBy: t("ratedBy"),
+        avgRating: t("avgRating"),
+        ratingDistribution: t("ratingDistribution"),
+        noRatings: t("noRatings"),
+        addedOverTime: t("addedOverTime"),
+        shows: t("shows"),
+        users: t("users"),
+      }}
     />
   );
 }

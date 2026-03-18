@@ -38,6 +38,7 @@
     "notifications": "Notifications",
     "profile": "Profile",
     "faq": "FAQ",
+    "rankings": "Top Rated",
     "settings": "Settings"
   },
   "follows": {
@@ -148,7 +149,14 @@
     "noOverview": "No description available yet. Visit this page to load info from TMDB.",
     "loadingInfo": "Loading show info from TMDB...",
     "notFound": "Show not found",
-    "publicListsTitle": "Public lists with this show"
+    "publicListsTitle": "Public lists with this show",
+    "analyticsTitle": "Community Analytics",
+    "ratedBy": "Rated by",
+    "ratingDistribution": "Rating distribution",
+    "noRatings": "No ratings yet",
+    "addedOverTime": "Added to lists over time",
+    "shows": "adds",
+    "users": "users"
   },
   "profile": {
     "title": "Profile",
@@ -215,6 +223,15 @@
       "title": "How do show recommendations work?",
       "body": "The **Suggested for you** section on the Explore page uses collaborative filtering — the same technique used by Netflix and Spotify.\n\nHere's how it works:\n\n**1. Find similar users** — We compare your list with all public lists using the similarity algorithm. The top 20 most similar users become your \"neighbors\".\n\n**2. Score candidate shows** — For each show your neighbors have that you don't, we calculate a score based on how similar the neighbor is to you and how highly they value that show (via rating or list position).\n\n**3. Rank and suggest** — The 10 shows with the highest combined scores are shown as recommendations.\n\nThe more shows you add and rate, the better your recommendations become. Shows that multiple similar users agree on will score higher than shows recommended by a single user."
     }
+  },
+  "rankings": {
+    "title": "Top Rated",
+    "subtitle": "Shows ranked by average user rating across all public lists",
+    "avgRating": "avg. rating",
+    "votes": "{count, plural, =1 {1 vote} other {# votes}}",
+    "minVotesHint": "Only shows with at least 2 ratings are shown",
+    "emptyTitle": "No rankings yet",
+    "emptyDescription": "Rate shows in your public list to contribute to the community ranking"
   },
   "onboarding": {
     "title": "Welcome to your list!",

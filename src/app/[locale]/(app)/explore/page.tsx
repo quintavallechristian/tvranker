@@ -68,9 +68,13 @@ export default function ExplorePage() {
           if (recs.length === 0) {
             setPopularLoading(true);
             getPopularShows()
-              .then((shows) => { if (!cancelled) setPopularShows(shows); })
+              .then((shows) => {
+                if (!cancelled) setPopularShows(shows);
+              })
               .catch(() => {})
-              .finally(() => { if (!cancelled) setPopularLoading(false); });
+              .finally(() => {
+                if (!cancelled) setPopularLoading(false);
+              });
           }
         }
       })
@@ -413,9 +417,10 @@ export default function ExplorePage() {
             {t("suggestedTitle")}
           </h2>
 
-          {!recsLoading && recommendations.length === 0 && popularShows.length === 0 && !popularLoading && (
-            <EmptyState title={t("suggestedEmpty")} />
-          )}
+          {!recsLoading &&
+            recommendations.length === 0 &&
+            popularShows.length === 0 &&
+            !popularLoading && <EmptyState title={t("suggestedEmpty")} />}
 
           {(recsLoading || popularLoading) && recommendations.length === 0 && (
             <div className="flex items-center gap-2 py-8 justify-center">
@@ -503,77 +508,88 @@ export default function ExplorePage() {
             </div>
           )}
           {/* Popular shows fallback when no recs */}
-          {!recsLoading && !popularLoading && recommendations.length === 0 && popularShows.length > 0 && (
-            <>
-              <p className="mb-3 text-xs text-text-muted">{t("popularFallback")}</p>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                {popularShows.map((show) => {
-                  const posterUrl = getPosterUrl(show.poster_path, "w185");
-                  const isAdded = addedShowIds.has(show.id);
-                  const isAdding = addingShowId === show.id;
+          {!recsLoading &&
+            !popularLoading &&
+            recommendations.length === 0 &&
+            popularShows.length > 0 && (
+              <>
+                <p className="mb-3 text-xs text-text-muted">
+                  {t("popularFallback")}
+                </p>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                  {popularShows.map((show) => {
+                    const posterUrl = getPosterUrl(show.poster_path, "w185");
+                    const isAdded = addedShowIds.has(show.id);
+                    const isAdding = addingShowId === show.id;
 
-                  return (
-                    <div
-                      key={show.id}
-                      className="group relative overflow-hidden rounded-lg border border-border bg-bg-surface transition-colors hover:border-border-hover"
-                    >
-                      <div className="relative aspect-2/3 w-full bg-bg-elevated">
-                        {posterUrl ? (
-                          <Image
-                            src={posterUrl}
-                            alt={show.title}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 17vw"
-                          />
-                        ) : (
-                          <div className="flex h-full items-center justify-center">
-                            <Television size={28} className="text-text-faint" />
-                          </div>
-                        )}
+                    return (
+                      <div
+                        key={show.id}
+                        className="group relative overflow-hidden rounded-lg border border-border bg-bg-surface transition-colors hover:border-border-hover"
+                      >
+                        <div className="relative aspect-2/3 w-full bg-bg-elevated">
+                          {posterUrl ? (
+                            <Image
+                              src={posterUrl}
+                              alt={show.title}
+                              fill
+                              className="object-cover"
+                              sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 17vw"
+                            />
+                          ) : (
+                            <div className="flex h-full items-center justify-center">
+                              <Television
+                                size={28}
+                                className="text-text-faint"
+                              />
+                            </div>
+                          )}
 
-                        {/* Add to list overlay */}
-                        <div className="absolute inset-0 flex items-end bg-linear-to-t from-black/80 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100">
-                          <div className="w-full p-2">
-                            {isAdded ? (
-                              <span className="flex items-center justify-center gap-1 rounded-sm bg-accent/20 px-2 py-1.5 text-xs font-medium text-accent">
-                                <Check size={14} weight="bold" />
-                                {t("addedToList")}
-                              </span>
-                            ) : (
-                              <button
-                                onClick={() => handleAddToList(show)}
-                                disabled={isAdding}
-                                className="flex w-full items-center justify-center gap-1 rounded-sm bg-accent px-2 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
-                              >
-                                {isAdding ? (
-                                  <SpinnerGap size={14} className="animate-spin" />
-                                ) : (
-                                  <PlusCircle size={14} weight="bold" />
-                                )}
-                              </button>
-                            )}
+                          {/* Add to list overlay */}
+                          <div className="absolute inset-0 flex items-end bg-linear-to-t from-black/80 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100">
+                            <div className="w-full p-2">
+                              {isAdded ? (
+                                <span className="flex items-center justify-center gap-1 rounded-sm bg-accent/20 px-2 py-1.5 text-xs font-medium text-accent">
+                                  <Check size={14} weight="bold" />
+                                  {t("addedToList")}
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={() => handleAddToList(show)}
+                                  disabled={isAdding}
+                                  className="flex w-full items-center justify-center gap-1 rounded-sm bg-accent px-2 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
+                                >
+                                  {isAdding ? (
+                                    <SpinnerGap
+                                      size={14}
+                                      className="animate-spin"
+                                    />
+                                  ) : (
+                                    <PlusCircle size={14} weight="bold" />
+                                  )}
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="p-2">
-                        <Link
-                          href={`/shows/${show.id}`}
-                          className="block truncate text-xs font-medium text-text-primary hover:text-accent transition-colors"
-                        >
-                          {show.title}
-                        </Link>
-                        <p className="mt-0.5 text-[10px] text-text-faint">
-                          {t("addedByCount", { count: show.addedCount })}
-                        </p>
+                        <div className="p-2">
+                          <Link
+                            href={`/shows/${show.id}`}
+                            className="block truncate text-xs font-medium text-text-primary hover:text-accent transition-colors"
+                          >
+                            {show.title}
+                          </Link>
+                          <p className="mt-0.5 text-[10px] text-text-faint">
+                            {t("addedByCount", { count: show.addedCount })}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          )}
+                    );
+                  })}
+                </div>
+              </>
+            )}
         </div>
       )}
     </div>

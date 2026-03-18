@@ -15,6 +15,7 @@ import {
   X,
   UsersThree,
   Bell,
+  Trophy,
 } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -51,6 +52,7 @@ export function SidebarNav({ username, avatarUrl, unreadCount }: SidebarNavProps
   const links = [
     { href: "/lists", label: t("myList"), icon: ListBullets, badge: 0 },
     { href: "/explore", label: t("explore"), icon: Compass, badge: 0 },
+    { href: "/rankings", label: t("rankings"), icon: Trophy, badge: 0 },
     { href: "/seguiti", label: t("seguiti"), icon: UsersThree, badge: 0 },
     {
       href: "/notifications",

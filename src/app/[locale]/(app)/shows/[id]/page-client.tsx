@@ -10,6 +10,8 @@ import {
 } from "@phosphor-icons/react";
 import { Link } from "@/i18n/navigation";
 import { getPosterUrl } from "@/lib/tmdb/client";
+import { ShowAnalyticsSection } from "@/components/ShowAnalytics";
+import type { ShowAnalyticsData } from "@/components/ShowAnalytics";
 
 type ShowData = {
   id: string;
@@ -40,12 +42,26 @@ type ShowDetailClientProps = {
     ratingCount: number;
   };
   publicLists: PublicList[];
+  analyticsData: ShowAnalyticsData;
+  analyticsLabels: {
+    title: string;
+    inLists: string;
+    ratedBy: string;
+    avgRating: string;
+    ratingDistribution: string;
+    noRatings: string;
+    addedOverTime: string;
+    shows: string;
+    users: string;
+  };
 };
 
 export function ShowDetailClient({
   show,
   stats,
   publicLists,
+  analyticsData,
+  analyticsLabels,
 }: ShowDetailClientProps) {
   const t = useTranslations();
   const posterUrl = getPosterUrl(show.poster_path, "w500");
@@ -180,6 +196,17 @@ export function ShowDetailClient({
           </div>
         </div>
       )}
+
+      {/* Analytics section */}
+      <ShowAnalyticsSection
+        data={analyticsData}
+        stats={{
+          listCount: stats.listCount,
+          ratingCount: stats.ratingCount,
+          avgRating: stats.avgRating,
+        }}
+        labels={analyticsLabels}
+      />
     </div>
   );
 }

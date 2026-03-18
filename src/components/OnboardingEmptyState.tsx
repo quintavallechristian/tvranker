@@ -6,8 +6,10 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { getPosterUrl } from "@/lib/tmdb/client";
 import {
+  getTopRatedShows,
+} from "@/app/[locale]/(app)/rankings/actions";
+import {
   getPopularShows,
-  type PopularShow,
 } from "@/app/[locale]/(app)/explore/actions";
 import { addShowToMyList } from "@/app/[locale]/(app)/lists/actions";
 import {
@@ -18,6 +20,17 @@ import {
   SpinnerGap,
 } from "@phosphor-icons/react";
 
+// Unified show shape for displaying in the onboarding grid
+type OnboardingShow = {
+  id: string;
+  tmdb_id: number | null;
+  title: string;
+  poster_path: string | null;
+  first_air_date: string | null;
+  overview: string | null;
+  avg_rating?: number;
+};
+
 type Props = {
   onAddShow: () => void;
   onImport: () => void;
@@ -26,20 +39,44 @@ type Props = {
 export function OnboardingEmptyState({ onAddShow, onImport }: Props) {
   const t = useTranslations("onboarding");
   const router = useRouter();
-  const [shows, setShows] = useState<PopularShow[]>([]);
+  const [shows, setShows] = useState<OnboardingShow[]>([]);
   const [loading, setLoading] = useState(true);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const [addingId, setAddingId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
   useEffect(() => {
-    getPopularShows()
-      .then(setShows)
-      .catch(() => {})
+    getTopRatedShows()
+      .then((topRated) => {
+        if (topRated.length >= 6) {
+          // Map TopRatedShow → OnboardingShow
+          setShows(
+            topRated.slice(0, 12).map((s) => ({
+              id: s.id,
+              tmdb_id: s.tmdb_id,
+              title: s.title,
+              poster_path: s.poster_path,
+              first_air_date: s.first_air_date,
+              overview: s.overview,
+              avg_rating: s.avg_rating,
+            }))
+          );
+        } else {
+          // Fall back to most-added shows when ratings data is sparse
+          return getPopularShows().then((popular) => {
+            setShows(popular.slice(0, 12));
+          });
+        }
+      })
+      .catch(() => {
+        getPopularShows()
+          .then((popular) => setShows(popular.slice(0, 12)))
+          .catch(() => {});
+      })
       .finally(() => setLoading(false));
   }, []);
 
-  const handleQuickAdd = (show: PopularShow) => {
+  const handleQuickAdd = (show: OnboardingShow) => {
     if (addedIds.has(show.id) || addingId === show.id) return;
     setAddingId(show.id);
     startTransition(async () => {
@@ -137,6 +174,13 @@ export function OnboardingEmptyState({ onAddShow, onImport }: Props) {
                     ) : (
                       <div className="flex h-full items-center justify-center">
                         <Television size={24} className="text-text-faint" />
+                      </div>
+                    )}
+
+                    {/* Avg rating badge (top-right) */}
+                    {show.avg_rating !== undefined && (
+                      <div className="absolute top-1.5 right-1.5 rounded px-1 py-0.5 bg-black/70 font-mono text-[10px] font-bold tabular-nums text-accent leading-none">
+                        {show.avg_rating.toFixed(1)}
                       </div>
                     )}
 
