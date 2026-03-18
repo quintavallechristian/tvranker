@@ -30,6 +30,7 @@ import {
   FunnelSimple,
   CopySimple,
   FileArrowUp,
+  ChartPie,
 } from "@phosphor-icons/react";
 import { Link, useRouter as useI18nRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
@@ -510,8 +511,8 @@ export function ListDetailClient({
         </button>
       )}
 
-      {/* List header */}
-      <div className="mb-6">
+      {/* List header + action buttons */}
+      <div className="mb-6 flex items-start justify-between gap-4">
         <ListHeader
           description={listDescription}
           isPublic={list.is_public}
@@ -520,63 +521,70 @@ export function ListDetailClient({
           readOnly={!isOwner}
           saveStatus={isOwner ? saveStatus : undefined}
         />
-      </div>
-
-      {/* Search bar */}
-      {items.length > 0 && (
-        <div className="mb-4 relative">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t("searchPlaceholder")}
-            className="w-full rounded-[var(--radius-md)] border border-border bg-transparent px-3 py-2 text-sm text-text-primary placeholder:text-text-faint focus:border-border-hover focus:outline-none transition-colors"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-faint hover:text-text-secondary transition-colors"
+        <div className="flex shrink-0 items-center gap-2 mt-0.5">
+          {isOwner && (
+            <Link
+              href="/lists/analytics"
+              className="flex items-center gap-1.5 rounded-[var(--radius-md)] border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary"
             >
-              <X size={14} />
+              <ChartPie size={14} />
+              {t("analytics")}
+            </Link>
+          )}
+          {isOwner && (
+            <button
+              onClick={() => setShowAddDialog(true)}
+              className="flex items-center gap-1.5 rounded-[var(--radius-md)] border border-dashed border-border px-3 py-2 text-xs text-text-muted transition-colors hover:border-border-hover hover:text-text-secondary"
+            >
+              <Plus size={14} />
+              Add show
+            </button>
+          )}
+          {isOwner && (
+            <button
+              onClick={() => setShowImport(true)}
+              className="flex items-center gap-1.5 rounded-[var(--radius-md)] border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary"
+            >
+              <FileArrowUp size={14} />
+              {t("importExternal")}
+            </button>
+          )}
+          {!isOwner && isLoggedIn && viewerListEmpty && (
+            <button
+              onClick={handleCopyList}
+              disabled={isCopying}
+              className="flex items-center gap-1.5 rounded-[var(--radius-md)] border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary disabled:opacity-50"
+            >
+              <CopySimple size={14} />
+              {isCopying ? t("copying") : t("copyList")}
             </button>
           )}
         </div>
-      )}
+      </div>
 
-      {/* Toolbar: add show + import + filters toggle + copy */}
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        {isOwner && (
-          <button
-            onClick={() => setShowAddDialog(true)}
-            className="flex items-center gap-1.5 rounded-[var(--radius-md)] border border-dashed border-border px-3 py-2 text-xs text-text-muted transition-colors hover:border-border-hover hover:text-text-secondary"
-          >
-            <Plus size={14} />
-            Add show
-          </button>
-        )}
-        {isOwner && (
-          <button
-            onClick={() => setShowImport(true)}
-            className="flex items-center gap-1.5 rounded-[var(--radius-md)] border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary"
-          >
-            <FileArrowUp size={14} />
-            {t("importExternal")}
-          </button>
-        )}
-        {!isOwner && isLoggedIn && viewerListEmpty && (
-          <button
-            onClick={handleCopyList}
-            disabled={isCopying}
-            className="flex items-center gap-1.5 rounded-[var(--radius-md)] border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary disabled:opacity-50"
-          >
-            <CopySimple size={14} />
-            {isCopying ? t("copying") : t("copyList")}
-          </button>
-        )}
-        {(allTags.length > 0 || items.length > 0) && (
+      {/* Search bar + filters toggle */}
+      {items.length > 0 && (
+        <div className="mb-4 flex items-center gap-2">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t("searchPlaceholder")}
+              className="w-full rounded-[var(--radius-md)] border border-border bg-transparent px-3 py-2 text-sm text-text-primary placeholder:text-text-faint focus:border-border-hover focus:outline-none transition-colors"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-faint hover:text-text-secondary transition-colors"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
           <button
             onClick={() => setShowFilters((v) => !v)}
-            className={`flex items-center gap-1.5 rounded-[var(--radius-md)] border px-3 py-2 text-xs transition-colors ${
+            className={`flex shrink-0 items-center gap-1.5 rounded-[var(--radius-md)] border px-3 py-2 text-xs transition-colors ${
               showFilters || activeFilterCount > 0
                 ? "border-border-hover text-text-primary"
                 : "border-border text-text-muted hover:border-border-hover hover:text-text-secondary"
@@ -590,8 +598,8 @@ export function ListDetailClient({
               </span>
             )}
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Filter panel */}
       {showFilters && (

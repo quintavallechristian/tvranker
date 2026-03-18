@@ -73,7 +73,18 @@
     "noSearchResults": "Nessuna serie corrisponde alla ricerca",
     "noSearchResultsHint": "Prova con un termine diverso",
     "noFilterResults": "Nessuna serie corrisponde ai filtri selezionati",
-    "noFilterResultsHint": "Prova a rimuovere alcuni filtri"
+    "noFilterResultsHint": "Prova a rimuovere alcuni filtri",
+    "analytics": "Analytics",
+    "tagDistribution": "Distribuzione tag",
+    "ratingDistribution": "Distribuzione voti",
+    "noTags": "Nessun tag assegnato",
+    "noRatings": "Nessun voto ancora",
+    "shows": "serie",
+    "unrated": "Non votato",
+    "totalShows": "Serie totali",
+    "ratedShows": "Votate",
+    "avgRating": "Voto medio",
+    "analyticsEmptyHint": "Aggiungi e vota le serie per vedere gli analytics"
   },
   "shows": {
     "addShow": "Aggiungi Serie",

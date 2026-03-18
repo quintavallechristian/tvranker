@@ -35,6 +35,7 @@ const SerializdShowSchema = z.object({
   seasons: z.array(z.unknown()).optional(),
   created_at: z.string().optional(),
   status: z.string().optional(),
+  score: z.number().optional(),
 });
 
 const SerializdArraySchema = z.array(SerializdShowSchema);
@@ -45,6 +46,7 @@ export type TraktList = z.infer<typeof TraktListSchema>;
 export type ParsedShow = {
   title: string;
   imdb_id: string | null;
+  score?: number | null;
 };
 
 export type ParseResult = {
@@ -70,6 +72,7 @@ export function parseTraktJson(input: unknown): ParseResult {
       shows: parsed.map((show) => ({
         title: show.title,
         imdb_id: normalizeImdb(show.id?.imdb),
+        score: show.score ?? null,
       })),
     };
   }

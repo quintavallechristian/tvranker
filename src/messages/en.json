@@ -73,7 +73,18 @@
     "noSearchResults": "No shows match your search",
     "noSearchResultsHint": "Try a different search term",
     "noFilterResults": "No shows match the selected filters",
-    "noFilterResultsHint": "Try removing some filters"
+    "noFilterResultsHint": "Try removing some filters",
+    "analytics": "Analytics",
+    "tagDistribution": "Tag distribution",
+    "ratingDistribution": "Rating distribution",
+    "noTags": "No tags assigned yet",
+    "noRatings": "No ratings yet",
+    "shows": "shows",
+    "unrated": "Unrated",
+    "totalShows": "Total shows",
+    "ratedShows": "Rated",
+    "avgRating": "Avg. rating",
+    "analyticsEmptyHint": "Add and rate shows to see analytics"
   },
   "shows": {
     "addShow": "Add Show",

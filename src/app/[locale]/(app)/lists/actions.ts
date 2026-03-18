@@ -256,9 +256,13 @@ export async function importToMyList(jsonData: unknown) {
 
       if (dbShowId) {
         // Skip if show already in list (unique constraint)
+        const rating =
+          typeof show.score === "number" && show.score >= 1 && show.score <= 10
+            ? show.score
+            : null;
         const { error } = await supabase
           .from("list_items")
-          .insert({ list_id: myList.id, show_id: dbShowId, position });
+          .insert({ list_id: myList.id, show_id: dbShowId, position, rating });
         if (!error) {
           position++;
           importedCount++;
@@ -271,6 +275,105 @@ export async function importToMyList(jsonData: unknown) {
 
   revalidatePath("/lists");
   return { importedCount };
+}
+
+export type AnalyticsData = {
+  totalCount: number;
+  ratedCount: number;
+  avgRating: number | null;
+  ratingCounts: { rating: number; count: number }[];
+  tagCounts: { id: string; name: string; color: string; count: number }[];
+};
+
+export async function getListAnalytics(): Promise<AnalyticsData> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const list = await getUserList(supabase, user.id);
+  if (!list)
+    return {
+      totalCount: 0,
+      ratedCount: 0,
+      avgRating: null,
+      ratingCounts: Array.from({ length: 10 }, (_, i) => ({
+        rating: i + 1,
+        count: 0,
+      })),
+      tagCounts: [],
+    };
+
+  // Fetch all items (no pagination) — just the rating + show_id fields
+  const { data: allItems } = await supabase
+    .from("list_items")
+    .select("rating, show_id")
+    .eq("list_id", list.id);
+
+  const items = allItems ?? [];
+  const totalCount = items.length;
+  const ratedRows = items.filter((r) => r.rating !== null);
+  const ratedCount = ratedRows.length;
+  const avgRating =
+    ratedCount > 0
+      ? Math.round(
+          (ratedRows.reduce((s, r) => s + r.rating!, 0) / ratedCount) * 10,
+        ) / 10
+      : null;
+
+  // Rating distribution
+  const ratingMap: Record<number, number> = {};
+  for (let r = 1; r <= 10; r++) ratingMap[r] = 0;
+  for (const row of items) {
+    if (row.rating !== null)
+      ratingMap[row.rating] = (ratingMap[row.rating] ?? 0) + 1;
+  }
+  const ratingCounts = Array.from({ length: 10 }, (_, i) => ({
+    rating: i + 1,
+    count: ratingMap[i + 1],
+  }));
+
+  // Tag distribution — only for shows still in the list
+  const showIds = items.map((i) => i.show_id);
+  const tagCounts: AnalyticsData["tagCounts"] = [];
+
+  if (showIds.length > 0) {
+    const [{ data: showTagRows }, { data: tagDefs }] = await Promise.all([
+      supabase
+        .from("show_tags")
+        .select("tag_id")
+        .eq("user_id", user.id)
+        .in("show_id", showIds),
+      supabase
+        .from("tags")
+        .select("id, name, color")
+        .or(`is_default.eq.true,user_id.eq.${user.id}`),
+    ]);
+
+    const tagMap = new Map((tagDefs ?? []).map((t) => [t.id, t]));
+    const tagCountMap: Record<
+      string,
+      { id: string; name: string; color: string; count: number }
+    > = {};
+    for (const { tag_id } of showTagRows ?? []) {
+      const tag = tagMap.get(tag_id);
+      if (tag) {
+        tagCountMap[tag_id] ??= {
+          id: tag.id,
+          name: tag.name,
+          color: tag.color,
+          count: 0,
+        };
+        tagCountMap[tag_id].count++;
+      }
+    }
+    tagCounts.push(
+      ...Object.values(tagCountMap).sort((a, b) => b.count - a.count),
+    );
+  }
+
+  return { totalCount, ratedCount, avgRating, ratingCounts, tagCounts };
 }
 
 export type ListItemWithShow = {

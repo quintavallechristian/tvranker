@@ -32,9 +32,15 @@ export function parseMalXml(xmlText: string): ParseResult {
     if (seen.has(title.toLowerCase())) return;
     seen.add(title.toLowerCase());
 
+    const rawScore = parseInt(
+      node.querySelector("my_score")?.textContent?.trim() ?? "0",
+      10,
+    );
+
     shows.push({
       title,
       imdb_id: null,
+      score: rawScore >= 1 && rawScore <= 10 ? rawScore : null,
     });
   });
 

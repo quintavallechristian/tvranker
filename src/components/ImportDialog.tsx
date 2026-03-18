@@ -114,6 +114,7 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
         const asJson = parsed.shows.map((s) => ({
           title: s.title,
           id: s.imdb_id ? { imdb: s.imdb_id } : undefined,
+          score: s.score ?? undefined,
         }));
         await onImport(asJson);
       } else {

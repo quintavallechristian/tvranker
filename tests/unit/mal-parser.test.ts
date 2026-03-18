@@ -66,14 +66,17 @@ describe("parseMalXml", () => {
     expect(result.shows[0]).toEqual({
       title: "3-gatsu no Lion",
       imdb_id: null,
+      score: 9,
     });
     expect(result.shows[1]).toEqual({
       title: "Blue Lock",
       imdb_id: null,
+      score: 9,
     });
     expect(result.shows[2]).toEqual({
       title: "Ao no Hako",
       imdb_id: null,
+      score: 8,
     });
   });
 
@@ -90,10 +93,12 @@ describe("parseMalXml", () => {
   <myinfo></myinfo>
   <anime>
     <series_title><![CDATA[My Show]]></series_title>
+    <my_score>7</my_score>
     <my_status>Completed</my_status>
   </anime>
   <anime>
     <series_title><![CDATA[my show]]></series_title>
+    <my_score>8</my_score>
     <my_status>Completed</my_status>
   </anime>
 </myanimelist>`;
@@ -101,6 +106,22 @@ describe("parseMalXml", () => {
     const result = parseMalXml(xmlWithDupes);
     expect(result.shows).toHaveLength(1);
     expect(result.shows[0].title).toBe("My Show");
+    expect(result.shows[0].score).toBe(7);
+  });
+
+  it("sets score to null when my_score is 0 (unrated)", () => {
+    const xmlUnrated = `<?xml version="1.0" encoding="UTF-8" ?>
+<myanimelist>
+  <myinfo></myinfo>
+  <anime>
+    <series_title><![CDATA[Unrated Show]]></series_title>
+    <my_score>0</my_score>
+    <my_status>Completed</my_status>
+  </anime>
+</myanimelist>`;
+
+    const result = parseMalXml(xmlUnrated);
+    expect(result.shows[0].score).toBeNull();
   });
 
   it("throws on invalid XML", () => {
