@@ -89,6 +89,8 @@
     "avgRatingPerTag": "Voto medio per tag",
     "addedOverTime": "Serie aggiunte nel tempo",
     "releaseDecades": "Decade di uscita",
+    "avgRatingByDecade": "Voto medio per decade",
+    "backToDecades": "Torna alle decadi",
     "noData": "Dati insufficienti"
   },
   "shows": {

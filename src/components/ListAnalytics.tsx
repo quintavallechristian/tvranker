@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { DndContext } from "@dnd-kit/core";
 import {
   PieChart,
   Pie,
@@ -14,11 +16,12 @@ import {
   Area,
   CartesianGrid,
 } from "recharts";
-import { ArrowLeft } from "@phosphor-icons/react";
+import { ArrowLeft, X } from "@phosphor-icons/react";
 import { Link } from "@/i18n/navigation";
 import { TAG_COLOR_HEX, type TagColor } from "@/lib/tag-colors";
 import { getRatingLabel } from "@/lib/rating-labels";
-import type { AnalyticsData } from "@/app/[locale]/(app)/lists/actions";
+import { ShowRow } from "@/components/ShowRow";
+import type { AnalyticsData, ShowSummary } from "@/app/[locale]/(app)/lists/actions";
 
 type Props = {
   data: AnalyticsData;
@@ -39,6 +42,8 @@ type Props = {
     avgRatingPerTag: string;
     addedOverTime: string;
     releaseDecades: string;
+    avgRatingByDecade: string;
+    backToDecades: string;
     noData: string;
   };
 };
@@ -71,7 +76,12 @@ function StatCard({
   );
 }
 
-export function ListAnalyticsPage({ data, ratingLabels, backHref, labels }: Props) {
+export function ListAnalyticsPage({
+  data,
+  ratingLabels,
+  backHref,
+  labels,
+}: Props) {
   const hasTagData = data.tagCounts.length > 0;
   const hasRatingData = data.ratingCounts.some((d) => d.count > 0);
   const ratedPct =
@@ -83,6 +93,33 @@ export function ListAnalyticsPage({ data, ratingLabels, backHref, labels }: Prop
     ...d,
     label: getRatingLabel(d.rating, ratingLabels),
   }));
+
+  const [drillDecadeCount, setDrillDecadeCount] = useState<string | null>(null);
+  const [drillDecadeRating, setDrillDecadeRating] = useState<string | null>(
+    null,
+  );
+  const [modalData, setModalData] = useState<{
+    title: string;
+    shows: ShowSummary[];
+  } | null>(null);
+
+  const openModal = (title: string, shows: ShowSummary[]) => {
+    if (shows.length > 0) setModalData({ title, shows });
+  };
+
+  const decadeCountDisplayData = drillDecadeCount
+    ? data.yearCounts.filter(({ year }) => {
+        const y = parseInt(year, 10);
+        return `${Math.floor(y / 10) * 10}s` === drillDecadeCount;
+      })
+    : data.decadeCounts;
+
+  const decadeRatingDisplayData = drillDecadeRating
+    ? data.yearAvgRatings.filter(({ year }) => {
+        const y = parseInt(year, 10);
+        return `${Math.floor(y / 10) * 10}s` === drillDecadeRating;
+      })
+    : data.decadeAvgRatings;
 
   return (
     <div>
@@ -123,7 +160,7 @@ export function ListAnalyticsPage({ data, ratingLabels, backHref, labels }: Prop
           </div>
 
           {/* Charts row 1 */}
-          <div className="grid gap-6 sm:grid-cols-2">
+          <div className="mt-6 grid gap-6 sm:grid-cols-2">
             {/* Tag distribution */}
             <div className="rounded-lg border border-border bg-bg-surface p-4">
               <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-text-faint">
@@ -238,6 +275,14 @@ export function ListAnalyticsPage({ data, ratingLabels, backHref, labels }: Prop
                       fill={RATING_BAR_COLOR}
                       radius={[3, 3, 0, 0]}
                       maxBarSize={40}
+                      cursor="pointer"
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      onClick={(barData: any) => {
+                        openModal(
+                          `${barData.rating}/10`,
+                          data.showsByRating[barData.rating] ?? [],
+                        );
+                      }}
                     />
                   </BarChart>
                 </ResponsiveContainer>
@@ -250,7 +295,7 @@ export function ListAnalyticsPage({ data, ratingLabels, backHref, labels }: Prop
           </div>
 
           {/* Charts row 2 */}
-          <div className="grid gap-6 sm:grid-cols-2">
+          <div className="mt-6 grid gap-6 sm:grid-cols-2">
             {/* Avg rating per tag */}
             <div className="rounded-lg border border-border bg-bg-surface p-4">
               <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-text-faint">
@@ -297,17 +342,29 @@ export function ListAnalyticsPage({ data, ratingLabels, backHref, labels }: Prop
 
             {/* Decade distribution */}
             <div className="rounded-lg border border-border bg-bg-surface p-4">
-              <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-text-faint">
-                {labels.releaseDecades}
-              </h3>
-              {data.decadeCounts.length > 0 ? (
+              <div className="mb-4 flex items-center gap-2">
+                {drillDecadeCount && (
+                  <button
+                    onClick={() => setDrillDecadeCount(null)}
+                    className="inline-flex items-center gap-1 text-[11px] text-text-muted transition-colors hover:text-text-secondary"
+                  >
+                    <ArrowLeft size={11} />
+                    {labels.backToDecades}
+                  </button>
+                )}
+                <h3 className="text-xs font-semibold uppercase tracking-widest text-text-faint">
+                  {drillDecadeCount ? drillDecadeCount : labels.releaseDecades}
+                </h3>
+              </div>
+              {decadeCountDisplayData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart
-                    data={data.decadeCounts}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    data={decadeCountDisplayData as any[]}
                     margin={{ top: 4, right: 4, bottom: 0, left: -20 }}
                   >
                     <XAxis
-                      dataKey="decade"
+                      dataKey={drillDecadeCount ? "year" : "decade"}
                       tick={{ fontSize: 11, fill: "var(--text-muted)" }}
                       tickLine={false}
                       axisLine={{ stroke: "var(--border)" }}
@@ -333,6 +390,15 @@ export function ListAnalyticsPage({ data, ratingLabels, backHref, labels }: Prop
                       fill="#818cf8"
                       radius={[3, 3, 0, 0]}
                       maxBarSize={40}
+                      cursor="pointer"
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      onClick={(barData: any) => {
+                        if (!drillDecadeCount && barData.decade) {
+                          setDrillDecadeCount(barData.decade);
+                        } else if (drillDecadeCount && barData.year) {
+                          openModal(barData.year, data.showsByYear[barData.year] ?? []);
+                        }
+                      }}
                     />
                   </BarChart>
                 </ResponsiveContainer>
@@ -344,8 +410,79 @@ export function ListAnalyticsPage({ data, ratingLabels, backHref, labels }: Prop
             </div>
           </div>
 
+          {/* Charts row 3: Avg rating by decade */}
+          <div className="mt-6 rounded-lg border border-border bg-bg-surface p-4">
+            <div className="mb-4 flex items-center gap-2">
+              {drillDecadeRating && (
+                <button
+                  onClick={() => setDrillDecadeRating(null)}
+                  className="inline-flex items-center gap-1 text-[11px] text-text-muted transition-colors hover:text-text-secondary"
+                >
+                  <ArrowLeft size={11} />
+                  {labels.backToDecades}
+                </button>
+              )}
+              <h3 className="text-xs font-semibold uppercase tracking-widest text-text-faint">
+                {drillDecadeRating
+                  ? drillDecadeRating
+                  : labels.avgRatingByDecade}
+              </h3>
+            </div>
+            {decadeRatingDisplayData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  data={decadeRatingDisplayData as any[]}
+                  margin={{ top: 4, right: 4, bottom: 0, left: -20 }}
+                >
+                  <XAxis
+                    dataKey={drillDecadeRating ? "year" : "decade"}
+                    tick={{ fontSize: 11, fill: "var(--text-muted)" }}
+                    tickLine={false}
+                    axisLine={{ stroke: "var(--border)" }}
+                  />
+                  <YAxis
+                    domain={[0, 10]}
+                    tick={{ fontSize: 11, fill: "var(--text-muted)" }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "var(--bg-elevated)",
+                      border: "1px solid var(--border)",
+                      borderRadius: "var(--radius-md)",
+                      fontSize: "12px",
+                      color: "var(--text-primary)",
+                    }}
+                    formatter={(value) => [`${value}/10`]}
+                  />
+                  <Bar
+                    dataKey="avgRating"
+                    fill={RATING_BAR_COLOR}
+                    radius={[3, 3, 0, 0]}
+                    maxBarSize={40}
+                    cursor="pointer"
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    onClick={(barData: any) => {
+                      if (!drillDecadeRating && barData.decade) {
+                        setDrillDecadeRating(barData.decade);
+                      } else if (drillDecadeRating && barData.year) {
+                        openModal(barData.year, data.showsByYear[barData.year] ?? []);
+                      }
+                    }}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="py-14 text-center text-xs text-text-muted">
+                {labels.noData}
+              </p>
+            )}
+          </div>
+
           {/* Timeline: series added over time */}
-          <div className="rounded-lg border border-border bg-bg-surface p-4">
+          <div className="mt-6 rounded-lg border border-border bg-bg-surface p-4">
             <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-text-faint">
               {labels.addedOverTime}
             </h3>
@@ -356,9 +493,23 @@ export function ListAnalyticsPage({ data, ratingLabels, backHref, labels }: Prop
                   margin={{ top: 4, right: 4, bottom: 0, left: -20 }}
                 >
                   <defs>
-                    <linearGradient id="timelineGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={RATING_BAR_COLOR} stopOpacity={0.3} />
-                      <stop offset="95%" stopColor={RATING_BAR_COLOR} stopOpacity={0} />
+                    <linearGradient
+                      id="timelineGrad"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="5%"
+                        stopColor={RATING_BAR_COLOR}
+                        stopOpacity={0.3}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor={RATING_BAR_COLOR}
+                        stopOpacity={0}
+                      />
                     </linearGradient>
                   </defs>
                   <CartesianGrid
@@ -406,6 +557,63 @@ export function ListAnalyticsPage({ data, ratingLabels, backHref, labels }: Prop
             )}
           </div>
         </>
+      )}
+
+      {/* Bar drill-through modal */}
+      {modalData && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60"
+          onClick={() => setModalData(null)}
+        >
+          <div
+            className="relative w-full max-w-sm max-h-[75vh] flex flex-col rounded-xl border border-border bg-bg-elevated shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
+              <h2 className="text-sm font-semibold text-text-primary">
+                {modalData.title}
+                <span className="ml-2 font-mono text-xs font-normal text-text-muted">
+                  {modalData.shows.length}
+                </span>
+              </h2>
+              <button
+                onClick={() => setModalData(null)}
+                className="text-text-muted transition-colors hover:text-text-primary"
+                aria-label="Close"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            {/* List */}
+            <div className="overflow-y-auto p-3">
+              <DndContext>
+                <div className="space-y-1.5">
+                  {[...modalData.shows]
+                    .sort((a, b) => {
+                      if (a.rating === null && b.rating === null) return 0;
+                      if (a.rating === null) return 1;
+                      if (b.rating === null) return -1;
+                      return b.rating - a.rating;
+                    })
+                    .map((show, i) => (
+                      <ShowRow
+                        key={show.id}
+                        id={show.id}
+                        title={show.title}
+                        posterPath={show.poster_path}
+                        rating={show.rating}
+                        position={i + 1}
+                        readOnly
+                        showId={show.id}
+                        ratingLabels={ratingLabels}
+                      />
+                    ))}
+                </div>
+              </DndContext>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

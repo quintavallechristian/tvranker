@@ -1,35 +1,53 @@
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { ListAnalyticsPage } from "@/components/ListAnalytics";
-import { getListAnalytics } from "../actions";
+import { getListAnalytics } from "../../../lists/actions";
 
-export default async function AnalyticsPage() {
+export default async function UserAnalyticsPage({
+  params,
+}: {
+  params: Promise<{ username: string }>;
+}) {
+  const { username } = await params;
   const supabase = await createClient();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, username, rating_labels")
+    .eq("username", username)
+    .single();
+
+  if (!profile) notFound();
+
+  const { data: list } = await supabase
+    .from("lists")
+    .select("id, is_public")
+    .eq("user_id", profile.id)
+    .single();
+
+  if (!list) notFound();
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
+  const isOwner = user?.id === profile.id;
+  if (!list.is_public && !isOwner) notFound();
 
-  const [data, { data: profile }, t] = await Promise.all([
-    getListAnalytics(),
-    supabase
-      .from("profiles")
-      .select("rating_labels")
-      .eq("id", user.id)
-      .single(),
+  const [data, t] = await Promise.all([
+    getListAnalytics(list.id),
     getTranslations("lists"),
   ]);
 
   return (
     <ListAnalyticsPage
       data={data}
-      ratingLabels={profile?.rating_labels as string[] | null}
-      backHref="/lists"
+      ratingLabels={profile.rating_labels as string[] | null}
+      backHref={`/users/${username}`}
       labels={{
         title: t("analytics"),
-        backToList: t("title"),
+        backToList: `@${username}`,
         totalShows: t("totalShows"),
         ratedShows: t("ratedShows"),
         avgRating: t("avgRating"),

@@ -58,6 +58,13 @@
   box-sizing: border-box;
 }
 
+/* Remove focus ring from Recharts SVG elements */
+.recharts-wrapper,
+.recharts-wrapper svg,
+.recharts-surface {
+  outline: none !important;
+}
+
 body {
   background: var(--bg-primary);
   color: var(--text-primary);

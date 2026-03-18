@@ -59,6 +59,8 @@ export default async function ListIdAnalyticsPage({
         avgRatingPerTag: t("avgRatingPerTag"),
         addedOverTime: t("addedOverTime"),
         releaseDecades: t("releaseDecades"),
+        avgRatingByDecade: t("avgRatingByDecade"),
+        backToDecades: t("backToDecades"),
         noData: t("noData"),
       }}
     />

@@ -277,15 +277,34 @@ export async function importToMyList(jsonData: unknown) {
   return { importedCount };
 }
 
+export type ShowSummary = {
+  id: string;
+  title: string;
+  poster_path: string | null;
+  rating: number | null;
+  first_air_date: string | null;
+};
+
 export type AnalyticsData = {
   totalCount: number;
   ratedCount: number;
   avgRating: number | null;
   ratingCounts: { rating: number; count: number }[];
   tagCounts: { id: string; name: string; color: string; count: number }[];
-  tagAvgRatings: { id: string; name: string; color: string; avgRating: number; count: number }[];
+  tagAvgRatings: {
+    id: string;
+    name: string;
+    color: string;
+    avgRating: number;
+    count: number;
+  }[];
   monthlyAdded: { month: string; count: number }[];
   decadeCounts: { decade: string; count: number }[];
+  yearCounts: { year: string; count: number }[];
+  decadeAvgRatings: { decade: string; avgRating: number }[];
+  yearAvgRatings: { year: string; avgRating: number }[];
+  showsByRating: Record<number, ShowSummary[]>;
+  showsByYear: Record<string, ShowSummary[]>;
 };
 
 const EMPTY_ANALYTICS: AnalyticsData = {
@@ -300,6 +319,11 @@ const EMPTY_ANALYTICS: AnalyticsData = {
   tagAvgRatings: [],
   monthlyAdded: [],
   decadeCounts: [],
+  yearCounts: [],
+  decadeAvgRatings: [],
+  yearAvgRatings: [],
+  showsByRating: {},
+  showsByYear: {},
 };
 
 /**
@@ -344,11 +368,16 @@ export async function getListAnalytics(
     rating: number | null;
     show_id: string;
     added_at: string | null;
-    shows: { first_air_date: string | null } | null;
+    shows: {
+      id: string;
+      title: string;
+      poster_path: string | null;
+      first_air_date: string | null;
+    } | null;
   };
   const { data: rawItems } = await supabase
     .from("list_items")
-    .select("rating, show_id, added_at, shows(first_air_date)")
+    .select("rating, show_id, added_at, shows(id, title, poster_path, first_air_date)")
     .eq("list_id", resolvedListId);
 
   const items = (rawItems ?? []) as RawItem[];
@@ -459,17 +488,79 @@ export async function getListAnalytics(
 
   // Decade distribution: group by decade of first_air_date
   const decadeMap: Record<string, number> = {};
+  const yearCountMap: Record<string, number> = {};
+  const decadeRatingAcc: Record<string, { sum: number; count: number }> = {};
+  const yearRatingAcc: Record<string, { sum: number; count: number }> = {};
+
   for (const item of items) {
     const firstAirDate = item.shows?.first_air_date;
     if (!firstAirDate) continue;
     const year = parseInt(firstAirDate.slice(0, 4), 10);
     if (isNaN(year) || year < 1900) continue;
     const decade = `${Math.floor(year / 10) * 10}s`;
+    const yearStr = String(year);
+
     decadeMap[decade] = (decadeMap[decade] ?? 0) + 1;
+    yearCountMap[yearStr] = (yearCountMap[yearStr] ?? 0) + 1;
+
+    if (item.rating !== null) {
+      decadeRatingAcc[decade] ??= { sum: 0, count: 0 };
+      decadeRatingAcc[decade].sum += item.rating;
+      decadeRatingAcc[decade].count++;
+
+      yearRatingAcc[yearStr] ??= { sum: 0, count: 0 };
+      yearRatingAcc[yearStr].sum += item.rating;
+      yearRatingAcc[yearStr].count++;
+    }
   }
+
   const decadeCounts = Object.entries(decadeMap)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([decade, count]) => ({ decade, count }));
+
+  const yearCounts = Object.entries(yearCountMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([year, count]) => ({ year, count }));
+
+  const decadeAvgRatings = Object.entries(decadeRatingAcc)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([decade, { sum, count }]) => ({
+      decade,
+      avgRating: Math.round((sum / count) * 10) / 10,
+    }));
+
+  const yearAvgRatings = Object.entries(yearRatingAcc)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([year, { sum, count }]) => ({
+      year,
+      avgRating: Math.round((sum / count) * 10) / 10,
+    }));
+
+  // Build show lookup maps for modal drill-through
+  const showsByRating: Record<number, ShowSummary[]> = {};
+  const showsByYear: Record<string, ShowSummary[]> = {};
+  for (const item of items) {
+    const summary: ShowSummary = {
+      id: item.shows?.id ?? item.show_id,
+      title: item.shows?.title ?? "",
+      poster_path: item.shows?.poster_path ?? null,
+      rating: item.rating,
+      first_air_date: item.shows?.first_air_date ?? null,
+    };
+    if (item.rating !== null) {
+      showsByRating[item.rating] ??= [];
+      showsByRating[item.rating].push(summary);
+    }
+    const fad = item.shows?.first_air_date;
+    if (fad) {
+      const y = parseInt(fad.slice(0, 4), 10);
+      if (!isNaN(y) && y >= 1900) {
+        const yr = String(y);
+        showsByYear[yr] ??= [];
+        showsByYear[yr].push(summary);
+      }
+    }
+  }
 
   return {
     totalCount,
@@ -480,6 +571,11 @@ export async function getListAnalytics(
     tagAvgRatings,
     monthlyAdded,
     decadeCounts,
+    yearCounts,
+    decadeAvgRatings,
+    yearAvgRatings,
+    showsByRating,
+    showsByYear,
   };
 }
 
@@ -637,6 +733,76 @@ export async function addShowToMyList(show: {
   const { error } = await supabase.from("list_items").insert({
     list_id: myList.id,
     show_id: showId,
+    position: nextPosition,
+  });
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/lists");
+  return { alreadyExists: false };
+}
+
+export async function addTmdbShowToMyList(show: {
+  tmdb_id: number;
+  title: string;
+  poster_path: string | null;
+  first_air_date: string | null;
+  overview: string | null;
+}) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const myList = await getUserList(supabase, user.id);
+  if (!myList) throw new Error("List not found");
+
+  // Find or create the show by tmdb_id
+  let { data: existingShow } = await supabase
+    .from("shows")
+    .select("id")
+    .eq("tmdb_id", show.tmdb_id)
+    .single();
+
+  if (!existingShow) {
+    const { data: newShow, error: showError } = await supabase
+      .from("shows")
+      .insert({
+        tmdb_id: show.tmdb_id,
+        title: show.title,
+        poster_path: show.poster_path,
+        first_air_date: show.first_air_date,
+        overview: show.overview,
+      })
+      .select("id")
+      .single();
+    if (showError) throw new Error(showError.message);
+    existingShow = newShow;
+  }
+
+  // Check if already in list
+  const { data: existing } = await supabase
+    .from("list_items")
+    .select("id")
+    .eq("list_id", myList.id)
+    .eq("show_id", existingShow!.id)
+    .single();
+
+  if (existing) return { alreadyExists: true };
+
+  const { data: items } = await supabase
+    .from("list_items")
+    .select("position")
+    .eq("list_id", myList.id)
+    .order("position", { ascending: false })
+    .limit(1);
+
+  const nextPosition = (items?.[0]?.position ?? -1) + 1;
+
+  const { error } = await supabase.from("list_items").insert({
+    list_id: myList.id,
+    show_id: existingShow!.id,
     position: nextPosition,
   });
 

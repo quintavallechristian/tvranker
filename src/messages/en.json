@@ -89,6 +89,8 @@
     "avgRatingPerTag": "Avg. rating per tag",
     "addedOverTime": "Shows added over time",
     "releaseDecades": "Release decade",
+    "avgRatingByDecade": "Avg. rating by decade",
+    "backToDecades": "Back to decades",
     "noData": "Not enough data yet"
   },
   "shows": {

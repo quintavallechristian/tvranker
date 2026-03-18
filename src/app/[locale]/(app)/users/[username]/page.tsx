@@ -5,6 +5,7 @@ import { FollowButton } from "@/components/FollowButton";
 import { computeListSimilarity } from "@/lib/similarity";
 import { UserListClient } from "./user-list-client";
 import { ListItemWithShow } from "../../lists/actions";
+import { Link } from "@/i18n/navigation";
 
 export default async function UserProfilePage({
   params,
@@ -102,8 +103,8 @@ export default async function UserProfilePage({
     isFollowing = !!follow;
   }
 
-  // Fetch the viewer's own show IDs so we can mark already-added shows
-  let viewerShowIds: string[] = [];
+  // Fetch the viewer's own show IDs + ratings so we can mark already-added shows
+  let viewerItems: { show_id: string; rating: number | null }[] = [];
   if (user && !isOwnProfile && list?.is_public) {
     const { data: viewerList } = await supabase
       .from("lists")
@@ -111,11 +112,14 @@ export default async function UserProfilePage({
       .eq("user_id", user.id)
       .single();
     if (viewerList) {
-      const { data: viewerItems } = await supabase
+      const { data: fetchedViewerItems } = await supabase
         .from("list_items")
-        .select("show_id")
+        .select("show_id, rating")
         .eq("list_id", viewerList.id);
-      viewerShowIds = (viewerItems ?? []).map((i) => i.show_id);
+      viewerItems = (fetchedViewerItems ?? []) as {
+        show_id: string;
+        rating: number | null;
+      }[];
     }
   }
 
@@ -166,7 +170,15 @@ export default async function UserProfilePage({
                 </p>
               )}
             </div>
-            <span className="text-xs text-text-faint">{itemCount} shows</span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-text-faint">{itemCount} shows</span>
+              <Link
+                href={`/users/${profile.username}/analytics`}
+                className="rounded-md border border-border px-2.5 py-1 text-xs text-text-muted transition-colors hover:border-border-hover hover:text-text-secondary"
+              >
+                Analytics
+              </Link>
+            </div>
           </div>
 
           {listItems.length === 0 ? (
@@ -177,7 +189,8 @@ export default async function UserProfilePage({
               initialItems={listItems}
               initialHasMore={hasMore}
               isLoggedIn={!!user && !isOwnProfile}
-              viewerShowIds={viewerShowIds}
+              viewerItems={viewerItems}
+              ratingLabels={profile.rating_labels}
             />
           )}
         </div>

@@ -10,7 +10,7 @@ import {
 } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
-import { Television, PlusCircle, Check } from "@phosphor-icons/react";
+import { Television, PlusCircle, Check, Funnel } from "@phosphor-icons/react";
 import { getPosterUrl } from "@/lib/tmdb/client";
 import {
   getListItemsPage,
@@ -25,8 +25,7 @@ type Props = {
   initialHasMore: boolean;
   ratingLabels?: string[] | null;
   isLoggedIn: boolean;
-  // show IDs (DB ids) already in the viewer's list
-  viewerShowIds: string[];
+  viewerItems: { show_id: string; rating: number | null }[];
 };
 
 export function UserListClient({
@@ -35,11 +34,12 @@ export function UserListClient({
   initialHasMore,
   ratingLabels,
   isLoggedIn,
-  viewerShowIds: initialViewerShowIds,
+  viewerItems: initialViewerItems,
 }: Props) {
   const [items, setItems] = useState<ListItemWithShow[]>(initialItems);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [showCommonOnly, setShowCommonOnly] = useState(false);
   const nextPageRef = useRef(1);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -50,16 +50,35 @@ export function UserListClient({
   >({});
   const [, startTransition] = useTransition();
 
-  // Merge initial viewer show ids with session-added ones
+  // Map of showId -> viewer's rating (null = in list but unrated)
+  const viewerRatingMap = useMemo(() => {
+    const map = new Map<string, number | null>();
+    for (const item of initialViewerItems) {
+      map.set(item.show_id, item.rating);
+    }
+    return map;
+  }, [initialViewerItems]);
+
   const inMyList = useCallback(
     (showId: string) =>
-      initialViewerShowIds.includes(showId) || addedShowIds.has(showId),
-    [initialViewerShowIds, addedShowIds],
+      viewerRatingMap.has(showId) || addedShowIds.has(showId),
+    [viewerRatingMap, addedShowIds],
+  );
+
+  const getViewerRating = useCallback(
+    (showId: string): number | null | undefined => {
+      if (addedShowIds.has(showId) && !viewerRatingMap.has(showId)) return undefined;
+      return viewerRatingMap.get(showId);
+    },
+    [viewerRatingMap, addedShowIds],
   );
 
   // Rating groups, sorted desc with unrated last
   const ratingGroups = useMemo(() => {
-    const sorted = [...items].sort((a, b) => {
+    const filtered = showCommonOnly
+      ? items.filter((item) => inMyList(item.shows.id))
+      : items;
+    const sorted = [...filtered].sort((a, b) => {
       if (a.rating === b.rating) return a.position - b.position;
       if (a.rating === null) return 1;
       if (b.rating === null) return -1;
@@ -75,11 +94,16 @@ export function UserListClient({
       }
     }
     return groups;
-  }, [items]);
+  }, [items, showCommonOnly, inMyList]);
 
   const sortedIds = useMemo(
     () => ratingGroups.flatMap((g) => g.items.map((i) => i.id)),
     [ratingGroups],
+  );
+
+  const commonCount = useMemo(
+    () => items.filter((item) => inMyList(item.shows.id)).length,
+    [items, inMyList],
   );
 
   // Infinite scroll
@@ -147,6 +171,23 @@ export function UserListClient({
 
   return (
     <div className="space-y-6">
+      {/* Filter bar */}
+      {isLoggedIn && commonCount > 0 && (
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowCommonOnly((v) => !v)}
+            className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+              showCommonOnly
+                ? "border-accent bg-accent-muted text-accent"
+                : "border-border text-text-muted hover:border-border-hover hover:text-text-secondary"
+            }`}
+          >
+            <Funnel size={12} weight={showCommonOnly ? "fill" : "regular"} />
+            In comune ({commonCount})
+          </button>
+        </div>
+      )}
+
       {ratingGroups.map((group) => {
         const tierLabel =
           group.rating !== null
@@ -169,6 +210,7 @@ export function UserListClient({
                 const posterUrl = getPosterUrl(item.shows.poster_path, "w92");
                 const alreadyAdded = inMyList(item.shows.id);
                 const feedback = quickAddFeedback[item.shows.id];
+                const viewerRating = getViewerRating(item.shows.id);
 
                 return (
                   <div
@@ -205,33 +247,36 @@ export function UserListClient({
                       {item.shows.title}
                     </Link>
 
-                    {/* Rating */}
+                    {/* Their rating */}
                     {item.rating != null && (
                       <span className="shrink-0 font-mono text-xs tabular-nums text-accent">
                         {item.rating}/10
                       </span>
                     )}
 
-                    {/* Quick-add button */}
+                    {/* Viewer's rating or quick-add */}
                     {isLoggedIn && (
-                      <button
-                        onClick={() => handleQuickAdd(item.shows)}
-                        disabled={alreadyAdded || feedback === "adding"}
-                        className="shrink-0 ml-1 text-text-faint transition-colors hover:text-accent disabled:cursor-default"
-                        title={
-                          alreadyAdded
-                            ? "Already in your list"
-                            : "Add to my list"
-                        }
-                      >
-                        {alreadyAdded ||
-                        feedback === "added" ||
-                        feedback === "exists" ? (
-                          <Check size={18} className="text-accent" />
+                      alreadyAdded ? (
+                        viewerRating != null ? (
+                          <span
+                            className="shrink-0 ml-1 font-mono text-xs tabular-nums text-text-muted"
+                            title="Il tuo voto"
+                          >
+                            {viewerRating}/10
+                          </span>
                         ) : (
+                          <Check size={18} className="shrink-0 ml-1 text-accent" />
+                        )
+                      ) : (
+                        <button
+                          onClick={() => handleQuickAdd(item.shows)}
+                          disabled={feedback === "adding"}
+                          className="shrink-0 ml-1 text-text-faint transition-colors hover:text-accent disabled:cursor-default"
+                          title="Add to my list"
+                        >
                           <PlusCircle size={18} />
-                        )}
-                      </button>
+                        </button>
+                      )
                     )}
                   </div>
                 );
@@ -240,6 +285,11 @@ export function UserListClient({
           </div>
         );
       })}
+
+      {/* Common filter empty state */}
+      {showCommonOnly && ratingGroups.length === 0 && (
+        <p className="text-sm text-text-muted">Nessuna serie in comune.</p>
+      )}
 
       {/* Infinite scroll sentinel */}
       <div ref={sentinelRef} className="flex justify-center py-2">

@@ -20,7 +20,7 @@ import {
   type SimilarUser,
   type PopularShow,
 } from "./actions";
-import { addShowToMyList } from "../lists/actions";
+import { addShowToMyList, addTmdbShowToMyList } from "../lists/actions";
 
 type UserResult = {
   id: string;
@@ -51,6 +51,8 @@ export default function ExplorePage() {
   const [similarUsersLoading, setSimilarUsersLoading] = useState(true);
   const [addedShowIds, setAddedShowIds] = useState<Set<string>>(new Set());
   const [addingShowId, setAddingShowId] = useState<string | null>(null);
+  const [addedTmdbIds, setAddedTmdbIds] = useState<Set<number>>(new Set());
+  const [addingTmdbId, setAddingTmdbId] = useState<number | null>(null);
   const [isPending, startTransition] = useTransition();
 
   // Load recommendations and similar users on mount
@@ -110,6 +112,26 @@ export default function ExplorePage() {
         // silently fail
       } finally {
         setAddingShowId(null);
+      }
+    });
+  }, []);
+
+  const handleAddSearchShow = useCallback((show: ShowResult) => {
+    setAddingTmdbId(show.tmdb_id);
+    startTransition(async () => {
+      try {
+        await addTmdbShowToMyList({
+          tmdb_id: show.tmdb_id,
+          title: show.title,
+          poster_path: show.poster_path,
+          first_air_date: show.first_air_date,
+          overview: show.overview,
+        });
+        setAddedTmdbIds((prev) => new Set(prev).add(show.tmdb_id));
+      } catch {
+        // silently fail
+      } finally {
+        setAddingTmdbId(null);
       }
     });
   }, []);
@@ -336,6 +358,29 @@ export default function ExplorePage() {
                         </p>
                       )}
                     </div>
+                    <button
+                      onClick={() =>
+                        !addedTmdbIds.has(show.tmdb_id) &&
+                        handleAddSearchShow(show)
+                      }
+                      disabled={
+                        addingTmdbId === show.tmdb_id ||
+                        addedTmdbIds.has(show.tmdb_id)
+                      }
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors ${
+                        addedTmdbIds.has(show.tmdb_id)
+                          ? "border-accent/50 bg-accent/20 text-accent"
+                          : "border-border text-text-muted hover:border-border-hover hover:text-text-primary"
+                      }`}
+                    >
+                      {addingTmdbId === show.tmdb_id ? (
+                        <SpinnerGap size={14} className="animate-spin" />
+                      ) : addedTmdbIds.has(show.tmdb_id) ? (
+                        <Check size={14} weight="bold" />
+                      ) : (
+                        <Plus size={14} weight="bold" />
+                      )}
+                    </button>
                   </div>
                 ))}
               </div>
