@@ -102,7 +102,10 @@
     "suggestedLoading": "Finding shows you might like...",
     "addedToList": "Added to your list",
     "alreadyInList": "Already in your list",
-    "recommendedBy": "{count, plural, =1 {1 similar user} other {# similar users}}"
+    "recommendedBy": "{count, plural, =1 {1 similar user} other {# similar users}}",
+    "similarUsersTitle": "People like you",
+    "similarUsersEmpty": "Add more shows to find users with similar taste",
+    "similarUsersLoading": "Finding similar profiles..."
   },
   "showDetail": {
     "overview": "Overview",

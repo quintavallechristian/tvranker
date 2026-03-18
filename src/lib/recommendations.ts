@@ -89,7 +89,9 @@ export function scoreRecommendations(
   // 5. Sort by score descending, take top `limit`
   const results: ScoredShow[] = [];
   for (const [showId, { score, count }] of showScores) {
-    results.push({ showId, score, recommendedBy: count });
+    // Normalize: average contribution × 100 → [0, 100]
+    const normalizedScore = Math.round((score / count) * 100);
+    results.push({ showId, score: normalizedScore, recommendedBy: count });
   }
 
   results.sort((a, b) => b.score - a.score);

@@ -102,7 +102,10 @@
     "suggestedLoading": "Cerchiamo serie che potrebbero piacerti...",
     "addedToList": "Aggiunto alla tua lista",
     "alreadyInList": "Già presente nella tua lista",
-    "recommendedBy": "{count, plural, =1 {1 utente simile} other {# utenti simili}}"
+    "recommendedBy": "{count, plural, =1 {1 utente simile} other {# utenti simili}}",
+    "similarUsersTitle": "Profili simili a te",
+    "similarUsersEmpty": "Aggiungi più serie per trovare utenti con gusti simili",
+    "similarUsersLoading": "Cerchiamo profili simili..."
   },
   "showDetail": {
     "overview": "Trama",

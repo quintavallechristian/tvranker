@@ -52,6 +52,7 @@ import {
   copyListToMine,
   type ListItemWithShow,
 } from "../actions";
+import { getRecommendations } from "../../explore/actions";
 import {
   addTagToShow,
   removeTagFromShow,
@@ -141,6 +142,9 @@ export function ListDetailClient({
   const tCommon = useTranslations("common");
   const [isPending, startTransition] = useTransition();
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [recScoreMap, setRecScoreMap] = useState<Map<number, number>>(
+    new Map(),
+  );
   const [items, setItems] = useState<ListItem[]>(list.list_items);
 
   // Local state for debounced name/description edits
@@ -241,6 +245,18 @@ export function ListDetailClient({
       setLoadingMore(false);
     }
   }, [loadingMore, hasMore, listId]);
+
+  // Fetch recommendations once when the add-show dialog opens
+  useEffect(() => {
+    if (!showAddDialog) return;
+    getRecommendations().then((recs) => {
+      const map = new Map<number, number>();
+      for (const r of recs) {
+        if (r.tmdb_id !== null) map.set(r.tmdb_id, r.score);
+      }
+      setRecScoreMap(map);
+    });
+  }, [showAddDialog]);
 
   useEffect(() => {
     if (!hasMore) return;
@@ -798,6 +814,7 @@ export function ListDetailClient({
         onClose={() => setShowAddDialog(false)}
         onAdd={handleAddShow}
         existingTmdbIds={existingTmdbIds}
+        scoreMap={recScoreMap}
       />
 
       {/* Import dialog */}

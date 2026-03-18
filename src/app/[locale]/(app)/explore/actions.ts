@@ -2,7 +2,113 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { scoreRecommendations, type UserList } from "@/lib/recommendations";
-import type { ListEntry } from "@/lib/similarity";
+import { computeListSimilarity, type ListEntry } from "@/lib/similarity";
+
+export type SimilarUser = {
+  id: string;
+  username: string;
+  avatar_url: string | null;
+  show_count: number;
+  similarity: number;
+  is_following: boolean;
+};
+
+export async function getSimilarUsers(): Promise<SimilarUser[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  // Get current user's list items
+  const { data: myList } = await supabase
+    .from("lists")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!myList) return [];
+
+  const { data: myItems } = await supabase
+    .from("list_items")
+    .select("show_id, rating, position")
+    .eq("list_id", myList.id)
+    .order("position", { ascending: true });
+
+  if (!myItems || myItems.length === 0) return [];
+
+  const viewerList: ListEntry[] = myItems.map((i, idx) => ({
+    showId: i.show_id,
+    rating: i.rating,
+    position: i.position ?? idx,
+  }));
+
+  // Fetch all public lists (excluding self) with profile info
+  const { data: publicLists } = await supabase
+    .from("lists")
+    .select("id, user_id, profiles(id, username, avatar_url)")
+    .eq("is_public", true)
+    .neq("user_id", user.id);
+
+  if (!publicLists || publicLists.length === 0) return [];
+
+  const listIds = publicLists.map((l) => l.id);
+
+  // Fetch all items for those lists in one batch
+  const { data: allItems } = await supabase
+    .from("list_items")
+    .select("list_id, show_id, rating, position")
+    .in("list_id", listIds);
+
+  if (!allItems) return [];
+
+  // Group items by list_id
+  const itemsByList = new Map<string, ListEntry[]>();
+  for (const item of allItems) {
+    if (!itemsByList.has(item.list_id)) itemsByList.set(item.list_id, []);
+    itemsByList.get(item.list_id)!.push({
+      showId: item.show_id,
+      rating: item.rating,
+      position: item.position,
+    });
+  }
+
+  // Check who the current user is already following
+  const { data: followsData } = await supabase
+    .from("follows")
+    .select("following_id")
+    .eq("follower_id", user.id);
+
+  const followingIds = new Set((followsData ?? []).map((f) => f.following_id));
+
+  // Compute similarity for each user
+  const results: SimilarUser[] = [];
+
+  for (const list of publicLists) {
+    const profile = Array.isArray(list.profiles)
+      ? list.profiles[0]
+      : list.profiles;
+    if (!profile) continue;
+
+    const otherItems = itemsByList.get(list.id) ?? [];
+    if (otherItems.length === 0) continue;
+
+    const similarity = computeListSimilarity(viewerList, otherItems);
+    if (similarity === 0) continue;
+
+    results.push({
+      id: profile.id,
+      username: profile.username,
+      avatar_url: profile.avatar_url,
+      show_count: otherItems.length,
+      similarity,
+      is_following: followingIds.has(profile.id),
+    });
+  }
+
+  // Sort by similarity descending, return top 3
+  return results.sort((a, b) => b.similarity - a.similarity).slice(0, 3);
+}
 
 export type RecommendedShow = {
   id: string;

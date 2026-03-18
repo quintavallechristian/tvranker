@@ -20,6 +20,7 @@ type AddShowDialogProps = {
   onClose: () => void;
   onAdd: (show: TMDBResult) => void;
   existingTmdbIds?: number[];
+  scoreMap?: Map<number, number>;
 };
 
 export function AddShowDialog({
@@ -27,6 +28,7 @@ export function AddShowDialog({
   onClose,
   onAdd,
   existingTmdbIds = [],
+  scoreMap,
 }: AddShowDialogProps) {
   const t = useTranslations("shows");
   const [results, setResults] = useState<TMDBResult[]>([]);
@@ -126,6 +128,12 @@ export function AddShowDialog({
                       {show.first_air_date?.slice(0, 4) || "Unknown"}
                     </p>
                   </div>
+
+                  {scoreMap?.has(show.tmdb_id) && (
+                    <span className="shrink-0 rounded-[var(--radius-sm)] bg-accent-muted border border-accent/30 px-1.5 py-0.5 text-xs font-mono font-semibold text-accent tabular-nums">
+                      {scoreMap.get(show.tmdb_id)}%
+                    </span>
+                  )}
 
                   {isAdded ? (
                     <span className="text-xs text-text-muted">Added</span>
