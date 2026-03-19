@@ -41,7 +41,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Match all pathnames except static files
-    "/((?!_next|api|.*\\..*).*)",
+    // Match all pathnames except static files and auth callback
+    "/((?!_next|api|auth|.*\\..*).*)",
   ],
 };
