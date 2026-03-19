@@ -1,7 +1,16 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { findByImdbId, searchShows, getShowDetails } from "@/lib/tmdb/client";
+import {
+  findByImdbId,
+  searchShows,
+  searchMovies,
+  getShowDetails,
+  getMovieDetails,
+  normalizeMovieAsShow,
+  extractTrailerUrl,
+} from "@/lib/tmdb/client";
+import type { TMDBShowExtended } from "@/lib/tmdb/client";
 
 /**
  * Lazily fetches TMDB data for a show and persists it to the database.
@@ -26,44 +35,72 @@ export async function fetchTmdbData(showId: string) {
   const needsFetch =
     (show as unknown as { tmdb_fetched?: boolean }).tmdb_fetched === false ||
     (show.tmdb_id !== null && show.tmdb_id < 0) ||
-    show.tmdb_id === null;
+    show.tmdb_id === null ||
+    // Retry if previously fetched but nothing was found (e.g. was a movie, only TV was searched)
+    (!show.poster_path && !show.overview);
 
   if (!needsFetch) return show;
 
-  type TmdbResult = {
-    id: number;
-    name: string;
-    poster_path: string | null;
-    first_air_date: string;
-    overview: string;
-    vote_average: number;
-  };
+  let found: TMDBShowExtended | null = null;
+  let isMovieMatch = false;
 
-  let found: TmdbResult | null = null;
-
-  // Strategy 1: lookup by existing positive tmdb_id
+  // Strategy 1: lookup by existing positive tmdb_id as a TV show
   if (show.tmdb_id !== null && show.tmdb_id > 0) {
     try {
       found = await getShowDetails(show.tmdb_id);
     } catch {
-      /* fall through */
+      // The tmdb_id might belong to a movie — check and flag for removal
+      try {
+        const movie = await getMovieDetails(show.tmdb_id);
+        found = normalizeMovieAsShow(movie);
+        isMovieMatch = true;
+      } catch {
+        /* fall through */
+      }
     }
   }
 
   // Strategy 2: lookup by IMDb ID
   if (!found && show.imdb_id) {
     try {
-      found = await findByImdbId(show.imdb_id);
+      const { show: tvMatch, movie: movieMatch } = await findByImdbId(
+        show.imdb_id,
+      );
+      if (tvMatch) {
+        found = await getShowDetails(tvMatch.id);
+      } else if (movieMatch) {
+        // IMDb ID resolves to a movie — flag for removal
+        const movieDetails = await getMovieDetails(movieMatch.id);
+        found = normalizeMovieAsShow(movieDetails);
+        isMovieMatch = true;
+      }
     } catch {
       /* fall through */
     }
   }
 
-  // Strategy 3: search by title
+  // Strategy 3: search by title as TV show
   if (!found) {
     try {
       const data = await searchShows(show.title);
-      found = data.results?.[0] ?? null;
+      const first = data.results?.[0];
+      if (first) {
+        found = await getShowDetails(first.id);
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  // Strategy 4: search by title as movie — this is a TV ranker, so flag for removal
+  if (!found) {
+    try {
+      const data = await searchMovies(show.title);
+      const first = data.results?.[0];
+      if (first) {
+        found = normalizeMovieAsShow(await getMovieDetails(first.id));
+        isMovieMatch = true;
+      }
     } catch {
       /* ignore */
     }
@@ -71,7 +108,6 @@ export async function fetchTmdbData(showId: string) {
 
   if (!found) {
     // Mark as fetched even if TMDB has no match, to avoid repeated lookups.
-    // tmdb_fetched column is only present after migration — ignore errors if missing.
     await supabase
       .from("shows")
       .update({ tmdb_fetched: true } as Record<string, unknown>)
@@ -79,8 +115,14 @@ export async function fetchTmdbData(showId: string) {
       .then(
         () => null,
         () => null,
-      ); // ignore errors
+      );
     return show;
+  }
+
+  // This is a TV ranker — if TMDB only recognises the entry as a movie, remove it.
+  if (isMovieMatch) {
+    await supabase.from("shows").delete().eq("id", showId);
+    return null;
   }
 
   // Check if another show row already holds this real tmdb_id
@@ -109,6 +151,22 @@ export async function fetchTmdbData(showId: string) {
     return canonical;
   }
 
+  // Build extra fields from extended TMDB response
+  const seasonsData = found.seasons
+    ? found.seasons
+        .filter((s) => s.season_number > 0) // exclude "Specials" (season 0)
+        .map((s) => ({
+          season_number: s.season_number,
+          name: s.name,
+          episode_count: s.episode_count,
+          air_date: s.air_date || null,
+        }))
+    : null;
+
+  const trailerUrl = extractTrailerUrl(found.videos);
+
+  const watchProviders = found["watch/providers"]?.results ?? null;
+
   // Update the show with real TMDB data.
   // tmdb_fetched is only in updates after migration — PostgREST ignores unknown columns gracefully.
   const updates: Record<string, unknown> = {
@@ -118,6 +176,9 @@ export async function fetchTmdbData(showId: string) {
     first_air_date: found.first_air_date || null,
     overview: found.overview || null,
     tmdb_fetched: true,
+    seasons_data: seasonsData,
+    trailer_url: trailerUrl,
+    watch_providers: watchProviders,
   };
 
   const { data: updated, error: updateError } = await supabase

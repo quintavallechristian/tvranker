@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseMalXml, validateMalXml } from "@/lib/import/mal-parser";
+import { parseMalXml, validateMalXml, extractBaseTitle } from "@/lib/import/mal-parser";
 import { JSDOM } from "jsdom";
 
 // Ensure DOMParser is available in test environment
@@ -63,6 +63,7 @@ describe("parseMalXml", () => {
 
     expect(result.name).toBe("MyAnimeList Import");
     expect(result.shows).toHaveLength(3);
+    expect(result.moviesSkipped).toBe(0);
     expect(result.shows[0]).toEqual({
       title: "3-gatsu no Lion",
       imdb_id: null,
@@ -87,17 +88,43 @@ describe("parseMalXml", () => {
     expect(titles).not.toContain("Dropped Show");
   });
 
-  it("deduplicates shows by title (case-insensitive)", () => {
+  it("excludes movies and counts them in moviesSkipped", () => {
+    const xmlWithMovie = `<?xml version="1.0" encoding="UTF-8" ?>
+<myanimelist>
+  <myinfo></myinfo>
+  <anime>
+    <series_title><![CDATA[Sen to Chihiro no Kamikakushi]]></series_title>
+    <series_type>Movie</series_type>
+    <my_score>10</my_score>
+    <my_status>Completed</my_status>
+  </anime>
+  <anime>
+    <series_title><![CDATA[Attack on Titan]]></series_title>
+    <series_type>TV</series_type>
+    <my_score>9</my_score>
+    <my_status>Completed</my_status>
+  </anime>
+</myanimelist>`;
+
+    const result = parseMalXml(xmlWithMovie);
+    expect(result.shows).toHaveLength(1);
+    expect(result.shows[0].title).toBe("Attack on Titan");
+    expect(result.moviesSkipped).toBe(1);
+  });
+
+  it("deduplicates shows by base title — later seasons are merged", () => {
     const xmlWithDupes = `<?xml version="1.0" encoding="UTF-8" ?>
 <myanimelist>
   <myinfo></myinfo>
   <anime>
     <series_title><![CDATA[My Show]]></series_title>
+    <series_type>TV</series_type>
     <my_score>7</my_score>
     <my_status>Completed</my_status>
   </anime>
   <anime>
     <series_title><![CDATA[my show]]></series_title>
+    <series_type>TV</series_type>
     <my_score>8</my_score>
     <my_status>Completed</my_status>
   </anime>
@@ -107,6 +134,49 @@ describe("parseMalXml", () => {
     expect(result.shows).toHaveLength(1);
     expect(result.shows[0].title).toBe("My Show");
     expect(result.shows[0].score).toBe(7);
+  });
+
+  it("skips later seasons and counts them in seasonsSkipped", () => {
+    const xmlSeasons = `<?xml version="1.0" encoding="UTF-8" ?>
+<myanimelist>
+  <myinfo></myinfo>
+  <anime>
+    <series_title><![CDATA[Attack on Titan]]></series_title>
+    <series_type>TV</series_type>
+    <my_score>9</my_score>
+    <my_status>Completed</my_status>
+  </anime>
+  <anime>
+    <series_title><![CDATA[Attack on Titan Season 2]]></series_title>
+    <series_type>TV</series_type>
+    <my_score>8</my_score>
+    <my_status>Completed</my_status>
+  </anime>
+  <anime>
+    <series_title><![CDATA[Attack on Titan Season 3]]></series_title>
+    <series_type>TV</series_type>
+    <my_score>10</my_score>
+    <my_status>Completed</my_status>
+  </anime>
+  <anime>
+    <series_title><![CDATA[Fruits Basket 1st Season]]></series_title>
+    <series_type>TV</series_type>
+    <my_score>8</my_score>
+    <my_status>Completed</my_status>
+  </anime>
+  <anime>
+    <series_title><![CDATA[Fruits Basket 2nd Season]]></series_title>
+    <series_type>TV</series_type>
+    <my_score>9</my_score>
+    <my_status>Completed</my_status>
+  </anime>
+</myanimelist>`;
+
+    const result = parseMalXml(xmlSeasons);
+    expect(result.shows).toHaveLength(2);
+    expect(result.shows[0].title).toBe("Attack on Titan");
+    expect(result.shows[1].title).toBe("Fruits Basket");
+    expect(result.seasonsSkipped).toBe(3); // Season 2, Season 3, 2nd Season
   });
 
   it("sets score to null when my_score is 0 (unrated)", () => {
@@ -126,6 +196,30 @@ describe("parseMalXml", () => {
 
   it("throws on invalid XML", () => {
     expect(() => parseMalXml("not xml at all <><><<")).toThrow();
+  });
+});
+
+describe("extractBaseTitle", () => {
+  it.each([
+    ["3-gatsu no Lion 2nd Season", "3-gatsu no Lion"],
+    ["Aharen-san wa Hakarenai Season 2", "Aharen-san wa Hakarenai"],
+    ["Fruits Basket 1st Season", "Fruits Basket"],
+    ["Haikyuu!! Second Season", "Haikyuu!!"],
+    ["Beastars Final Season", "Beastars"],
+    ["Spy x Family Part 2", "Spy x Family"],
+    ["Spy x Family Season 2", "Spy x Family"],
+    ["Gokushufudou Part 2", "Gokushufudou"],
+    ["Shingeki no Kyojin Season 3 Part 2", "Shingeki no Kyojin"],
+    ["Shingeki no Kyojin: The Final Season", "Shingeki no Kyojin"],
+    ["Shingeki no Kyojin: The Final Season Part 2", "Shingeki no Kyojin"],
+    ["Shingeki no Kyojin: The Final Season - Kanketsu-hen", "Shingeki no Kyojin"],
+    ["Ore dake Level Up na Ken Season 2: Arise from the Shadow", "Ore dake Level Up na Ken"],
+    ["Kusuriya no Hitorigoto 3rd Season Part 2", "Kusuriya no Hitorigoto"],
+    // Titles without season suffix should be unchanged
+    ["Attack on Titan", "Attack on Titan"],
+    ["Blue Lock", "Blue Lock"],
+  ])("%s → %s", (input, expected) => {
+    expect(extractBaseTitle(input)).toBe(expected);
   });
 });
 

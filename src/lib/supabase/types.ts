@@ -1,3 +1,21 @@
+export type SeasonInfo = {
+  season_number: number;
+  name: string;
+  episode_count: number;
+  air_date: string | null;
+};
+
+export type WatchProvider = {
+  provider_id: number;
+  provider_name: string;
+  logo_path: string;
+};
+
+export type WatchProviderRegion = Record<
+  string,
+  { flatrate?: WatchProvider[]; buy?: WatchProvider[]; rent?: WatchProvider[] }
+>;
+
 export type Database = {
   public: {
     Tables: {
@@ -72,6 +90,9 @@ export type Database = {
           first_air_date: string | null;
           overview: string | null;
           tmdb_fetched: boolean;
+          seasons_data: SeasonInfo[] | null;
+          trailer_url: string | null;
+          watch_providers: WatchProviderRegion | null;
         };
         Insert: {
           id?: string;
@@ -82,6 +103,9 @@ export type Database = {
           first_air_date?: string | null;
           overview?: string | null;
           tmdb_fetched?: boolean;
+          seasons_data?: SeasonInfo[] | null;
+          trailer_url?: string | null;
+          watch_providers?: WatchProviderRegion | null;
         };
         Update: {
           tmdb_id?: number | null;
@@ -91,6 +115,9 @@ export type Database = {
           first_air_date?: string | null;
           overview?: string | null;
           tmdb_fetched?: boolean;
+          seasons_data?: SeasonInfo[] | null;
+          trailer_url?: string | null;
+          watch_providers?: WatchProviderRegion | null;
         };
         Relationships: [];
       };
@@ -298,8 +325,7 @@ export type ListItem = Database["public"]["Tables"]["list_items"]["Row"];
 export type Tag = Database["public"]["Tables"]["tags"]["Row"];
 export type ShowTag = Database["public"]["Tables"]["show_tags"]["Row"];
 export type Follow = Database["public"]["Tables"]["follows"]["Row"];
-export type Notification =
-  Database["public"]["Tables"]["notifications"]["Row"];
+export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 
 export type ListWithItems = List & {
   list_items: (ListItem & { shows: Show })[];

@@ -23,14 +23,21 @@ export default async function ShowDetailPage({
   if (!show) notFound();
 
   // Lazily fetch TMDB data if not yet done.
-  // Condition covers: tmdb_fetched=false (post-migration) OR negative tmdb_id (pre-migration placeholder).
+  // Condition covers: tmdb_fetched=false (post-migration) OR negative tmdb_id (pre-migration placeholder)
+  // OR previously fetched but nothing was found (e.g. anime movie missed by TV-only search).
   const needsFetch =
     (show as unknown as { tmdb_fetched?: boolean }).tmdb_fetched === false ||
     (show.tmdb_id !== null && show.tmdb_id < 0) ||
-    show.tmdb_id === null;
+    show.tmdb_id === null ||
+    (!show.poster_path && !show.overview);
 
-  const enrichedShow = needsFetch ? await fetchTmdbData(id) : show;
-  const finalShow = enrichedShow ?? show;
+  let finalShow = show;
+  if (needsFetch) {
+    const enrichedShow = await fetchTmdbData(id);
+    // null means the show was removed (e.g. it turned out to be a movie)
+    if (!enrichedShow) notFound();
+    finalShow = enrichedShow;
+  }
 
   // Aggregate stats: how many lists contain this show + average rating
   const { data: listItems } = await supabase

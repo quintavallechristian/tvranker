@@ -11,7 +11,7 @@ import { FollowButton } from "@/components/FollowButton";
 import { createClient } from "@/lib/supabase/client";
 import { computeListSimilarity } from "@/lib/similarity";
 import { getPosterUrl } from "@/lib/tmdb/client";
-import { Television, Plus, Check, SpinnerGap } from "@phosphor-icons/react";
+import { Television, Plus, Check, SpinnerGap, ArrowRight } from "@phosphor-icons/react";
 import {
   getRecommendations,
   getSimilarUsers,
@@ -53,7 +53,16 @@ export default function ExplorePage() {
   const [addingShowId, setAddingShowId] = useState<string | null>(null);
   const [addedTmdbIds, setAddedTmdbIds] = useState<Set<number>>(new Set());
   const [addingTmdbId, setAddingTmdbId] = useState<number | null>(null);
+  const [activeShowId, setActiveShowId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  // Dismiss tapped card overlay when clicking outside
+  useEffect(() => {
+    if (!activeShowId) return;
+    const dismiss = () => setActiveShowId(null);
+    document.addEventListener("click", dismiss);
+    return () => document.removeEventListener("click", dismiss);
+  }, [activeShowId]);
 
   // Load recommendations and similar users on mount
   useEffect(() => {
@@ -480,6 +489,16 @@ export default function ExplorePage() {
                   <div
                     key={show.id}
                     className="group relative overflow-hidden rounded-[var(--radius-lg)] border border-border bg-bg-surface transition-colors hover:border-border-hover"
+                    onPointerEnter={(e) => {
+                      if (e.pointerType === "mouse") setActiveShowId(show.id);
+                    }}
+                    onPointerLeave={(e) => {
+                      if (e.pointerType === "mouse") setActiveShowId(null);
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveShowId(show.id);
+                    }}
                   >
                     {/* Score badge */}
                     <div className="absolute top-2 right-2 z-10 flex items-center justify-center rounded-[var(--radius-sm)] bg-bg-primary/80 px-1.5 py-0.5 text-xs font-mono font-bold text-accent tabular-nums backdrop-blur-sm">
@@ -504,29 +523,45 @@ export default function ExplorePage() {
 
                       {/* Add to list overlay */}
                       <div
-                        className={`absolute inset-0 flex items-center justify-center bg-black/60 transition-opacity ${
-                          isAdded
+                        className={`absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-black/70 transition-opacity ${
+                          activeShowId === show.id || isAdded
                             ? "opacity-100"
-                            : "opacity-0 group-hover:opacity-100"
+                            : "opacity-0 pointer-events-none"
                         }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveShowId(null);
+                        }}
                       >
-                        <button
-                          onClick={() => !isAdded && handleAddToList(show)}
-                          disabled={isAdding || isAdded}
-                          className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
-                            isAdded
-                              ? "border-accent/50 bg-accent/20 text-accent"
-                              : "border-white/30 bg-white/10 text-white hover:bg-white/20"
-                          }`}
-                        >
-                          {isAdding ? (
-                            <SpinnerGap size={16} className="animate-spin" />
-                          ) : isAdded ? (
-                            <Check size={16} weight="bold" />
-                          ) : (
-                            <Plus size={16} weight="bold" />
-                          )}
-                        </button>
+                        {isAdded ? (
+                          <Check size={24} weight="bold" className="text-accent" />
+                        ) : (
+                          <>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddToList(show);
+                              }}
+                              disabled={isAdding}
+                              className="flex items-center gap-1.5 rounded-full border border-white/40 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/25 transition-colors disabled:opacity-50"
+                            >
+                              {isAdding ? (
+                                <SpinnerGap size={13} className="animate-spin" />
+                              ) : (
+                                <Plus size={13} weight="bold" />
+                              )}
+                              {t("addToList")}
+                            </button>
+                            <Link
+                              href={`/shows/${show.id}`}
+                              className="flex items-center gap-1.5 rounded-full border border-white/20 bg-black/40 px-3 py-1.5 text-xs font-medium text-white/80 hover:bg-black/60 transition-colors"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <ArrowRight size={13} weight="bold" />
+                              {t("details")}
+                            </Link>
+                          </>
+                        )}
                       </div>
                     </div>
 
@@ -535,6 +570,7 @@ export default function ExplorePage() {
                       <Link
                         href={`/shows/${show.id}`}
                         className="block truncate text-sm font-medium text-text-primary hover:text-accent transition-colors"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         {show.title}
                       </Link>
@@ -566,6 +602,16 @@ export default function ExplorePage() {
                       <div
                         key={show.id}
                         className="group relative overflow-hidden rounded-lg border border-border bg-bg-surface transition-colors hover:border-border-hover"
+                        onPointerEnter={(e) => {
+                          if (e.pointerType === "mouse") setActiveShowId(show.id);
+                        }}
+                        onPointerLeave={(e) => {
+                          if (e.pointerType === "mouse") setActiveShowId(null);
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveShowId(show.id);
+                        }}
                       >
                         <div className="relative aspect-2/3 w-full bg-bg-elevated">
                           {posterUrl ? (
@@ -587,32 +633,48 @@ export default function ExplorePage() {
 
                           {/* Add to list overlay */}
                           <div
-                            className={`absolute inset-0 flex items-center justify-center bg-black/60 transition-opacity ${
-                              isAdded
+                            className={`absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-black/70 transition-opacity ${
+                              activeShowId === show.id || isAdded
                                 ? "opacity-100"
-                                : "opacity-0 group-hover:opacity-100"
+                                : "opacity-0 pointer-events-none"
                             }`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveShowId(null);
+                            }}
                           >
-                            <button
-                              onClick={() => !isAdded && handleAddToList(show)}
-                              disabled={isAdding || isAdded}
-                              className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
-                                isAdded
-                                  ? "border-accent/50 bg-accent/20 text-accent"
-                                  : "border-white/30 bg-white/10 text-white hover:bg-white/20"
-                              }`}
-                            >
-                              {isAdding ? (
-                                <SpinnerGap
-                                  size={16}
-                                  className="animate-spin"
-                                />
-                              ) : isAdded ? (
-                                <Check size={16} weight="bold" />
-                              ) : (
-                                <Plus size={16} weight="bold" />
-                              )}
-                            </button>
+                            {isAdded ? (
+                              <Check size={24} weight="bold" className="text-accent" />
+                            ) : (
+                              <>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAddToList(show);
+                                  }}
+                                  disabled={isAdding}
+                                  className="flex items-center gap-1.5 rounded-full border border-white/40 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/25 transition-colors disabled:opacity-50"
+                                >
+                                  {isAdding ? (
+                                    <SpinnerGap
+                                      size={13}
+                                      className="animate-spin"
+                                    />
+                                  ) : (
+                                    <Plus size={13} weight="bold" />
+                                  )}
+                                  {t("addToList")}
+                                </button>
+                                <Link
+                                  href={`/shows/${show.id}`}
+                                  className="flex items-center gap-1.5 rounded-full border border-white/20 bg-black/40 px-3 py-1.5 text-xs font-medium text-white/80 hover:bg-black/60 transition-colors"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <ArrowRight size={13} weight="bold" />
+                                  {t("details")}
+                                </Link>
+                              </>
+                            )}
                           </div>
                         </div>
 
@@ -620,6 +682,7 @@ export default function ExplorePage() {
                           <Link
                             href={`/shows/${show.id}`}
                             className="block truncate text-xs font-medium text-text-primary hover:text-accent transition-colors"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             {show.title}
                           </Link>

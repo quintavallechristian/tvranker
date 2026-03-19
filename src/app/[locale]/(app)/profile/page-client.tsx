@@ -185,13 +185,13 @@ export function ProfilePageClient({
                       e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""),
                     )
                   }
-                  className="rounded-[var(--radius-md)] border border-border bg-bg-elevated px-3 py-1.5 text-sm text-text-primary outline-none focus:border-accent"
+                  className="rounded-md border border-border bg-bg-elevated px-3 py-1.5 text-sm text-text-primary outline-none focus:border-accent"
                   autoFocus
                 />
                 <button
                   onClick={handleSave}
                   disabled={isPending || username.length < 3}
-                  className="rounded-[var(--radius-md)] bg-accent px-3 py-1.5 text-xs font-medium text-bg-primary hover:bg-accent-hover disabled:opacity-50"
+                  className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-bg-primary hover:bg-accent-hover disabled:opacity-50"
                 >
                   Save
                 </button>
@@ -242,7 +242,7 @@ export function ProfilePageClient({
               <button
                 onClick={handleSaveLabels}
                 disabled={labelsPending}
-                className="flex items-center gap-1 rounded-[var(--radius-md)] bg-accent px-3 py-1.5 text-xs font-medium text-bg-primary hover:bg-accent-hover disabled:opacity-50"
+                className="flex items-center gap-1 rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-bg-primary hover:bg-accent-hover disabled:opacity-50"
               >
                 <Check size={12} />
                 Save
@@ -355,7 +355,7 @@ export function ProfilePageClient({
               </span>
               {/* Color picker popover for this tag */}
               {colorPickerTagId === tag.id && (
-                <div className="absolute left-0 top-full z-50 mt-1 flex flex-wrap gap-1.5 rounded-[var(--radius-md)] border border-border bg-bg-surface p-2 shadow-lg">
+                <div className="absolute left-0 top-full z-50 mt-1 flex flex-wrap gap-1.5 rounded-md border border-border bg-bg-surface p-2 shadow-lg">
                   {TAG_COLORS.map((c) => (
                     <button
                       key={c}
@@ -411,12 +411,12 @@ export function ProfilePageClient({
               onChange={(e) => setNewTagName(e.target.value)}
               placeholder="Nuovo tag personalizzato..."
               maxLength={50}
-              className="min-w-0 flex-1 rounded-[var(--radius-md)] border border-border bg-bg-elevated px-3 py-1.5 text-xs text-text-primary placeholder:text-text-faint outline-none focus:border-accent"
+              className="min-w-0 flex-1 rounded-md border border-border bg-bg-elevated px-3 py-1.5 text-xs text-text-primary placeholder:text-text-faint outline-none focus:border-accent"
             />
             <button
               type="submit"
               disabled={!newTagName.trim() || tagsPending}
-              className="flex items-center gap-1 rounded-[var(--radius-md)] bg-accent px-3 py-1.5 text-xs font-medium text-bg-primary hover:bg-accent-hover disabled:opacity-40"
+              className="flex items-center gap-1 rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-bg-primary hover:bg-accent-hover disabled:opacity-40"
             >
               <Plus size={12} weight="bold" />
               Aggiungi
@@ -449,7 +449,7 @@ export function ProfilePageClient({
                 await setLocale("en");
                 router.refresh();
               }}
-              className={`rounded-[var(--radius-md)] px-4 py-2 text-xs font-medium transition-colors ${
+              className={`rounded-md px-4 py-2 text-xs font-medium transition-colors ${
                 currentLocale === "en"
                   ? "bg-accent text-bg-primary"
                   : "border border-border bg-bg-elevated text-text-secondary hover:bg-bg-surface-hover hover:text-text-primary"
@@ -462,7 +462,7 @@ export function ProfilePageClient({
                 await setLocale("it");
                 router.refresh();
               }}
-              className={`rounded-[var(--radius-md)] px-4 py-2 text-xs font-medium transition-colors ${
+              className={`rounded-md px-4 py-2 text-xs font-medium transition-colors ${
                 currentLocale === "it"
                   ? "bg-accent text-bg-primary"
                   : "border border-border bg-bg-elevated text-text-secondary hover:bg-bg-surface-hover hover:text-text-primary"

@@ -513,54 +513,79 @@ export function ListDetailClient({
       )}
 
       {/* List header + action buttons */}
-      <div className="mb-6 flex items-start justify-between gap-4">
-        <ListHeader
-          description={listDescription}
-          isPublic={list.is_public}
-          onDescriptionChange={isOwner ? handleDescriptionChange : undefined}
-          onTogglePublic={isOwner ? handleTogglePublic : undefined}
-          readOnly={!isOwner}
-          saveStatus={isOwner ? saveStatus : undefined}
-        />
-        <div className="flex shrink-0 items-center gap-2 mt-0.5">
-          {isOwner && (
-            <Link
-              href="/lists/analytics"
-              className="flex items-center gap-1.5 rounded-[var(--radius-md)] border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary"
-            >
-              <ChartPie size={14} />
-              {t("analytics")}
-            </Link>
-          )}
-          {isOwner && (
+      <div className="mb-6">
+        {/* Title row: on mobile Analytics sits inline; on desktop all buttons are to the right */}
+        <div className="flex items-start justify-between gap-4">
+          <ListHeader
+            description={listDescription}
+            isPublic={list.is_public}
+            onDescriptionChange={isOwner ? handleDescriptionChange : undefined}
+            onTogglePublic={isOwner ? handleTogglePublic : undefined}
+            readOnly={!isOwner}
+            saveStatus={isOwner ? saveStatus : undefined}
+          />
+          <div className="flex shrink-0 items-center gap-2 mt-0.5">
+            {/* Analytics: always in the title row (mobile + desktop) */}
+            {isOwner && items.length > 0 && (
+              <Link
+                href="/lists/analytics"
+                className="flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary"
+              >
+                <ChartPie size={14} />
+                {t("analytics")}
+              </Link>
+            )}
+            {/* Add show + Import: only shown inline on desktop */}
+            {isOwner && items.length > 0 && (
+              <button
+                onClick={() => setShowAddDialog(true)}
+                className="hidden items-center gap-1.5 rounded-md bg-accent px-3 py-2 text-xs font-medium text-black transition-colors hover:bg-accent-hover sm:flex"
+              >
+                <Plus size={14} />
+                Add show
+              </button>
+            )}
+            {isOwner && items.length > 0 && (
+              <button
+                onClick={() => setShowImport(true)}
+                className="hidden items-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary sm:flex"
+              >
+                <FileArrowUp size={14} />
+                {t("importExternal")}
+              </button>
+            )}
+            {!isOwner && isLoggedIn && viewerListEmpty && (
+              <button
+                onClick={handleCopyList}
+                disabled={isCopying}
+                className="flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary disabled:opacity-50"
+              >
+                <CopySimple size={14} />
+                {isCopying ? t("copying") : t("copyList")}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Mobile-only: Add show + Import below the title (hidden when list is empty) */}
+        {isOwner && items.length > 0 && (
+          <div className="mt-3 flex items-center gap-2 sm:hidden">
             <button
               onClick={() => setShowAddDialog(true)}
-              className="flex items-center gap-1.5 rounded-[var(--radius-md)] border border-dashed border-border px-3 py-2 text-xs text-text-muted transition-colors hover:border-border-hover hover:text-text-secondary"
+              className="flex items-center gap-1.5 rounded-md bg-accent px-3 py-2 text-xs font-medium text-black transition-colors hover:bg-accent-hover"
             >
               <Plus size={14} />
               Add show
             </button>
-          )}
-          {isOwner && (
             <button
               onClick={() => setShowImport(true)}
-              className="flex items-center gap-1.5 rounded-[var(--radius-md)] border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary"
+              className="flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary"
             >
               <FileArrowUp size={14} />
               {t("importExternal")}
             </button>
-          )}
-          {!isOwner && isLoggedIn && viewerListEmpty && (
-            <button
-              onClick={handleCopyList}
-              disabled={isCopying}
-              className="flex items-center gap-1.5 rounded-[var(--radius-md)] border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary disabled:opacity-50"
-            >
-              <CopySimple size={14} />
-              {isCopying ? t("copying") : t("copyList")}
-            </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Search bar + filters toggle */}
@@ -572,7 +597,7 @@ export function ListDetailClient({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t("searchPlaceholder")}
-              className="w-full rounded-[var(--radius-md)] border border-border bg-transparent px-3 py-2 text-sm text-text-primary placeholder:text-text-faint focus:border-border-hover focus:outline-none transition-colors"
+              className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm text-text-primary placeholder:text-text-faint focus:border-border-hover focus:outline-none transition-colors"
             />
             {searchQuery && (
               <button
@@ -585,7 +610,7 @@ export function ListDetailClient({
           </div>
           <button
             onClick={() => setShowFilters((v) => !v)}
-            className={`flex shrink-0 items-center gap-1.5 rounded-[var(--radius-md)] border px-3 py-2 text-xs transition-colors ${
+            className={`flex shrink-0 items-center gap-1.5 rounded-md border px-3 py-2 text-xs transition-colors ${
               showFilters || activeFilterCount > 0
                 ? "border-border-hover text-text-primary"
                 : "border-border text-text-muted hover:border-border-hover hover:text-text-secondary"
@@ -604,7 +629,7 @@ export function ListDetailClient({
 
       {/* Filter panel */}
       {showFilters && (
-        <div className="mb-4 rounded-[var(--radius-md)] border border-border bg-surface-subtle p-3 space-y-3">
+        <div className="mb-4 rounded-md border border-border bg-surface-subtle p-3 space-y-3">
           {/* Rating filter */}
           <div>
             <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-text-faint">

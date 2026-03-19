@@ -26,6 +26,8 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
   const [preview, setPreview] = useState<{
     name: string;
     showCount: number;
+    moviesSkipped: number;
+    seasonsSkipped: number;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -69,9 +71,12 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
         }
 
         setFile(selectedFile);
+        const moviesSkipped = isFormatA ? (json.movies?.length ?? 0) : 0;
         setPreview({
           name: isFormatA ? json.name || selectedFile.name : selectedFile.name,
           showCount: isFormatA ? json.shows.length : json.length,
+          moviesSkipped,
+          seasonsSkipped: 0,
         });
       } catch {
         setError(t("invalidFormatJson"));
@@ -92,6 +97,8 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
         setPreview({
           name: selectedFile.name,
           showCount: parsed.shows.length,
+          moviesSkipped: parsed.moviesSkipped,
+          seasonsSkipped: parsed.seasonsSkipped,
         });
       } catch {
         setError(t("invalidFormatXml"));
@@ -110,12 +117,17 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
         const text = await file.text();
         const { parseMalXml } = await import("@/lib/import/mal-parser");
         const parsed = parseMalXml(text);
-        // Convert to the same array format the onImport handler expects
-        const asJson = parsed.shows.map((s) => ({
-          title: s.title,
-          id: s.imdb_id ? { imdb: s.imdb_id } : undefined,
-          score: s.score ?? undefined,
-        }));
+        // Keep MAL imports identifiable on the server side.
+        const asJson = {
+          name: parsed.name,
+          description: parsed.description,
+          is_public: parsed.is_public,
+          shows: parsed.shows.map((s) => ({
+            title: s.title,
+            id: s.imdb_id ? { imdb: s.imdb_id } : undefined,
+            score: s.score ?? undefined,
+          })),
+        };
         await onImport(asJson);
       } else {
         const text = await file.text();
@@ -154,35 +166,29 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
           <div className="flex flex-col gap-3">
             <button
               onClick={() => setService("tvtime")}
-              className="flex items-center gap-4 rounded-[var(--radius-md)] border border-border p-4 text-left transition-colors hover:border-border-hover hover:bg-bg-surface-hover"
+              className="flex items-center gap-4 rounded-md border border-border p-4 text-left transition-colors hover:border-border-hover hover:bg-bg-surface-hover"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-[#FFD12A]/10 text-[#FFD12A]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-[#FFD12A]/10 text-[#FFD12A]">
                 <TelevisionSimple size={22} weight="duotone" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-text-primary">
-                  TV Time
-                </p>
-                <p className="text-xs text-text-secondary">
-                  {t("tvtimeDesc")}
-                </p>
+                <p className="text-sm font-medium text-text-primary">TV Time</p>
+                <p className="text-xs text-text-secondary">{t("tvtimeDesc")}</p>
               </div>
             </button>
 
             <button
               onClick={() => setService("mal")}
-              className="flex items-center gap-4 rounded-[var(--radius-md)] border border-border p-4 text-left transition-colors hover:border-border-hover hover:bg-bg-surface-hover"
+              className="flex items-center gap-4 rounded-md border border-border p-4 text-left transition-colors hover:border-border-hover hover:bg-bg-surface-hover"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-[#2E51A2]/10 text-[#2E51A2]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-[#2E51A2]/10 text-[#2E51A2]">
                 <span className="text-base font-bold">MAL</span>
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-text-primary">
                   MyAnimeList
                 </p>
-                <p className="text-xs text-text-secondary">
-                  {t("malDesc")}
-                </p>
+                <p className="text-xs text-text-secondary">{t("malDesc")}</p>
               </div>
             </button>
           </div>
@@ -225,7 +231,7 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
         {/* Dropzone */}
         <div
           onClick={() => fileInputRef.current?.click()}
-          className="flex cursor-pointer flex-col items-center gap-2 rounded-[var(--radius-md)] border-2 border-dashed border-border p-8 transition-colors hover:border-border-hover hover:bg-bg-surface-hover"
+          className="flex cursor-pointer flex-col items-center gap-2 rounded-md border-2 border-dashed border-border p-8 transition-colors hover:border-border-hover hover:bg-bg-surface-hover"
         >
           <UploadSimple size={28} className="text-text-muted" />
           <span className="text-sm text-text-secondary">
@@ -245,14 +251,24 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
 
         {/* Preview */}
         {preview && (
-          <div className="mt-4 flex items-center gap-3 rounded-[var(--radius-md)] border border-border bg-bg-elevated p-3">
+          <div className="mt-4 flex items-center gap-3 rounded-md border border-border bg-bg-elevated p-3">
             <FileText size={20} className="text-accent" />
             <div className="flex-1">
               <p className="text-sm font-medium text-text-primary">
                 {preview.name}
               </p>
               <p className="text-xs text-text-secondary">
-                {preview.showCount} shows
+                {t("previewShows", { count: preview.showCount })}
+                {preview.moviesSkipped > 0 && (
+                  <span className="ml-2 text-text-muted">
+                    · {t("moviesSkipped", { count: preview.moviesSkipped })}
+                  </span>
+                )}
+                {preview.seasonsSkipped > 0 && (
+                  <span className="ml-2 text-text-muted">
+                    · {t("seasonsSkipped", { count: preview.seasonsSkipped })}
+                  </span>
+                )}
               </p>
             </div>
           </div>
@@ -269,19 +285,19 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
         <div className="mt-6 flex justify-end gap-2">
           <button
             onClick={handleClose}
-            className="rounded-[var(--radius-md)] px-4 py-2 text-sm text-text-secondary hover:text-text-primary"
+            className="rounded-md px-4 py-2 text-sm text-text-secondary hover:text-text-primary"
           >
             {t("cancel")}
           </button>
           <button
             onClick={handleImport}
             disabled={!file || loading}
-            className="flex items-center gap-2 rounded-[var(--radius-md)] bg-accent px-4 py-2 text-sm font-medium text-bg-primary transition-colors hover:bg-accent-hover disabled:opacity-50"
+            className="flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-medium text-bg-primary transition-colors hover:bg-accent-hover disabled:opacity-50"
           >
             {loading && <SpinnerGap size={14} className="animate-spin" />}
             {loading
               ? t("importing")
-              : `Import ${preview?.showCount ?? 0} shows`}
+              : t("importButton", { count: preview?.showCount ?? 0 })}
           </button>
         </div>
       </div>

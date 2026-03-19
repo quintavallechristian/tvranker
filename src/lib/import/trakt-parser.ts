@@ -11,6 +11,7 @@ const TraktShowSchema = z.object({
   title: z.string(),
   uuid: z.string().optional(),
   added_at: z.string().optional(),
+  score: z.number().optional(),
 });
 
 const TraktListSchema = z.object({
@@ -54,6 +55,8 @@ export type ParseResult = {
   description: string;
   is_public: boolean;
   shows: ParsedShow[];
+  moviesSkipped: number;
+  seasonsSkipped: number;
 };
 
 function normalizeImdb(value: string | undefined | null): string | null {
@@ -74,6 +77,8 @@ export function parseTraktJson(input: unknown): ParseResult {
         imdb_id: normalizeImdb(show.id?.imdb),
         score: show.score ?? null,
       })),
+      moviesSkipped: 0,
+      seasonsSkipped: 0,
     };
   }
 
@@ -86,7 +91,10 @@ export function parseTraktJson(input: unknown): ParseResult {
     shows: parsed.shows.map((show) => ({
       title: show.title,
       imdb_id: normalizeImdb(show.id?.imdb),
+      score: show.score ?? null,
     })),
+    moviesSkipped: parsed.movies?.length ?? 0,
+    seasonsSkipped: 0,
   };
 }
 

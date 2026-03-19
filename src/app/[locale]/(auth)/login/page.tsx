@@ -58,7 +58,7 @@ export default function LoginPage() {
       {/* Google login temporarily hidden
       <button
         onClick={handleGoogleLogin}
-        className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border border-border bg-bg-surface px-4 py-2.5 text-sm font-medium text-text-primary transition-colors hover:bg-bg-surface-hover"
+        className="flex w-full items-center justify-center gap-2 rounded-md border border-border bg-bg-surface px-4 py-2.5 text-sm font-medium text-text-primary transition-colors hover:bg-bg-surface-hover"
       >
         <GoogleLogo size={18} weight="bold" />
         {t("continueWithGoogle")}
@@ -91,7 +91,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
-              className="w-full rounded-[var(--radius-md)] border border-border bg-bg-surface py-2.5 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-faint transition-colors focus:border-accent focus:outline-none"
+              className="w-full rounded-md border border-border bg-bg-surface py-2.5 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-faint transition-colors focus:border-accent focus:outline-none"
             />
           </div>
         </div>
@@ -115,7 +115,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
-              className="w-full rounded-[var(--radius-md)] border border-border bg-bg-surface py-2.5 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-faint transition-colors focus:border-accent focus:outline-none"
+              className="w-full rounded-md border border-border bg-bg-surface py-2.5 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-faint transition-colors focus:border-accent focus:outline-none"
             />
           </div>
         </div>
@@ -129,7 +129,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-[var(--radius-md)] bg-accent px-4 py-2.5 text-sm font-medium text-bg-primary transition-colors hover:bg-accent-hover disabled:opacity-50"
+          className="w-full rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-bg-primary transition-colors hover:bg-accent-hover disabled:opacity-50"
         >
           {loading ? "..." : t("login")}
         </button>

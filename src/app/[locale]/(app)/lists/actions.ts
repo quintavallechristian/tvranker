@@ -195,6 +195,19 @@ export async function importToMyList(jsonData: unknown) {
 
   const { parseTraktJson } = await import("@/lib/import/trakt-parser");
   const parsed = parseTraktJson(jsonData);
+  const isMalImport = parsed.name === "MyAnimeList Import";
+
+  let animeTagId: string | null = null;
+  if (isMalImport) {
+    const { data: animeTag } = await supabase
+      .from("tags")
+      .select("id")
+      .eq("is_default", true)
+      .ilike("name", "anime")
+      .maybeSingle();
+
+    animeTagId = animeTag?.id ?? null;
+  }
 
   // Get current max position in the user's list
   const { data: existingItems } = await supabase
@@ -264,6 +277,15 @@ export async function importToMyList(jsonData: unknown) {
           .from("list_items")
           .insert({ list_id: myList.id, show_id: dbShowId, position, rating });
         if (!error) {
+          if (animeTagId) {
+            // Best-effort: keep import resilient even if tag assignment fails.
+            await supabase.from("show_tags").insert({
+              user_id: user.id,
+              show_id: dbShowId,
+              tag_id: animeTagId,
+            });
+          }
+
           position++;
           importedCount++;
         }
@@ -377,7 +399,9 @@ export async function getListAnalytics(
   };
   const { data: rawItems } = await supabase
     .from("list_items")
-    .select("rating, show_id, added_at, shows(id, title, poster_path, first_air_date)")
+    .select(
+      "rating, show_id, added_at, shows(id, title, poster_path, first_air_date)",
+    )
     .eq("list_id", resolvedListId);
 
   const items = (rawItems ?? []) as RawItem[];

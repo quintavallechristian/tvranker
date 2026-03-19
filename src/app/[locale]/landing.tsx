@@ -52,13 +52,13 @@ export function LandingPage() {
           <div className="flex items-center gap-3">
             <Link
               href="/login"
-              className="rounded-[var(--radius-md)] px-3 py-1.5 text-sm text-text-secondary transition-colors hover:text-text-primary"
+              className="rounded-md px-3 py-1.5 text-sm text-text-secondary transition-colors hover:text-text-primary"
             >
               {tAuth("login")}
             </Link>
             <Link
               href="/register"
-              className="rounded-[var(--radius-md)] bg-accent px-3 py-1.5 text-sm font-medium text-bg-primary transition-colors hover:bg-accent-hover"
+              className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-bg-primary transition-colors hover:bg-accent-hover"
             >
               {tAuth("register")}
             </Link>
@@ -75,9 +75,7 @@ export function LandingPage() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-50" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
             </span>
-            <span className="text-xs text-text-secondary">
-              Free &amp; open
-            </span>
+            <span className="text-xs text-text-secondary">Free &amp; open</span>
           </div>
 
           <h1 className="text-4xl font-bold leading-tight tracking-tight text-text-primary sm:text-5xl">
@@ -98,7 +96,7 @@ export function LandingPage() {
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
               href="/register"
-              className="group inline-flex items-center gap-2 rounded-[var(--radius-md)] bg-accent px-5 py-2.5 text-sm font-medium text-bg-primary transition-colors hover:bg-accent-hover"
+              className="group inline-flex items-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-medium text-bg-primary transition-colors hover:bg-accent-hover"
             >
               {t("cta")}
               <ArrowRight
@@ -137,7 +135,7 @@ export function LandingPage() {
                 key={i}
                 className="rounded-[var(--radius-lg)] border border-border bg-bg-surface p-6 transition-colors hover:border-border-hover"
               >
-                <div className="mb-4 inline-flex rounded-[var(--radius-md)] bg-accent-muted p-2">
+                <div className="mb-4 inline-flex rounded-md bg-accent-muted p-2">
                   <Icon size={20} weight="duotone" className="text-accent" />
                 </div>
                 <h3 className="text-sm font-semibold tracking-tight text-text-primary">
@@ -160,7 +158,7 @@ export function LandingPage() {
           </p>
           <Link
             href="/register"
-            className="mt-6 inline-flex items-center gap-2 rounded-[var(--radius-md)] bg-accent px-5 py-2.5 text-sm font-medium text-bg-primary transition-colors hover:bg-accent-hover"
+            className="mt-6 inline-flex items-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-medium text-bg-primary transition-colors hover:bg-accent-hover"
           >
             {t("cta")}
           </Link>
@@ -171,7 +169,11 @@ export function LandingPage() {
       <footer className="border-t border-border px-6 py-6">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div className="flex items-center gap-2">
-            <Television size={16} weight="duotone" className="text-text-faint" />
+            <Television
+              size={16}
+              weight="duotone"
+              className="text-text-faint"
+            />
             <span className="text-xs text-text-faint">TV Ranker</span>
           </div>
           <span className="text-xs text-text-faint">

@@ -104,7 +104,7 @@ export function ShowRow({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group rounded-[var(--radius-md)] border border-border bg-bg-surface p-2.5 md:p-3 transition-colors hover:border-border-hover ${
+      className={`group rounded-md border border-border bg-bg-surface p-2.5 md:p-3 transition-colors hover:border-border-hover ${
         isDragging ? "opacity-50 shadow-lg" : ""
       }`}
     >
@@ -245,7 +245,7 @@ export function ShowRow({
               ) : onNotesChange ? (
                 <button
                   onClick={() => setEditingNote(true)}
-                  className="flex items-center gap-1 text-xs text-text-faint opacity-0 group-hover:opacity-100 transition-opacity hover:text-text-muted"
+                  className="flex items-center gap-1 text-xs text-text-faint transition-opacity hover:text-text-muted sm:opacity-0 sm:group-hover:opacity-100"
                 >
                   <NotePencil size={11} />
                   Aggiungi una nota...

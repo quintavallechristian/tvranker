@@ -120,7 +120,11 @@
     "error": "Errore durante l'importazione",
     "invalidFormatJson": "Formato JSON non valido",
     "invalidFormatXml": "Formato XML non valido",
-    "cancel": "Annulla"
+    "cancel": "Annulla",
+    "previewShows": "{count, plural, =0 {Nessuna serie} =1 {1 serie} other {# serie}}",
+    "moviesSkipped": "{count, plural, =1 {1 film escluso} other {# film esclusi}}",
+    "seasonsSkipped": "{count, plural, =1 {1 stagione duplicata unita} other {# stagioni duplicate unite}}",
+    "importButton": "{count, plural, =0 {Importa} =1 {Importa 1 serie} other {Importa # serie}}"
   },
   "explore": {
     "title": "Esplora",
@@ -140,7 +144,9 @@
     "similarUsersEmpty": "Aggiungi più serie per trovare utenti con gusti simili",
     "similarUsersLoading": "Cerchiamo profili simili...",
     "popularFallback": "Aggiungi serie alla tua lista per ricevere suggerimenti personalizzati. Nel frattempo, ecco i preferiti della community:",
-    "addedByCount": "{count, plural, =1 {Aggiunto da 1 utente} other {Aggiunto da # utenti}}"
+    "addedByCount": "{count, plural, =1 {Aggiunto da 1 utente} other {Aggiunto da # utenti}}",
+    "addToList": "Aggiungi",
+    "details": "Dettagli"
   },
   "showDetail": {
     "overview": "Trama",
@@ -151,6 +157,11 @@
     "noOverview": "Nessuna descrizione disponibile. Visita questa pagina per caricare le info da TMDB.",
     "loadingInfo": "Caricamento info serie da TMDB...",
     "notFound": "Serie non trovata",
+    "watchTrailer": "Guarda Trailer",
+    "seasonsTitle": "Stagioni",
+    "episodeCount": "{count, plural, =1 {1 episodio} other {# episodi}}",
+    "streamingTitle": "Dove Guardare",
+    "streamingRegion": "Disponibilità per {region}",
     "publicListsTitle": "Liste pubbliche con questa serie",
     "analyticsTitle": "Statistiche Community",
     "ratedBy": "Votato da",
@@ -158,7 +169,12 @@
     "noRatings": "Nessun voto ancora",
     "addedOverTime": "Aggiunto alle liste nel tempo",
     "shows": "aggiunte",
-    "users": "utenti"
+    "users": "utenti",
+    "tabSeasons": "Stagioni",
+    "tabTrailer": "Trailer",
+    "tabStats": "Statistiche",
+    "noSeasonsData": "Nessuna informazione sulle stagioni disponibile.",
+    "noTrailer": "Nessun trailer disponibile per questa serie."
   },
   "profile": {
     "title": "Profilo",
@@ -199,7 +215,7 @@
     },
     "importExternal": {
       "title": "Come importo le serie da un servizio esterno?",
-      "body": "Dalla tua lista, clicca il pulsante **Importa da servizi esterni** nella barra degli strumenti. Scegli il servizio da cui importare:\n\n**TV Time** — Seleziona un file JSON in formato Trakt.tv / TV Time. Vedrai un'anteprima delle serie da importare.\n\n**MyAnimeList** — Esporta la tua lista anime come XML da MyAnimeList (Profilo → Esporta), poi carica il file XML. Verranno importati gli anime completati e quelli in visione.\n\nIn entrambi i casi, le serie già presenti nella tua lista verranno saltate automaticamente."
+      "body": "Dalla tua lista, clicca il pulsante **Importa da servizi esterni** nella barra degli strumenti. Scegli il servizio da cui importare:\n\n**TV Time** — Seleziona un file JSON in formato Trakt.tv / TV Time. Vedrai un'anteprima delle serie da importare.\n\n**MyAnimeList** — Esporta la tua lista anime come XML da MyAnimeList (Profilo → Esporta), poi carica il file XML. Verranno importati gli anime completati e quelli in visione, e ogni elemento importato riceverà automaticamente il tag **anime**.\n\nIn entrambi i casi, le serie già presenti nella tua lista verranno saltate automaticamente."
     },
     "viewProfile": {
       "title": "Come visualizzo il profilo di un altro utente?",
@@ -240,6 +256,8 @@
     "subtitle": "Inizia ad aggiungere le serie che hai visto o che vuoi vedere, oppure importa da un servizio esterno.",
     "addFirst": "Aggiungi una serie",
     "importExternal": "Importa",
-    "communityFavorites": "Preferiti della community"
+    "communityFavorites": "Preferiti della community",
+    "addToList": "Aggiungi",
+    "details": "Dettagli"
   }
 }

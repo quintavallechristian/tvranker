@@ -18,7 +18,7 @@ export function LanguageSwitcher() {
   return (
     <button
       onClick={switchLocale}
-      className="flex w-full items-center gap-2 rounded-[var(--radius-md)] px-3 py-1.5 text-xs text-text-muted transition-colors hover:bg-bg-surface hover:text-text-secondary"
+      className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-text-muted transition-colors hover:bg-bg-surface hover:text-text-secondary"
     >
       <GlobeSimple size={14} />
       {currentLocale === "en" ? "Italiano" : "English"}

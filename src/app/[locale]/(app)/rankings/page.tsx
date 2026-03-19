@@ -36,7 +36,7 @@ export default async function RankingsPage() {
               /* Mirror ShowRow container classes exactly */
               <div
                 key={show.id}
-                className="group rounded-[var(--radius-md)] border border-border bg-bg-surface p-2.5 md:p-3 transition-colors hover:border-border-hover"
+                className="group rounded-md border border-border bg-bg-surface p-2.5 md:p-3 transition-colors hover:border-border-hover"
               >
                 <div className="flex items-center gap-2 md:gap-3">
                   {/* Rank — same slot as the drag handle + position in ShowRow */}

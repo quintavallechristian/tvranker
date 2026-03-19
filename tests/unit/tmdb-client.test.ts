@@ -120,6 +120,7 @@ describe("findByImdbId", () => {
           vote_average: 8.1,
         },
       ],
+      movie_results: [],
     };
 
     mockFetch.mockResolvedValueOnce({
@@ -129,8 +130,8 @@ describe("findByImdbId", () => {
 
     const result = await findByImdbId("tt15677150");
 
-    expect(result).not.toBeNull();
-    expect(result!.name).toBe("Shrinking");
+    expect(result.show).not.toBeNull();
+    expect(result.show!.name).toBe("Shrinking");
 
     const calledUrl = mockFetch.mock.calls[0][0];
     expect(calledUrl).toContain("/find/tt15677150");
@@ -140,11 +141,12 @@ describe("findByImdbId", () => {
   it("returns null when no show found", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ tv_results: [] }),
+      json: async () => ({ tv_results: [], movie_results: [] }),
     });
 
     const result = await findByImdbId("tt0000000");
-    expect(result).toBeNull();
+    expect(result.show).toBeNull();
+    expect(result.movie).toBeNull();
   });
 });
 

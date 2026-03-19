@@ -38,10 +38,12 @@ describe("parseTraktJson", () => {
     expect(result.shows[0]).toEqual({
       title: "Shrinking",
       imdb_id: "tt15677150",
+      score: null,
     });
     expect(result.shows[1]).toEqual({
       title: "Game of Thrones",
       imdb_id: "tt0944947",
+      score: null,
     });
   });
 

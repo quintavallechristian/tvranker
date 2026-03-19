@@ -26,7 +26,11 @@ type SidebarNavProps = {
   unreadCount: number;
 };
 
-export function SidebarNav({ username, avatarUrl, unreadCount }: SidebarNavProps) {
+export function SidebarNav({
+  username,
+  avatarUrl,
+  unreadCount,
+}: SidebarNavProps) {
   const t = useTranslations("nav");
   const pathname = usePathname();
   const router = useRouter();
@@ -131,7 +135,7 @@ export function SidebarNav({ username, avatarUrl, unreadCount }: SidebarNavProps
                   <Link
                     key={href}
                     href={href}
-                    className={`flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2.5 text-sm transition-colors ${
+                    className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors ${
                       isActive
                         ? "bg-bg-surface text-text-primary font-medium"
                         : "text-text-secondary active:bg-bg-surface"
@@ -156,7 +160,7 @@ export function SidebarNav({ username, avatarUrl, unreadCount }: SidebarNavProps
               <div className="flex items-center gap-2">
                 <Link
                   href="/profile"
-                  className="flex min-w-0 flex-1 items-center gap-2 rounded-[var(--radius-md)] py-1.5 pr-1 transition-colors active:opacity-70"
+                  className="flex min-w-0 flex-1 items-center gap-2 rounded-md py-1.5 pr-1 transition-colors active:opacity-70"
                 >
                   <UserAvatar url={avatarUrl} username={username} size={28} />
                   <span className="flex-1 truncate text-xs font-medium text-text-secondary">
@@ -192,7 +196,7 @@ export function SidebarNav({ username, avatarUrl, unreadCount }: SidebarNavProps
               <Link
                 key={href}
                 href={href}
-                className={`flex items-center gap-2.5 rounded-[var(--radius-md)] px-3 py-2 text-sm transition-colors ${
+                className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors ${
                   isActive
                     ? "bg-bg-surface text-text-primary font-medium"
                     : "text-text-secondary hover:bg-bg-surface hover:text-text-primary"
@@ -216,7 +220,7 @@ export function SidebarNav({ username, avatarUrl, unreadCount }: SidebarNavProps
           <div className="flex items-center gap-2">
             <Link
               href="/profile"
-              className="flex min-w-0 flex-1 items-center gap-2 rounded-[var(--radius-md)] py-1 pr-1 transition-colors hover:opacity-80"
+              className="flex min-w-0 flex-1 items-center gap-2 rounded-md py-1 pr-1 transition-colors hover:opacity-80"
             >
               <UserAvatar url={avatarUrl} username={username} size={28} />
               <span className="flex-1 truncate text-xs font-medium text-text-secondary">

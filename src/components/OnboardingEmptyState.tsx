@@ -4,6 +4,7 @@ import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
+import { Link } from "@/i18n/navigation";
 import { getPosterUrl } from "@/lib/tmdb/client";
 import {
   getTopRatedShows,
@@ -18,6 +19,7 @@ import {
   FileArrowUp,
   Television,
   SpinnerGap,
+  ArrowRight,
 } from "@phosphor-icons/react";
 
 // Unified show shape for displaying in the onboarding grid
@@ -43,7 +45,15 @@ export function OnboardingEmptyState({ onAddShow, onImport }: Props) {
   const [loading, setLoading] = useState(true);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const [addingId, setAddingId] = useState<string | null>(null);
+  const [activeShowId, setActiveShowId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (!activeShowId) return;
+    const dismiss = () => setActiveShowId(null);
+    document.addEventListener("click", dismiss);
+    return () => document.removeEventListener("click", dismiss);
+  }, [activeShowId]);
 
   useEffect(() => {
     getTopRatedShows()
@@ -160,7 +170,17 @@ export function OnboardingEmptyState({ onAddShow, onImport }: Props) {
               return (
                 <div
                   key={show.id}
-                  className="group overflow-hidden rounded-md border border-border bg-bg-surface"
+                  className="group relative overflow-hidden rounded-md border border-border bg-bg-surface"
+                  onPointerEnter={(e) => {
+                    if (e.pointerType === "mouse") setActiveShowId(show.id);
+                  }}
+                  onPointerLeave={(e) => {
+                    if (e.pointerType === "mouse") setActiveShowId(null);
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveShowId(show.id);
+                  }}
                 >
                   <div className="relative aspect-2/3 bg-bg-elevated">
                     {posterUrl ? (
@@ -186,29 +206,45 @@ export function OnboardingEmptyState({ onAddShow, onImport }: Props) {
 
                     {/* Add overlay */}
                     <div
-                      className={`absolute inset-0 flex items-center justify-center bg-black/60 transition-opacity ${
-                        isAdded
+                      className={`absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-black/70 transition-opacity ${
+                        activeShowId === show.id || isAdded
                           ? "opacity-100"
-                          : "opacity-0 group-hover:opacity-100"
+                          : "opacity-0 pointer-events-none"
                       }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveShowId(null);
+                      }}
                     >
-                      <button
-                        onClick={() => handleQuickAdd(show)}
-                        disabled={isAdding || isAdded}
-                        className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
-                          isAdded
-                            ? "border-accent/50 bg-accent/20 text-accent"
-                            : "border-white/30 bg-white/10 text-white hover:bg-white/20"
-                        }`}
-                      >
-                        {isAdding ? (
-                          <SpinnerGap size={16} className="animate-spin" />
-                        ) : isAdded ? (
-                          <Check size={16} weight="bold" />
-                        ) : (
-                          <Plus size={16} weight="bold" />
-                        )}
-                      </button>
+                      {isAdded ? (
+                        <Check size={24} weight="bold" className="text-accent" />
+                      ) : (
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleQuickAdd(show);
+                            }}
+                            disabled={isAdding}
+                            className="flex items-center gap-1.5 rounded-full border border-white/40 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/25 transition-colors disabled:opacity-50"
+                          >
+                            {isAdding ? (
+                              <SpinnerGap size={13} className="animate-spin" />
+                            ) : (
+                              <Plus size={13} weight="bold" />
+                            )}
+                            {t("addToList")}
+                          </button>
+                          <Link
+                            href={`/shows/${show.id}`}
+                            className="flex items-center gap-1.5 rounded-full border border-white/20 bg-black/40 px-3 py-1.5 text-xs font-medium text-white/80 hover:bg-black/60 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <ArrowRight size={13} weight="bold" />
+                            {t("details")}
+                          </Link>
+                        </>
+                      )}
                     </div>
                   </div>
                   <p className="truncate px-2 py-1.5 text-xs text-text-secondary">

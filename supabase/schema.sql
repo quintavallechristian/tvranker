@@ -33,7 +33,10 @@ create table if not exists public.shows (
   poster_path text,
   first_air_date date,
   overview text,
-  tmdb_fetched boolean default false not null
+  tmdb_fetched boolean default false not null,
+  seasons_data jsonb,
+  trailer_url text,
+  watch_providers jsonb
 );
 
 -- List items (junction table)

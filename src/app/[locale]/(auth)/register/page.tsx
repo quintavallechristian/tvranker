@@ -95,7 +95,7 @@ export default function RegisterPage() {
               required
               minLength={3}
               maxLength={30}
-              className="w-full rounded-[var(--radius-md)] border border-border bg-bg-surface py-2.5 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-faint transition-colors focus:border-accent focus:outline-none"
+              className="w-full rounded-md border border-border bg-bg-surface py-2.5 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-faint transition-colors focus:border-accent focus:outline-none"
             />
           </div>
         </div>
@@ -119,7 +119,7 @@ export default function RegisterPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
-              className="w-full rounded-[var(--radius-md)] border border-border bg-bg-surface py-2.5 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-faint transition-colors focus:border-accent focus:outline-none"
+              className="w-full rounded-md border border-border bg-bg-surface py-2.5 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-faint transition-colors focus:border-accent focus:outline-none"
             />
           </div>
         </div>
@@ -144,7 +144,7 @@ export default function RegisterPage() {
               placeholder="••••••••"
               required
               minLength={6}
-              className="w-full rounded-[var(--radius-md)] border border-border bg-bg-surface py-2.5 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-faint transition-colors focus:border-accent focus:outline-none"
+              className="w-full rounded-md border border-border bg-bg-surface py-2.5 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-faint transition-colors focus:border-accent focus:outline-none"
             />
           </div>
         </div>
@@ -158,7 +158,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-[var(--radius-md)] bg-accent px-4 py-2.5 text-sm font-medium text-bg-primary transition-colors hover:bg-accent-hover disabled:opacity-50"
+          className="w-full rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-bg-primary transition-colors hover:bg-accent-hover disabled:opacity-50"
         >
           {loading ? "..." : t("register")}
         </button>

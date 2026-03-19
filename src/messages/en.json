@@ -120,7 +120,11 @@
     "error": "Error importing file",
     "invalidFormatJson": "Invalid JSON format",
     "invalidFormatXml": "Invalid XML format",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "previewShows": "{count, plural, =0 {No shows} =1 {1 show} other {# shows}}",
+    "moviesSkipped": "{count, plural, =1 {1 movie excluded} other {# movies excluded}}",
+    "seasonsSkipped": "{count, plural, =1 {1 duplicate season merged} other {# duplicate seasons merged}}",
+    "importButton": "{count, plural, =0 {Import} =1 {Import 1 show} other {Import # shows}}"
   },
   "explore": {
     "title": "Explore",
@@ -140,7 +144,9 @@
     "similarUsersEmpty": "Add more shows to find users with similar taste",
     "similarUsersLoading": "Finding similar profiles...",
     "popularFallback": "Add shows to your list to get personalized suggestions. In the meantime, here are the community favorites:",
-    "addedByCount": "{count, plural, =1 {Added by 1 user} other {Added by # users}}"
+    "addedByCount": "{count, plural, =1 {Added by 1 user} other {Added by # users}}",
+    "addToList": "Add",
+    "details": "Details"
   },
   "showDetail": {
     "overview": "Overview",
@@ -151,6 +157,11 @@
     "noOverview": "No description available yet. Visit this page to load info from TMDB.",
     "loadingInfo": "Loading show info from TMDB...",
     "notFound": "Show not found",
+    "watchTrailer": "Watch Trailer",
+    "seasonsTitle": "Seasons",
+    "episodeCount": "{count, plural, =1 {1 episode} other {# episodes}}",
+    "streamingTitle": "Where to Watch",
+    "streamingRegion": "Availability for {region}",
     "publicListsTitle": "Public lists with this show",
     "analyticsTitle": "Community Analytics",
     "ratedBy": "Rated by",
@@ -158,7 +169,12 @@
     "noRatings": "No ratings yet",
     "addedOverTime": "Added to lists over time",
     "shows": "adds",
-    "users": "users"
+    "users": "users",
+    "tabSeasons": "Seasons",
+    "tabTrailer": "Trailer",
+    "tabStats": "Statistics",
+    "noSeasonsData": "No season data available for this show.",
+    "noTrailer": "No trailer available for this show."
   },
   "profile": {
     "title": "Profile",
@@ -199,7 +215,7 @@
     },
     "importExternal": {
       "title": "How do I import shows from an external service?",
-      "body": "From your list, click the **Import from external services** button in the toolbar. Choose the service you want to import from:\n\n**TV Time** — Select a JSON file in Trakt.tv / TV Time format. You'll see a preview of the shows to import.\n\n**MyAnimeList** — Export your anime list as XML from MyAnimeList (Profile → Export), then upload the XML file. Completed and currently watching anime will be imported.\n\nIn both cases, shows already in your list will be skipped automatically."
+      "body": "From your list, click the **Import from external services** button in the toolbar. Choose the service you want to import from:\n\n**TV Time** — Select a JSON file in Trakt.tv / TV Time format. You'll see a preview of the shows to import.\n\n**MyAnimeList** — Export your anime list as XML from MyAnimeList (Profile → Export), then upload the XML file. Completed and currently watching anime will be imported, and each imported item is automatically tagged as **anime**.\n\nIn both cases, shows already in your list will be skipped automatically."
     },
     "viewProfile": {
       "title": "How do I view another user's profile?",
@@ -240,6 +256,8 @@
     "subtitle": "Start adding shows you've watched or want to watch, or import from an external service.",
     "addFirst": "Add a show",
     "importExternal": "Import from external",
-    "communityFavorites": "Community favorites"
+    "communityFavorites": "Community favorites",
+    "addToList": "Add",
+    "details": "Details"
   }
 }
