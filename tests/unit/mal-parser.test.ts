@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { parseMalXml, validateMalXml, extractBaseTitle } from "@/lib/import/mal-parser";
+import {
+  parseMalXml,
+  validateMalXml,
+  extractBaseTitle,
+} from "@/lib/import/mal-parser";
 import { JSDOM } from "jsdom";
 
 // Ensure DOMParser is available in test environment
@@ -212,8 +216,14 @@ describe("extractBaseTitle", () => {
     ["Shingeki no Kyojin Season 3 Part 2", "Shingeki no Kyojin"],
     ["Shingeki no Kyojin: The Final Season", "Shingeki no Kyojin"],
     ["Shingeki no Kyojin: The Final Season Part 2", "Shingeki no Kyojin"],
-    ["Shingeki no Kyojin: The Final Season - Kanketsu-hen", "Shingeki no Kyojin"],
-    ["Ore dake Level Up na Ken Season 2: Arise from the Shadow", "Ore dake Level Up na Ken"],
+    [
+      "Shingeki no Kyojin: The Final Season - Kanketsu-hen",
+      "Shingeki no Kyojin",
+    ],
+    [
+      "Ore dake Level Up na Ken Season 2: Arise from the Shadow",
+      "Ore dake Level Up na Ken",
+    ],
     ["Kusuriya no Hitorigoto 3rd Season Part 2", "Kusuriya no Hitorigoto"],
     // Titles without season suffix should be unchanged
     ["Attack on Titan", "Attack on Titan"],

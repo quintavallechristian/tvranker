@@ -7,23 +7,25 @@ import type { ParseResult, ParsedShow } from "./trakt-parser";
  *   "Fruits Basket 1st Season" + "Fruits Basket 2nd Season" → keep base "Fruits Basket"
  */
 export function extractBaseTitle(title: string): string {
-  return title
-    // FIRST: ": [The] [Nth|Final] Season [...]" — e.g. ": The Final Season - Kanketsu-hen"
-    // Must run before the standalone pattern to avoid leaving ": The" as a suffix.
-    .replace(
-      /:\s+(?:The\s+)?(?:\d+(?:st|nd|rd|th)|Final|Second|Third|Fourth|Fifth|Sixth|Seventh|Eighth|Ninth|Tenth)\s+Season\b.*/i,
-      "",
-    )
-    // "Nth Season [...]" — e.g. "2nd Season", "Final Season", "Second Season"
-    .replace(
-      /\s+(?:\d+(?:st|nd|rd|th)|Final|Second|Third|Fourth|Fifth|Sixth|Seventh|Eighth|Ninth|Tenth)\s+Season\b.*/i,
-      "",
-    )
-    // "Season N [...]" — e.g. "Season 2", "Season 2: Subtitle"
-    .replace(/\s+Season\s+\d+\b.*/i, "")
-    // "Part N" at the end — e.g. "Part 2"
-    .replace(/\s+Part\s+\d+\b.*/i, "")
-    .trim();
+  return (
+    title
+      // FIRST: ": [The] [Nth|Final] Season [...]" — e.g. ": The Final Season - Kanketsu-hen"
+      // Must run before the standalone pattern to avoid leaving ": The" as a suffix.
+      .replace(
+        /:\s+(?:The\s+)?(?:\d+(?:st|nd|rd|th)|Final|Second|Third|Fourth|Fifth|Sixth|Seventh|Eighth|Ninth|Tenth)\s+Season\b.*/i,
+        "",
+      )
+      // "Nth Season [...]" — e.g. "2nd Season", "Final Season", "Second Season"
+      .replace(
+        /\s+(?:\d+(?:st|nd|rd|th)|Final|Second|Third|Fourth|Fifth|Sixth|Seventh|Eighth|Ninth|Tenth)\s+Season\b.*/i,
+        "",
+      )
+      // "Season N [...]" — e.g. "Season 2", "Season 2: Subtitle"
+      .replace(/\s+Season\s+\d+\b.*/i, "")
+      // "Part N" at the end — e.g. "Part 2"
+      .replace(/\s+Part\s+\d+\b.*/i, "")
+      .trim()
+  );
 }
 
 /**
@@ -48,13 +50,11 @@ export function parseMalXml(xmlText: string): ParseResult {
   let seasonsSkipped = 0;
 
   animeNodes.forEach((node) => {
-    const status =
-      node.querySelector("my_status")?.textContent?.trim() ?? "";
+    const status = node.querySelector("my_status")?.textContent?.trim() ?? "";
     // Only import completed and currently watching anime
     if (status !== "Completed" && status !== "Watching") return;
 
-    const title =
-      node.querySelector("series_title")?.textContent?.trim() ?? "";
+    const title = node.querySelector("series_title")?.textContent?.trim() ?? "";
     if (!title) return;
 
     // Skip movies — this is a TV series ranker
