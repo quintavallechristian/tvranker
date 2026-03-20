@@ -58,7 +58,7 @@ export function AddShowDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-start justify-center bg-black/60 sm:pt-[10vh] backdrop-blur-sm">
-      <div className="relative w-full sm:mx-4 sm:max-w-lg rounded-t-[16px] sm:rounded-[var(--radius-lg)] border border-border bg-bg-surface max-h-[85vh] sm:max-h-none flex flex-col">
+      <div className="relative w-full sm:mx-4 sm:max-w-lg rounded-t-[16px] sm:rounded-[var(--radius-lg)] border border-border bg-bg-surface max-h-[85vh] flex flex-col">
         <div className="flex items-center justify-between border-b border-border p-4">
           <h2 className="text-sm font-semibold text-text-primary">
             {t("addShow")}
