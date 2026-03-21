@@ -1,0 +1,10 @@
+{
+  "android": {
+    "package": "com.anonymous.tvranker"
+  },
+  "extra": {
+    "eas": {
+      "projectId": "fcd27638-ed5b-474f-8482-c7c68507edd6"
+    }
+  }
+}
