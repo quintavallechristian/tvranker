@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,15927,a=>{"use strict";a.i(24856),a.s([],6702),a.i(6702);var e=a.i(84977);a.s(["extractBaseTitle",()=>e.extractBaseTitle,"parseMalXml",()=>e.parseMalXml,"validateMalXml",()=>e.validateMalXml],15927)}]);

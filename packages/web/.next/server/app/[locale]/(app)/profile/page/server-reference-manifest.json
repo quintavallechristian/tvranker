@@ -1,0 +1,65 @@
+{
+  "node": {
+    "60a3ac6676b84c9b1e126c469d2a0c56e447c6a453": {
+      "workers": {
+        "app/[locale]/(app)/profile/page": {
+          "moduleId": 87737,
+          "async": false,
+          "exportedName": "createTag",
+          "filename": "packages/web/src/app/[locale]/(app)/tags/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/profile/page": "action-browser"
+      },
+      "exportedName": "createTag",
+      "filename": "packages/web/src/app/[locale]/(app)/tags/actions.ts"
+    },
+    "404cecbdfef59d303aaed8ea0cc11e701e7a3bf5ae": {
+      "workers": {
+        "app/[locale]/(app)/profile/page": {
+          "moduleId": 87737,
+          "async": false,
+          "exportedName": "deleteTag",
+          "filename": "packages/web/src/app/[locale]/(app)/tags/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/profile/page": "action-browser"
+      },
+      "exportedName": "deleteTag",
+      "filename": "packages/web/src/app/[locale]/(app)/tags/actions.ts"
+    },
+    "60049e117413c2a45b420082f11d5f903bf5deea37": {
+      "workers": {
+        "app/[locale]/(app)/profile/page": {
+          "moduleId": 87737,
+          "async": false,
+          "exportedName": "updateTagColor",
+          "filename": "packages/web/src/app/[locale]/(app)/tags/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/profile/page": "action-browser"
+      },
+      "exportedName": "updateTagColor",
+      "filename": "packages/web/src/app/[locale]/(app)/tags/actions.ts"
+    },
+    "4088d90c844fc9e3aa5dc6757475b9237d3584ec41": {
+      "workers": {
+        "app/[locale]/(app)/profile/page": {
+          "moduleId": 87737,
+          "async": false,
+          "exportedName": "setLocale",
+          "filename": "packages/web/src/app/[locale]/(app)/profile/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/profile/page": "action-browser"
+      },
+      "exportedName": "setLocale",
+      "filename": "packages/web/src/app/[locale]/(app)/profile/actions.ts"
+    }
+  },
+  "edge": {}
+}

@@ -1,0 +1,65 @@
+{
+  "node": {
+    "40451f29a2bb477466b1ec224ac5ea15ee7bd7072c": {
+      "workers": {
+        "app/[locale]/(app)/users/[username]/page": {
+          "moduleId": 97140,
+          "async": false,
+          "exportedName": "followUser",
+          "filename": "packages/web/src/app/[locale]/(app)/follows/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/users/[username]/page": "action-browser"
+      },
+      "exportedName": "followUser",
+      "filename": "packages/web/src/app/[locale]/(app)/follows/actions.ts"
+    },
+    "401b203295419b10150de777334f4cd2d62cf2e904": {
+      "workers": {
+        "app/[locale]/(app)/users/[username]/page": {
+          "moduleId": 97140,
+          "async": false,
+          "exportedName": "unfollowUser",
+          "filename": "packages/web/src/app/[locale]/(app)/follows/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/users/[username]/page": "action-browser"
+      },
+      "exportedName": "unfollowUser",
+      "filename": "packages/web/src/app/[locale]/(app)/follows/actions.ts"
+    },
+    "704d55e67520ed418c86cafffca65f3770de3577cd": {
+      "workers": {
+        "app/[locale]/(app)/users/[username]/page": {
+          "moduleId": 97140,
+          "async": false,
+          "exportedName": "getListItemsPage",
+          "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/users/[username]/page": "action-browser"
+      },
+      "exportedName": "getListItemsPage",
+      "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+    },
+    "40fefaf78e0852176b2a2ad5fcf94d22c751c63824": {
+      "workers": {
+        "app/[locale]/(app)/users/[username]/page": {
+          "moduleId": 97140,
+          "async": false,
+          "exportedName": "addShowToMyList",
+          "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/users/[username]/page": "action-browser"
+      },
+      "exportedName": "addShowToMyList",
+      "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+    }
+  },
+  "edge": {}
+}

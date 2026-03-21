@@ -1,0 +1,65 @@
+{
+  "node": {
+    "40ed3c806216f68c6815da405ef9973cbb9d521785": {
+      "workers": {
+        "app/[locale]/(app)/users/[username]/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/users/[username]/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/follows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "followUser",
+          "filename": "packages/web/src/app/[locale]/(app)/follows/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/users/[username]/page": "action-browser"
+      },
+      "exportedName": "followUser",
+      "filename": "packages/web/src/app/[locale]/(app)/follows/actions.ts"
+    },
+    "400bd16a58a58e16e8e184740c50ca3cbcc7d9fa04": {
+      "workers": {
+        "app/[locale]/(app)/users/[username]/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/users/[username]/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/follows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "unfollowUser",
+          "filename": "packages/web/src/app/[locale]/(app)/follows/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/users/[username]/page": "action-browser"
+      },
+      "exportedName": "unfollowUser",
+      "filename": "packages/web/src/app/[locale]/(app)/follows/actions.ts"
+    },
+    "7069107f9589fee67eb99e3abf54c5c59a5857e72f": {
+      "workers": {
+        "app/[locale]/(app)/users/[username]/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/users/[username]/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/follows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getListItemsPage",
+          "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/users/[username]/page": "action-browser"
+      },
+      "exportedName": "getListItemsPage",
+      "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+    },
+    "401cb9e19f15860a15e63380eccffb11c40f8c75a0": {
+      "workers": {
+        "app/[locale]/(app)/users/[username]/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/users/[username]/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/follows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "addShowToMyList",
+          "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/users/[username]/page": "action-browser"
+      },
+      "exportedName": "addShowToMyList",
+      "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+    }
+  },
+  "edge": {}
+}

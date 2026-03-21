@@ -1,0 +1,3 @@
+{
+  "/[locale]/(app)/users/[username]/analytics/page": "app/[locale]/(app)/users/[username]/analytics/page.js"
+}

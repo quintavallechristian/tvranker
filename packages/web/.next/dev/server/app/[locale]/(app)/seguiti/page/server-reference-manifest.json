@@ -1,0 +1,50 @@
+{
+  "node": {
+    "00df629b158a891a1c8a0acec522d9c8b425db3f21": {
+      "workers": {
+        "app/[locale]/(app)/seguiti/page": {
+          "moduleId": "[project]/.next-internal/server/app/[locale]/(app)/seguiti/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/[locale]/(app)/follows/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getFollowing",
+          "filename": "src/app/[locale]/(app)/follows/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/seguiti/page": "rsc"
+      },
+      "exportedName": "getFollowing",
+      "filename": "src/app/[locale]/(app)/follows/actions.ts"
+    },
+    "401b0557fadc9e5b3c25bd473cdc965fc6d95aa4bf": {
+      "workers": {
+        "app/[locale]/(app)/seguiti/page": {
+          "moduleId": "[project]/.next-internal/server/app/[locale]/(app)/seguiti/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/[locale]/(app)/follows/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "unfollowUser",
+          "filename": "src/app/[locale]/(app)/follows/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/seguiti/page": "rsc"
+      },
+      "exportedName": "unfollowUser",
+      "filename": "src/app/[locale]/(app)/follows/actions.ts"
+    },
+    "40bbc9ce8487a3d31a6b3b60316f37cc379c620508": {
+      "workers": {
+        "app/[locale]/(app)/seguiti/page": {
+          "moduleId": "[project]/.next-internal/server/app/[locale]/(app)/seguiti/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/[locale]/(app)/follows/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "followUser",
+          "filename": "src/app/[locale]/(app)/follows/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/seguiti/page": "rsc"
+      },
+      "exportedName": "followUser",
+      "filename": "src/app/[locale]/(app)/follows/actions.ts"
+    }
+  },
+  "edge": {}
+}

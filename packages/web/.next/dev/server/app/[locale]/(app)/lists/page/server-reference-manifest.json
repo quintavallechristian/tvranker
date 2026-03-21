@@ -1,0 +1,290 @@
+{
+  "node": {
+    "604f55753ca5e8115e6cccefdb137079597abee97d": {
+      "workers": {
+        "app/[locale]/(app)/lists/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/lists/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/explore/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/packages/web/src/app/[locale]/(app)/tags/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/packages/web/src/app/[locale]/(app)/shows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/packages/web/src/app/[locale]/(app)/rankings/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "updateList",
+          "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/lists/page": "action-browser"
+      },
+      "exportedName": "updateList",
+      "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+    },
+    "60e0c2656cc2bb318e9a7e139766786fbbcea34582": {
+      "workers": {
+        "app/[locale]/(app)/lists/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/lists/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/explore/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/packages/web/src/app/[locale]/(app)/tags/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/packages/web/src/app/[locale]/(app)/shows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/packages/web/src/app/[locale]/(app)/rankings/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "addShowToList",
+          "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/lists/page": "action-browser"
+      },
+      "exportedName": "addShowToList",
+      "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+    },
+    "605feabbe451922a81bc560a82cc2571d393467c5e": {
+      "workers": {
+        "app/[locale]/(app)/lists/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/lists/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/explore/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/packages/web/src/app/[locale]/(app)/tags/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/packages/web/src/app/[locale]/(app)/shows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/packages/web/src/app/[locale]/(app)/rankings/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "removeShowFromList",
+          "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/lists/page": "action-browser"
+      },
+      "exportedName": "removeShowFromList",
+      "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+    },
+    "70f013807d01f785d2640b0cc5f4f0a37b2ea06ff2": {
+      "workers": {
+        "app/[locale]/(app)/lists/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/lists/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/explore/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/packages/web/src/app/[locale]/(app)/tags/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/packages/web/src/app/[locale]/(app)/shows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/packages/web/src/app/[locale]/(app)/rankings/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "updateShowRating",
+          "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/lists/page": "action-browser"
+      },
+      "exportedName": "updateShowRating",
+      "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+    },
+    "70816a23f7c82d36f97f7366127cb907c61cf73044": {
+      "workers": {
+        "app/[locale]/(app)/lists/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/lists/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/explore/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/packages/web/src/app/[locale]/(app)/tags/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/packages/web/src/app/[locale]/(app)/shows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/packages/web/src/app/[locale]/(app)/rankings/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "updateShowNotes",
+          "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/lists/page": "action-browser"
+      },
+      "exportedName": "updateShowNotes",
+      "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+    },
+    "606f806e5adccbf0d63647ccf6da05daa7b62c2fbd": {
+      "workers": {
+        "app/[locale]/(app)/lists/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/lists/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/explore/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/packages/web/src/app/[locale]/(app)/tags/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/packages/web/src/app/[locale]/(app)/shows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/packages/web/src/app/[locale]/(app)/rankings/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "reorderListItems",
+          "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/lists/page": "action-browser"
+      },
+      "exportedName": "reorderListItems",
+      "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+    },
+    "7069107f9589fee67eb99e3abf54c5c59a5857e72f": {
+      "workers": {
+        "app/[locale]/(app)/lists/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/lists/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/explore/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/packages/web/src/app/[locale]/(app)/tags/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/packages/web/src/app/[locale]/(app)/shows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/packages/web/src/app/[locale]/(app)/rankings/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getListItemsPage",
+          "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/lists/page": "action-browser"
+      },
+      "exportedName": "getListItemsPage",
+      "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+    },
+    "401cb9e19f15860a15e63380eccffb11c40f8c75a0": {
+      "workers": {
+        "app/[locale]/(app)/lists/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/lists/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/explore/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/packages/web/src/app/[locale]/(app)/tags/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/packages/web/src/app/[locale]/(app)/shows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/packages/web/src/app/[locale]/(app)/rankings/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "addShowToMyList",
+          "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/lists/page": "action-browser"
+      },
+      "exportedName": "addShowToMyList",
+      "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+    },
+    "40d4944a60783ffec258c5854d574614e2eeb74a3d": {
+      "workers": {
+        "app/[locale]/(app)/lists/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/lists/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/explore/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/packages/web/src/app/[locale]/(app)/tags/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/packages/web/src/app/[locale]/(app)/shows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/packages/web/src/app/[locale]/(app)/rankings/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "copyListToMine",
+          "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/lists/page": "action-browser"
+      },
+      "exportedName": "copyListToMine",
+      "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+    },
+    "00ee312aa591ad510b9799fe4b8dccd9043bbef937": {
+      "workers": {
+        "app/[locale]/(app)/lists/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/lists/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/explore/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/packages/web/src/app/[locale]/(app)/tags/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/packages/web/src/app/[locale]/(app)/shows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/packages/web/src/app/[locale]/(app)/rankings/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getRecommendations",
+          "filename": "packages/web/src/app/[locale]/(app)/explore/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/lists/page": "action-browser"
+      },
+      "exportedName": "getRecommendations",
+      "filename": "packages/web/src/app/[locale]/(app)/explore/actions.ts"
+    },
+    "60284a1ab5ea19fbab9cf5063455a83f97f947407e": {
+      "workers": {
+        "app/[locale]/(app)/lists/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/lists/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/explore/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/packages/web/src/app/[locale]/(app)/tags/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/packages/web/src/app/[locale]/(app)/shows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/packages/web/src/app/[locale]/(app)/rankings/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "addTagToShow",
+          "filename": "packages/web/src/app/[locale]/(app)/tags/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/lists/page": "action-browser"
+      },
+      "exportedName": "addTagToShow",
+      "filename": "packages/web/src/app/[locale]/(app)/tags/actions.ts"
+    },
+    "60b2c2e67b25731c92502a0c0599b499b44b514caf": {
+      "workers": {
+        "app/[locale]/(app)/lists/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/lists/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/explore/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/packages/web/src/app/[locale]/(app)/tags/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/packages/web/src/app/[locale]/(app)/shows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/packages/web/src/app/[locale]/(app)/rankings/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "removeTagFromShow",
+          "filename": "packages/web/src/app/[locale]/(app)/tags/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/lists/page": "action-browser"
+      },
+      "exportedName": "removeTagFromShow",
+      "filename": "packages/web/src/app/[locale]/(app)/tags/actions.ts"
+    },
+    "60ae6b65df1639e757552ec317448df0fa8719df9a": {
+      "workers": {
+        "app/[locale]/(app)/lists/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/lists/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/explore/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/packages/web/src/app/[locale]/(app)/tags/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/packages/web/src/app/[locale]/(app)/shows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/packages/web/src/app/[locale]/(app)/rankings/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "createTag",
+          "filename": "packages/web/src/app/[locale]/(app)/tags/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/lists/page": "action-browser"
+      },
+      "exportedName": "createTag",
+      "filename": "packages/web/src/app/[locale]/(app)/tags/actions.ts"
+    },
+    "40960a8ed4e9e9afad4bb4b4bf6850e4539ad8f991": {
+      "workers": {
+        "app/[locale]/(app)/lists/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/lists/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/explore/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/packages/web/src/app/[locale]/(app)/tags/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/packages/web/src/app/[locale]/(app)/shows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/packages/web/src/app/[locale]/(app)/rankings/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "fetchTmdbData",
+          "filename": "packages/web/src/app/[locale]/(app)/shows/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/lists/page": "action-browser"
+      },
+      "exportedName": "fetchTmdbData",
+      "filename": "packages/web/src/app/[locale]/(app)/shows/actions.ts"
+    },
+    "00c8c8ab8a823c3be254589922a5a74281b2e9d91c": {
+      "workers": {
+        "app/[locale]/(app)/lists/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/lists/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/explore/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/packages/web/src/app/[locale]/(app)/tags/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/packages/web/src/app/[locale]/(app)/shows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/packages/web/src/app/[locale]/(app)/rankings/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getTopRatedShows",
+          "filename": "packages/web/src/app/[locale]/(app)/rankings/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/lists/page": "action-browser"
+      },
+      "exportedName": "getTopRatedShows",
+      "filename": "packages/web/src/app/[locale]/(app)/rankings/actions.ts"
+    },
+    "002a8f726f568507c58a270619d7a92c63dbe4a5c5": {
+      "workers": {
+        "app/[locale]/(app)/lists/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/lists/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/explore/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/packages/web/src/app/[locale]/(app)/tags/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/packages/web/src/app/[locale]/(app)/shows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/packages/web/src/app/[locale]/(app)/rankings/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getPopularShows",
+          "filename": "packages/web/src/app/[locale]/(app)/explore/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/lists/page": "action-browser"
+      },
+      "exportedName": "getPopularShows",
+      "filename": "packages/web/src/app/[locale]/(app)/explore/actions.ts"
+    },
+    "403cc78e43a405d9fa042d811cb811803a0831973b": {
+      "workers": {
+        "app/[locale]/(app)/lists/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/lists/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/explore/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/packages/web/src/app/[locale]/(app)/tags/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/packages/web/src/app/[locale]/(app)/shows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/packages/web/src/app/[locale]/(app)/rankings/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "importToMyList",
+          "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/lists/page": "action-browser"
+      },
+      "exportedName": "importToMyList",
+      "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+    },
+    "40e68ea9272a180d82ad0af004ca9814c7a0ed6cd5": {
+      "workers": {
+        "app/[locale]/(app)/lists/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/lists/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/explore/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/packages/web/src/app/[locale]/(app)/tags/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/packages/web/src/app/[locale]/(app)/shows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/packages/web/src/app/[locale]/(app)/rankings/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getListAnalytics",
+          "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/lists/page": "action-browser"
+      },
+      "exportedName": "getListAnalytics",
+      "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+    },
+    "40cfadb10f9d88eaf6eeac96885eeb3564c8662dbc": {
+      "workers": {
+        "app/[locale]/(app)/lists/page": {
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/lists/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/explore/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/packages/web/src/app/[locale]/(app)/tags/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/packages/web/src/app/[locale]/(app)/shows/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/packages/web/src/app/[locale]/(app)/rankings/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "addTmdbShowToMyList",
+          "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/lists/page": "action-browser"
+      },
+      "exportedName": "addTmdbShowToMyList",
+      "filename": "packages/web/src/app/[locale]/(app)/lists/actions.ts"
+    }
+  },
+  "edge": {}
+}

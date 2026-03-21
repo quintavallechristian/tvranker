@@ -1,0 +1,50 @@
+{
+  "node": {
+    "006d655b4ff7abe8461f8ea60121f53a56a636d433": {
+      "workers": {
+        "app/[locale]/(app)/seguiti/page": {
+          "moduleId": 52738,
+          "async": false,
+          "exportedName": "getFollowing",
+          "filename": "packages/web/src/app/[locale]/(app)/follows/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/seguiti/page": "rsc"
+      },
+      "exportedName": "getFollowing",
+      "filename": "packages/web/src/app/[locale]/(app)/follows/actions.ts"
+    },
+    "401b203295419b10150de777334f4cd2d62cf2e904": {
+      "workers": {
+        "app/[locale]/(app)/seguiti/page": {
+          "moduleId": 52738,
+          "async": false,
+          "exportedName": "unfollowUser",
+          "filename": "packages/web/src/app/[locale]/(app)/follows/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/seguiti/page": "rsc"
+      },
+      "exportedName": "unfollowUser",
+      "filename": "packages/web/src/app/[locale]/(app)/follows/actions.ts"
+    },
+    "40451f29a2bb477466b1ec224ac5ea15ee7bd7072c": {
+      "workers": {
+        "app/[locale]/(app)/seguiti/page": {
+          "moduleId": 52738,
+          "async": false,
+          "exportedName": "followUser",
+          "filename": "packages/web/src/app/[locale]/(app)/follows/actions.ts"
+        }
+      },
+      "layer": {
+        "app/[locale]/(app)/seguiti/page": "rsc"
+      },
+      "exportedName": "followUser",
+      "filename": "packages/web/src/app/[locale]/(app)/follows/actions.ts"
+    }
+  },
+  "edge": {}
+}

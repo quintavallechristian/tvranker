@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../../../../../packages/web/src/lib/similarity.ts"],"sourcesContent":["// Re-export from shared package\nexport {\n  computeListSimilarity,\n  type ListEntry,\n} from \"@tvranker/shared\";\n\n"],"names":[],"mappings":"uCACA,EAAA,CAAA,CAAA"}
