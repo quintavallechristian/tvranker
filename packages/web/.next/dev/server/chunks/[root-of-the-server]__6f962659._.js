@@ -490,6 +490,8 @@ __turbopack_context__.s([
     ()=>findByImdbId,
     "getMovieDetails",
     ()=>getMovieDetails,
+    "getSeasonDetails",
+    ()=>getSeasonDetails,
     "getShowDetails",
     ()=>getShowDetails,
     "normalizeMovieAsShow",
@@ -568,6 +570,9 @@ function normalizeMovieAsShow(movie) {
         // No seasons for movies
         seasons: undefined
     };
+}
+async function getSeasonDetails(tmdbId, seasonNumber) {
+    return tmdbFetch(`/tv/${tmdbId}/season/${seasonNumber}`);
 }
 async function findByImdbId(imdbId) {
     const result = await tmdbFetch(`/find/${imdbId}`, {

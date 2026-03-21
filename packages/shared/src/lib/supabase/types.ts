@@ -1,8 +1,15 @@
+export type EpisodeInfo = {
+  episode_number: number;
+  name: string;
+  runtime: number | null;
+};
+
 export type SeasonInfo = {
   season_number: number;
   name: string;
   episode_count: number;
   air_date: string | null;
+  episodes?: EpisodeInfo[];
 };
 
 export type WatchProvider = {
@@ -90,6 +97,7 @@ export type Database = {
           first_air_date: string | null;
           overview: string | null;
           tmdb_fetched: boolean;
+          episodes_fetched: boolean;
           seasons_data: SeasonInfo[] | null;
           trailer_url: string | null;
           watch_providers: WatchProviderRegion | null;
@@ -103,6 +111,7 @@ export type Database = {
           first_air_date?: string | null;
           overview?: string | null;
           tmdb_fetched?: boolean;
+          episodes_fetched?: boolean;
           seasons_data?: SeasonInfo[] | null;
           trailer_url?: string | null;
           watch_providers?: WatchProviderRegion | null;
@@ -115,6 +124,7 @@ export type Database = {
           first_air_date?: string | null;
           overview?: string | null;
           tmdb_fetched?: boolean;
+          episodes_fetched?: boolean;
           seasons_data?: SeasonInfo[] | null;
           trailer_url?: string | null;
           watch_providers?: WatchProviderRegion | null;

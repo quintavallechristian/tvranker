@@ -2,6 +2,8 @@
 export type {
   TMDBShow,
   TMDBSeason,
+  TMDBEpisode,
+  TMDBSeasonDetails,
   TMDBVideo,
   TMDBWatchProvider,
   TMDBWatchProviderRegion,
@@ -23,6 +25,7 @@ import type {
   TMDBFindResult,
   TMDBShow,
   TMDBMovie,
+  TMDBSeasonDetails,
   TMDBVideo,
 } from "@tvranker/shared";
 
@@ -123,6 +126,13 @@ export function normalizeMovieAsShow(
     // No seasons for movies
     seasons: undefined,
   };
+}
+
+export async function getSeasonDetails(
+  tmdbId: number,
+  seasonNumber: number,
+): Promise<TMDBSeasonDetails> {
+  return tmdbFetch<TMDBSeasonDetails>(`/tv/${tmdbId}/season/${seasonNumber}`);
 }
 
 export async function findByImdbId(

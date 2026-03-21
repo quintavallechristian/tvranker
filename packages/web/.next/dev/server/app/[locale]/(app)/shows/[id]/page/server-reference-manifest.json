@@ -1,19 +1,19 @@
 {
   "node": {
-    "409722b1e6e2facdc7051447d11177a4e821d718a5": {
+    "40960a8ed4e9e9afad4bb4b4bf6850e4539ad8f991": {
       "workers": {
         "app/[locale]/(app)/shows/[id]/page": {
-          "moduleId": "[project]/.next-internal/server/app/[locale]/(app)/shows/[id]/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/[locale]/(app)/shows/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/shows/[id]/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/shows/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "fetchTmdbData",
-          "filename": "src/app/[locale]/(app)/shows/actions.ts"
+          "filename": "packages/web/src/app/[locale]/(app)/shows/actions.ts"
         }
       },
       "layer": {
         "app/[locale]/(app)/shows/[id]/page": "rsc"
       },
       "exportedName": "fetchTmdbData",
-      "filename": "src/app/[locale]/(app)/shows/actions.ts"
+      "filename": "packages/web/src/app/[locale]/(app)/shows/actions.ts"
     }
   },
   "edge": {}

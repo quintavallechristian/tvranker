@@ -45,6 +45,12 @@ export default async function AnalyticsPage() {
         avgRatingByDecade: t("avgRatingByDecade"),
         backToDecades: t("backToDecades"),
         noData: t("noData"),
+        mostSeasonsShow: t("mostSeasonsShow"),
+        mostSeasonsByYear: t("mostSeasonsByYear"),
+        longestShow: t("longestShow"),
+        longestShowByYear: t("longestShowByYear"),
+        seasonsByYearTitle: t("seasonsByYearTitle"),
+        noSeasonData: t("noSeasonData"),
       }}
     />
   );

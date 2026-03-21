@@ -91,7 +91,14 @@
     "releaseDecades": "Release decade",
     "avgRatingByDecade": "Avg. rating by decade",
     "backToDecades": "Back to decades",
-    "noData": "Not enough data yet"
+    "noData": "Not enough data yet",
+    "mostSeasonsShow": "Most seasons in a show",
+    "mostSeasonsByYear": "Most seasons per year",
+    "longestShow": "Longest show",
+    "longestShowByYear": "Longest show per year",
+    "seasonsByYearTitle": "By premiere year",
+    "seasonCount": "{count, plural, =1 {1 season} other {# seasons}}",
+    "noSeasonData": "No season data available yet"
   },
   "shows": {
     "addShow": "Add Show",
@@ -174,7 +181,15 @@
     "tabTrailer": "Trailer",
     "tabStats": "Statistics",
     "noSeasonsData": "No season data available for this show.",
-    "noTrailer": "No trailer available for this show."
+    "noTrailer": "No trailer available for this show.",
+    "episodeNumber": "Ep. {number}",
+    "noRuntime": "—",
+    "seasonDuration": "Season total",
+    "showTotalDuration": "Total show duration",
+    "durationDays": "{days, plural, =1 {1 day} other {# days}}",
+    "durationHours": "{hours, plural, =1 {1 hour} other {# hours}}",
+    "durationMinutes": "{minutes, plural, =1 {1 minute} other {# minutes}}",
+    "noEpisodeData": "No episode data available."
   },
   "profile": {
     "title": "Profile",

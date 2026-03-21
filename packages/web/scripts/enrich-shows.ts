@@ -61,6 +61,18 @@ type TMDBSeason = {
   overview: string;
 };
 
+type TMDBEpisode = {
+  episode_number: number;
+  name: string;
+  runtime: number | null;
+};
+
+type TMDBSeasonDetails = {
+  season_number: number;
+  name: string;
+  episodes: TMDBEpisode[];
+};
+
 type TMDBVideo = {
   key: string;
   site: string;
@@ -145,6 +157,13 @@ async function getShowDetails(tmdbId: number): Promise<TMDBShowExtended> {
   return tmdbFetch<TMDBShowExtended>(`/tv/${tmdbId}`, {
     append_to_response: "videos,watch/providers",
   });
+}
+
+async function getSeasonDetails(
+  tmdbId: number,
+  seasonNumber: number,
+): Promise<TMDBSeasonDetails> {
+  return tmdbFetch<TMDBSeasonDetails>(`/tv/${tmdbId}/season/${seasonNumber}`);
 }
 
 async function getMovieDetails(tmdbId: number): Promise<TMDBMovieExtended> {
@@ -318,14 +337,30 @@ async function enrichShow(supabase: any, show: Show): Promise<EnrichResult> {
 
   // Build update payload
   const seasonsData = found.seasons
-    ? found.seasons
-        .filter((s) => s.season_number > 0)
-        .map((s) => ({
-          season_number: s.season_number,
-          name: s.name,
-          episode_count: s.episode_count,
-          air_date: s.air_date || null,
-        }))
+    ? await Promise.all(
+        found.seasons
+          .filter((s) => s.season_number > 0)
+          .map(async (s) => {
+            let episodes: TMDBEpisode[] = [];
+            try {
+              const details = await getSeasonDetails(found!.id, s.season_number);
+              episodes = details.episodes.map((e) => ({
+                episode_number: e.episode_number,
+                name: e.name,
+                runtime: e.runtime ?? null,
+              }));
+            } catch {
+              /* episodi non disponibili — procedi senza */
+            }
+            return {
+              season_number: s.season_number,
+              name: s.name,
+              episode_count: s.episode_count,
+              air_date: s.air_date || null,
+              episodes,
+            };
+          }),
+      )
     : null;
 
   const updates: Record<string, unknown> = {
@@ -335,6 +370,7 @@ async function enrichShow(supabase: any, show: Show): Promise<EnrichResult> {
     first_air_date: found.first_air_date || null,
     overview: found.overview || null,
     tmdb_fetched: true,
+    episodes_fetched: true,
     seasons_data: seasonsData,
     trailer_url: extractTrailerUrl(found.videos),
     watch_providers: found["watch/providers"]?.results ?? null,

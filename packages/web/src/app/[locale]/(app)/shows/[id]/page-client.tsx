@@ -12,6 +12,9 @@ import {
   YoutubeLogo,
   FilmStrip,
   ChartBar,
+  CaretDown,
+  CaretRight,
+  Clock,
 } from "@phosphor-icons/react";
 import { Link } from "@/i18n/navigation";
 import { getPosterUrl } from "@/lib/tmdb/client";
@@ -22,6 +25,25 @@ import type {
   WatchProvider,
   WatchProviderRegion,
 } from "@/lib/supabase/types";
+
+function formatDuration(
+  totalMinutes: number,
+  t: (key: string, values?: Record<string, number>) => string,
+): string {
+  if (totalMinutes <= 0) return "—";
+  const days = Math.floor(totalMinutes / (60 * 24));
+  const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+  const minutes = totalMinutes % 60;
+  const parts: string[] = [];
+  if (days > 0) parts.push(t("showDetail.durationDays", { days }));
+  if (hours > 0) parts.push(t("showDetail.durationHours", { hours }));
+  if (minutes > 0) parts.push(t("showDetail.durationMinutes", { minutes }));
+  return parts.join(" ") || "—";
+}
+
+function getSeasonTotalMinutes(episodes: { runtime: number | null }[]): number {
+  return episodes.reduce((sum, ep) => sum + (ep.runtime ?? 0), 0);
+}
 
 type Tab = "seasons" | "trailer" | "stats";
 
@@ -97,6 +119,26 @@ export function ShowDetailClient({
   const t = useTranslations();
   const posterUrl = getPosterUrl(show.poster_path, "w500");
   const [activeTab, setActiveTab] = useState<Tab>("seasons");
+  const [expandedSeasons, setExpandedSeasons] = useState<Set<number>>(new Set());
+
+  function toggleSeason(seasonNumber: number) {
+    setExpandedSeasons((prev) => {
+      const next = new Set(prev);
+      if (next.has(seasonNumber)) {
+        next.delete(seasonNumber);
+      } else {
+        next.add(seasonNumber);
+      }
+      return next;
+    });
+  }
+
+  const showTotalMinutes = show.seasons_data
+    ? show.seasons_data.reduce((sum, season) => {
+        if (!season.episodes) return sum;
+        return sum + getSeasonTotalMinutes(season.episodes);
+      }, 0)
+    : 0;
 
   const tabs: { id: Tab; label: string; icon: JSX.Element }[] = [
     {
@@ -242,29 +284,109 @@ export function ShowDetailClient({
           {activeTab === "seasons" && (
             <div>
               {show.seasons_data && show.seasons_data.length > 0 ? (
-                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                  {show.seasons_data.map((season) => (
-                    <div
-                      key={season.season_number}
-                      className="flex items-center justify-between rounded-md border border-border bg-bg-surface px-3 py-2.5"
-                    >
-                      <div className="min-w-0">
-                        <span className="block truncate text-sm text-text-primary">
-                          {season.name}
+                <div className="space-y-2">
+                  {/* Show total duration */}
+                  {showTotalMinutes > 0 && (
+                    <div className="mb-4 flex items-center gap-2 text-xs text-text-muted">
+                      <Clock size={13} />
+                      <span>
+                        {t("showDetail.showTotalDuration")}:{" "}
+                        <span className="font-medium text-text-secondary">
+                          {formatDuration(showTotalMinutes, t)}
                         </span>
-                        {season.air_date && (
-                          <span className="text-xs text-text-faint">
-                            {new Date(season.air_date).getFullYear()}
-                          </span>
-                        )}
-                      </div>
-                      <span className="ml-3 shrink-0 text-xs text-text-muted">
-                        {t("showDetail.episodeCount", {
-                          count: season.episode_count,
-                        })}
                       </span>
                     </div>
-                  ))}
+                  )}
+
+                  {show.seasons_data.map((season) => {
+                    const isExpanded = expandedSeasons.has(season.season_number);
+                    const hasEpisodes = season.episodes && season.episodes.length > 0;
+                    const seasonMinutes = hasEpisodes
+                      ? getSeasonTotalMinutes(season.episodes!)
+                      : 0;
+
+                    return (
+                      <div
+                        key={season.season_number}
+                        className="overflow-hidden rounded-md border border-border bg-bg-surface"
+                      >
+                        {/* Season header — clickable */}
+                        <button
+                          onClick={() => toggleSeason(season.season_number)}
+                          className="flex w-full items-center justify-between px-3 py-2.5 text-left transition-colors hover:bg-bg-elevated"
+                        >
+                          <div className="flex min-w-0 items-center gap-2">
+                            {hasEpisodes ? (
+                              isExpanded ? (
+                                <CaretDown size={13} className="shrink-0 text-text-faint" />
+                              ) : (
+                                <CaretRight size={13} className="shrink-0 text-text-faint" />
+                              )
+                            ) : (
+                              <span className="w-[13px] shrink-0" />
+                            )}
+                            <div className="min-w-0">
+                              <span className="block truncate text-sm text-text-primary">
+                                {season.name}
+                              </span>
+                              {season.air_date && (
+                                <span className="text-xs text-text-faint">
+                                  {new Date(season.air_date).getFullYear()}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="ml-3 flex shrink-0 items-center gap-3 text-xs text-text-muted">
+                            {seasonMinutes > 0 && (
+                              <span className="flex items-center gap-1">
+                                <Clock size={11} />
+                                {formatDuration(seasonMinutes, t)}
+                              </span>
+                            )}
+                            <span>
+                              {t("showDetail.episodeCount", {
+                                count: season.episode_count,
+                              })}
+                            </span>
+                          </div>
+                        </button>
+
+                        {/* Episode list */}
+                        {isExpanded && (
+                          <div className="border-t border-border">
+                            {hasEpisodes ? (
+                              <div className="divide-y divide-border">
+                                {season.episodes!.map((episode) => (
+                                  <div
+                                    key={episode.episode_number}
+                                    className="flex items-center justify-between px-4 py-2"
+                                  >
+                                    <div className="flex min-w-0 items-center gap-2.5">
+                                      <span className="w-8 shrink-0 text-right text-xs font-mono text-text-faint">
+                                        {episode.episode_number}
+                                      </span>
+                                      <span className="truncate text-sm text-text-secondary">
+                                        {episode.name}
+                                      </span>
+                                    </div>
+                                    <span className="ml-3 shrink-0 text-xs text-text-faint">
+                                      {episode.runtime != null
+                                        ? formatDuration(episode.runtime, t)
+                                        : t("showDetail.noRuntime")}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="px-4 py-3 text-xs text-text-faint">
+                                {t("showDetail.noEpisodeData")}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-sm text-text-muted">

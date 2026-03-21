@@ -297,3 +297,36 @@ export async function getPopularShows(): Promise<PopularShow[]> {
     })
     .filter((r): r is PopularShow => r !== null);
 }
+
+export async function getOrCreateShowByTmdbId(show: {
+  tmdb_id: number;
+  title: string;
+  poster_path: string | null;
+  first_air_date: string | null;
+  overview: string | null;
+}): Promise<string> {
+  const supabase = await createClient();
+
+  const { data: existing } = await supabase
+    .from("shows")
+    .select("id")
+    .eq("tmdb_id", show.tmdb_id)
+    .single();
+
+  if (existing) return existing.id;
+
+  const { data: newShow, error } = await supabase
+    .from("shows")
+    .insert({
+      tmdb_id: show.tmdb_id,
+      title: show.title,
+      poster_path: show.poster_path,
+      first_air_date: show.first_air_date,
+      overview: show.overview,
+    })
+    .select("id")
+    .single();
+
+  if (error || !newShow) throw new Error(error?.message ?? "Failed to create show");
+  return newShow.id;
+}

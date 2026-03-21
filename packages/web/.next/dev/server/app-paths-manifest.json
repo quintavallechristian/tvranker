@@ -1,10 +1,4 @@
 {
-  "/[locale]/(app)/explore/page": "app/[locale]/(app)/explore/page.js",
-  "/[locale]/(app)/lists/page": "app/[locale]/(app)/lists/page.js",
-  "/[locale]/(app)/rankings/page": "app/[locale]/(app)/rankings/page.js",
-  "/[locale]/(app)/users/[username]/page": "app/[locale]/(app)/users/[username]/page.js",
-  "/[locale]/(auth)/login/page": "app/[locale]/(auth)/login/page.js",
-  "/[locale]/(auth)/register/page": "app/[locale]/(auth)/register/page.js",
-  "/[locale]/page": "app/[locale]/page.js",
-  "/api/tmdb/search/route": "app/api/tmdb/search/route.js"
+  "/[locale]/(app)/users/[username]/analytics/page": "app/[locale]/(app)/users/[username]/analytics/page.js",
+  "/[locale]/page": "app/[locale]/page.js"
 }

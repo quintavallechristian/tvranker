@@ -215,7 +215,11 @@ const EMPTY_ANALYTICS = {
     decadeAvgRatings: [],
     yearAvgRatings: [],
     showsByRating: {},
-    showsByYear: {}
+    showsByYear: {},
+    mostSeasonsShow: null,
+    mostSeasonsByYear: [],
+    longestShowByYear: [],
+    longestShow: null
 };
 async function getListAnalytics(listId) {
     const supabase = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$packages$2f$web$2f$src$2f$lib$2f$supabase$2f$server$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["createClient"])();
@@ -237,7 +241,7 @@ async function getListAnalytics(listId) {
         resolvedListId = list.id;
         ownerId = user.id;
     }
-    const { data: rawItems } = await supabase.from("list_items").select("rating, show_id, added_at, shows(id, title, poster_path, first_air_date)").eq("list_id", resolvedListId);
+    const { data: rawItems } = await supabase.from("list_items").select("rating, show_id, added_at, shows(id, title, poster_path, first_air_date, seasons_data)").eq("list_id", resolvedListId);
     const items = rawItems ?? [];
     const totalCount = items.length;
     const ratedRows = items.filter((r)=>r.rating !== null);
@@ -387,6 +391,85 @@ async function getListAnalytics(listId) {
             }
         }
     }
+    // Season / duration stats
+    let mostSeasonsShow = null;
+    let longestShow = null;
+    // mostSeasonsByYear: for each premiere year, the show with the most seasons
+    const mostSeasonsByYearMap = {};
+    // longestShowByYear: for each premiere year, the show with the most total runtime
+    const longestShowByYearMap = {};
+    for (const item of items){
+        const show = item.shows;
+        if (!show?.seasons_data) continue;
+        const seasons = show.seasons_data;
+        // Count only real seasons (exclude season 0 = specials)
+        const seasonCount = seasons.filter((s)=>s.season_number > 0).length;
+        // Most seasons overall
+        if (seasonCount > (mostSeasonsShow?.seasonCount ?? 0)) {
+            mostSeasonsShow = {
+                id: show.id,
+                title: show.title,
+                poster_path: show.poster_path,
+                seasonCount,
+                rating: item.rating
+            };
+        }
+        // Most seasons by premiere year
+        const fad = show.first_air_date;
+        if (fad && seasonCount > 0) {
+            const y = parseInt(fad.slice(0, 4), 10);
+            if (!isNaN(y) && y >= 1900) {
+                const yr = String(y);
+                if (!mostSeasonsByYearMap[yr] || seasonCount > mostSeasonsByYearMap[yr].seasonCount) {
+                    mostSeasonsByYearMap[yr] = {
+                        id: show.id,
+                        title: show.title,
+                        poster_path: show.poster_path,
+                        seasonCount
+                    };
+                }
+            }
+        }
+        // Longest show by total episode runtime
+        const totalMinutes = seasons.reduce((sum, season)=>{
+            if (!season.episodes) return sum;
+            return sum + season.episodes.reduce((s, ep)=>s + (ep.runtime ?? 0), 0);
+        }, 0);
+        if (totalMinutes > (longestShow?.totalMinutes ?? 0)) {
+            longestShow = {
+                id: show.id,
+                title: show.title,
+                poster_path: show.poster_path,
+                totalMinutes,
+                rating: item.rating
+            };
+        }
+        // Longest show by premiere year
+        const fadForDuration = show.first_air_date;
+        if (fadForDuration && totalMinutes > 0) {
+            const y = parseInt(fadForDuration.slice(0, 4), 10);
+            if (!isNaN(y) && y >= 1900) {
+                const yr = String(y);
+                if (!longestShowByYearMap[yr] || totalMinutes > longestShowByYearMap[yr].totalMinutes) {
+                    longestShowByYearMap[yr] = {
+                        id: show.id,
+                        title: show.title,
+                        poster_path: show.poster_path,
+                        totalMinutes,
+                        seasonCount
+                    };
+                }
+            }
+        }
+    }
+    const mostSeasonsByYear = Object.entries(mostSeasonsByYearMap).sort(([a], [b])=>a.localeCompare(b)).map(([year, entry])=>({
+            year,
+            ...entry
+        }));
+    const longestShowByYear = Object.entries(longestShowByYearMap).sort(([a], [b])=>a.localeCompare(b)).map(([year, entry])=>({
+            year,
+            ...entry
+        }));
     return {
         totalCount,
         ratedCount,
@@ -400,7 +483,11 @@ async function getListAnalytics(listId) {
         decadeAvgRatings,
         yearAvgRatings,
         showsByRating,
-        showsByYear
+        showsByYear,
+        mostSeasonsShow,
+        mostSeasonsByYear,
+        longestShowByYear,
+        longestShow
     };
 }
 async function getListItemsPage(listId, page, pageSize = 50) {
@@ -1035,7 +1122,9 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$packages$2f$shared$2f$src$2f
 "[project]/packages/web/src/app/[locale]/(app)/explore/actions.ts [app-rsc] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
 
-/* __next_internal_action_entry_do_not_use__ [{"002a8f726f568507c58a270619d7a92c63dbe4a5c5":"getPopularShows","003a99768e3bd3da8b89cf7eeaac78a68557a6e86a":"getSimilarUsers","00ee312aa591ad510b9799fe4b8dccd9043bbef937":"getRecommendations"},"",""] */ __turbopack_context__.s([
+/* __next_internal_action_entry_do_not_use__ [{"002a8f726f568507c58a270619d7a92c63dbe4a5c5":"getPopularShows","003a99768e3bd3da8b89cf7eeaac78a68557a6e86a":"getSimilarUsers","00ee312aa591ad510b9799fe4b8dccd9043bbef937":"getRecommendations","40824b2d040eb40fae737765c4ada202a63988e257":"getOrCreateShowByTmdbId"},"",""] */ __turbopack_context__.s([
+    "getOrCreateShowByTmdbId",
+    ()=>getOrCreateShowByTmdbId,
     "getPopularShows",
     ()=>getPopularShows,
     "getRecommendations",
@@ -1222,15 +1311,31 @@ async function getPopularShows() {
         };
     }).filter((r)=>r !== null);
 }
+async function getOrCreateShowByTmdbId(show) {
+    const supabase = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$packages$2f$web$2f$src$2f$lib$2f$supabase$2f$server$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["createClient"])();
+    const { data: existing } = await supabase.from("shows").select("id").eq("tmdb_id", show.tmdb_id).single();
+    if (existing) return existing.id;
+    const { data: newShow, error } = await supabase.from("shows").insert({
+        tmdb_id: show.tmdb_id,
+        title: show.title,
+        poster_path: show.poster_path,
+        first_air_date: show.first_air_date,
+        overview: show.overview
+    }).select("id").single();
+    if (error || !newShow) throw new Error(error?.message ?? "Failed to create show");
+    return newShow.id;
+}
 ;
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$action$2d$validate$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["ensureServerEntryExports"])([
     getSimilarUsers,
     getRecommendations,
-    getPopularShows
+    getPopularShows,
+    getOrCreateShowByTmdbId
 ]);
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(getSimilarUsers, "003a99768e3bd3da8b89cf7eeaac78a68557a6e86a", null);
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(getRecommendations, "00ee312aa591ad510b9799fe4b8dccd9043bbef937", null);
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(getPopularShows, "002a8f726f568507c58a270619d7a92c63dbe4a5c5", null);
+(0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(getOrCreateShowByTmdbId, "40824b2d040eb40fae737765c4ada202a63988e257", null);
 }),
 "[project]/packages/web/src/app/[locale]/(app)/tags/actions.ts [app-rsc] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
@@ -1354,6 +1459,8 @@ __turbopack_context__.s([
     ()=>findByImdbId,
     "getMovieDetails",
     ()=>getMovieDetails,
+    "getSeasonDetails",
+    ()=>getSeasonDetails,
     "getShowDetails",
     ()=>getShowDetails,
     "normalizeMovieAsShow",
@@ -1432,6 +1539,9 @@ function normalizeMovieAsShow(movie) {
         // No seasons for movies
         seasons: undefined
     };
+}
+async function getSeasonDetails(tmdbId, seasonNumber) {
+    return tmdbFetch(`/tv/${tmdbId}/season/${seasonNumber}`);
 }
 async function findByImdbId(imdbId) {
     const result = await tmdbFetch(`/find/${imdbId}`, {
@@ -1545,13 +1655,26 @@ async function fetchTmdbData(showId) {
         return canonical;
     }
     // Build extra fields from extended TMDB response
-    const seasonsData = found.seasons ? found.seasons.filter((s)=>s.season_number > 0) // exclude "Specials" (season 0)
-    .map((s)=>({
+    const seasonsData = found.seasons ? await Promise.all(found.seasons.filter((s)=>s.season_number > 0) // exclude "Specials" (season 0)
+    .map(async (s)=>{
+        let episodes = [];
+        try {
+            const details = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$packages$2f$web$2f$src$2f$lib$2f$tmdb$2f$client$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$locals$3e$__["getSeasonDetails"])(found.id, s.season_number);
+            episodes = details.episodes.map((e)=>({
+                    episode_number: e.episode_number,
+                    name: e.name,
+                    runtime: e.runtime ?? null
+                }));
+        } catch  {
+        /* episodi non disponibili — procedi senza */ }
+        return {
             season_number: s.season_number,
             name: s.name,
             episode_count: s.episode_count,
-            air_date: s.air_date || null
-        })) : null;
+            air_date: s.air_date || null,
+            episodes
+        };
+    })) : null;
     const trailerUrl = (0, __TURBOPACK__imported__module__$5b$project$5d2f$packages$2f$shared$2f$src$2f$lib$2f$tmdb$2f$types$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["extractTrailerUrl"])(found.videos);
     const watchProviders = found["watch/providers"]?.results ?? null;
     // Update the show with real TMDB data.
@@ -1563,6 +1686,7 @@ async function fetchTmdbData(showId) {
         first_air_date: found.first_air_date || null,
         overview: found.overview || null,
         tmdb_fetched: true,
+        episodes_fetched: true,
         seasons_data: seasonsData,
         trailer_url: trailerUrl,
         watch_providers: watchProviders

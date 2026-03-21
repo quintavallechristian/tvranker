@@ -91,7 +91,14 @@
     "releaseDecades": "Decade di uscita",
     "avgRatingByDecade": "Voto medio per decade",
     "backToDecades": "Torna alle decadi",
-    "noData": "Dati insufficienti"
+    "noData": "Dati insufficienti",
+    "mostSeasonsShow": "Serie con più stagioni",
+    "mostSeasonsByYear": "Più stagioni per anno",
+    "longestShow": "Serie più lunga",
+    "longestShowByYear": "Serie più lunga per anno",
+    "seasonsByYearTitle": "Per anno di uscita",
+    "seasonCount": "{count, plural, =1 {1 stagione} other {# stagioni}}",
+    "noSeasonData": "Dati sulle stagioni non ancora disponibili"
   },
   "shows": {
     "addShow": "Aggiungi Serie",
@@ -174,7 +181,15 @@
     "tabTrailer": "Trailer",
     "tabStats": "Statistiche",
     "noSeasonsData": "Nessuna informazione sulle stagioni disponibile.",
-    "noTrailer": "Nessun trailer disponibile per questa serie."
+    "noTrailer": "Nessun trailer disponibile per questa serie.",
+    "episodeNumber": "Ep. {number}",
+    "noRuntime": "—",
+    "seasonDuration": "Durata stagione",
+    "showTotalDuration": "Durata totale serie",
+    "durationDays": "{days, plural, =1 {1 giorno} other {# giorni}}",
+    "durationHours": "{hours, plural, =1 {1 ora} other {# ore}}",
+    "durationMinutes": "{minutes, plural, =1 {1 minuto} other {# minuti}}",
+    "noEpisodeData": "Nessun dato sugli episodi disponibile."
   },
   "profile": {
     "title": "Profilo",

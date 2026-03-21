@@ -17,6 +17,18 @@ export type TMDBSeason = {
   overview: string;
 };
 
+export type TMDBEpisode = {
+  episode_number: number;
+  name: string;
+  runtime: number | null;
+};
+
+export type TMDBSeasonDetails = {
+  season_number: number;
+  name: string;
+  episodes: TMDBEpisode[];
+};
+
 export type TMDBVideo = {
   key: string;
   site: string;

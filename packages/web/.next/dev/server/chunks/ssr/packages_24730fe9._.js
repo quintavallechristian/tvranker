@@ -458,7 +458,9 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$packages$2f$shared$2f$src$2f
 "[project]/packages/web/src/app/[locale]/(app)/explore/actions.ts [app-rsc] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
 
-/* __next_internal_action_entry_do_not_use__ [{"002a8f726f568507c58a270619d7a92c63dbe4a5c5":"getPopularShows","003a99768e3bd3da8b89cf7eeaac78a68557a6e86a":"getSimilarUsers","00ee312aa591ad510b9799fe4b8dccd9043bbef937":"getRecommendations"},"",""] */ __turbopack_context__.s([
+/* __next_internal_action_entry_do_not_use__ [{"002a8f726f568507c58a270619d7a92c63dbe4a5c5":"getPopularShows","003a99768e3bd3da8b89cf7eeaac78a68557a6e86a":"getSimilarUsers","00ee312aa591ad510b9799fe4b8dccd9043bbef937":"getRecommendations","40824b2d040eb40fae737765c4ada202a63988e257":"getOrCreateShowByTmdbId"},"",""] */ __turbopack_context__.s([
+    "getOrCreateShowByTmdbId",
+    ()=>getOrCreateShowByTmdbId,
     "getPopularShows",
     ()=>getPopularShows,
     "getRecommendations",
@@ -645,15 +647,31 @@ async function getPopularShows() {
         };
     }).filter((r)=>r !== null);
 }
+async function getOrCreateShowByTmdbId(show) {
+    const supabase = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$packages$2f$web$2f$src$2f$lib$2f$supabase$2f$server$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["createClient"])();
+    const { data: existing } = await supabase.from("shows").select("id").eq("tmdb_id", show.tmdb_id).single();
+    if (existing) return existing.id;
+    const { data: newShow, error } = await supabase.from("shows").insert({
+        tmdb_id: show.tmdb_id,
+        title: show.title,
+        poster_path: show.poster_path,
+        first_air_date: show.first_air_date,
+        overview: show.overview
+    }).select("id").single();
+    if (error || !newShow) throw new Error(error?.message ?? "Failed to create show");
+    return newShow.id;
+}
 ;
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$action$2d$validate$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["ensureServerEntryExports"])([
     getSimilarUsers,
     getRecommendations,
-    getPopularShows
+    getPopularShows,
+    getOrCreateShowByTmdbId
 ]);
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(getSimilarUsers, "003a99768e3bd3da8b89cf7eeaac78a68557a6e86a", null);
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(getRecommendations, "00ee312aa591ad510b9799fe4b8dccd9043bbef937", null);
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(getPopularShows, "002a8f726f568507c58a270619d7a92c63dbe4a5c5", null);
+(0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(getOrCreateShowByTmdbId, "40824b2d040eb40fae737765c4ada202a63988e257", null);
 }),
 "[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
@@ -871,7 +889,10 @@ const EMPTY_ANALYTICS = {
     decadeAvgRatings: [],
     yearAvgRatings: [],
     showsByRating: {},
-    showsByYear: {}
+    showsByYear: {},
+    mostSeasonsShow: null,
+    mostSeasonsByYear: [],
+    longestShow: null
 };
 async function getListAnalytics(listId) {
     const supabase = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$packages$2f$web$2f$src$2f$lib$2f$supabase$2f$server$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["createClient"])();
@@ -893,7 +914,7 @@ async function getListAnalytics(listId) {
         resolvedListId = list.id;
         ownerId = user.id;
     }
-    const { data: rawItems } = await supabase.from("list_items").select("rating, show_id, added_at, shows(id, title, poster_path, first_air_date)").eq("list_id", resolvedListId);
+    const { data: rawItems } = await supabase.from("list_items").select("rating, show_id, added_at, shows(id, title, poster_path, first_air_date, seasons_data)").eq("list_id", resolvedListId);
     const items = rawItems ?? [];
     const totalCount = items.length;
     const ratedRows = items.filter((r)=>r.rating !== null);
@@ -1351,6 +1372,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$packages$2f$web$2f$src$2f$ap
 ;
 ;
 ;
+;
 }),
 "[project]/packages/web/.next-internal/server/app/[locale]/(app)/explore/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/explore/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/packages/web/src/app/[locale]/(app)/lists/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/packages/web/src/app/[locale]/(app)/follows/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)", ((__turbopack_context__) => {
 "use strict";
@@ -1366,6 +1388,8 @@ __turbopack_context__.s([
     ()=>__TURBOPACK__imported__module__$5b$project$5d2f$packages$2f$web$2f$src$2f$app$2f5b$locale$5d2f28$app$292f$follows$2f$actions$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["unfollowUser"],
     "401cb9e19f15860a15e63380eccffb11c40f8c75a0",
     ()=>__TURBOPACK__imported__module__$5b$project$5d2f$packages$2f$web$2f$src$2f$app$2f5b$locale$5d2f28$app$292f$lists$2f$actions$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["addShowToMyList"],
+    "40824b2d040eb40fae737765c4ada202a63988e257",
+    ()=>__TURBOPACK__imported__module__$5b$project$5d2f$packages$2f$web$2f$src$2f$app$2f5b$locale$5d2f28$app$292f$explore$2f$actions$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getOrCreateShowByTmdbId"],
     "40cfadb10f9d88eaf6eeac96885eeb3564c8662dbc",
     ()=>__TURBOPACK__imported__module__$5b$project$5d2f$packages$2f$web$2f$src$2f$app$2f5b$locale$5d2f28$app$292f$lists$2f$actions$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["addTmdbShowToMyList"],
     "40ed3c806216f68c6815da405ef9973cbb9d521785",

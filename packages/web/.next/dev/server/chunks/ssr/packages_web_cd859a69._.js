@@ -320,7 +320,10 @@ const EMPTY_ANALYTICS = {
     decadeAvgRatings: [],
     yearAvgRatings: [],
     showsByRating: {},
-    showsByYear: {}
+    showsByYear: {},
+    mostSeasonsShow: null,
+    mostSeasonsByYear: [],
+    longestShow: null
 };
 async function getListAnalytics(listId) {
     const supabase = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$packages$2f$web$2f$src$2f$lib$2f$supabase$2f$server$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["createClient"])();
@@ -342,7 +345,7 @@ async function getListAnalytics(listId) {
         resolvedListId = list.id;
         ownerId = user.id;
     }
-    const { data: rawItems } = await supabase.from("list_items").select("rating, show_id, added_at, shows(id, title, poster_path, first_air_date)").eq("list_id", resolvedListId);
+    const { data: rawItems } = await supabase.from("list_items").select("rating, show_id, added_at, shows(id, title, poster_path, first_air_date, seasons_data)").eq("list_id", resolvedListId);
     const items = rawItems ?? [];
     const totalCount = items.length;
     const ratedRows = items.filter((r)=>r.rating !== null);
@@ -492,6 +495,62 @@ async function getListAnalytics(listId) {
             }
         }
     }
+    // Season / duration stats
+    let mostSeasonsShow = null;
+    let longestShow = null;
+    // mostSeasonsByYear: for each premiere year, the show with the most seasons
+    const mostSeasonsByYearMap = {};
+    for (const item of items){
+        const show = item.shows;
+        if (!show?.seasons_data) continue;
+        const seasons = show.seasons_data;
+        // Count only real seasons (exclude season 0 = specials)
+        const seasonCount = seasons.filter((s)=>s.season_number > 0).length;
+        // Most seasons overall
+        if (seasonCount > (mostSeasonsShow?.seasonCount ?? 0)) {
+            mostSeasonsShow = {
+                id: show.id,
+                title: show.title,
+                poster_path: show.poster_path,
+                seasonCount,
+                rating: item.rating
+            };
+        }
+        // Most seasons by premiere year
+        const fad = show.first_air_date;
+        if (fad && seasonCount > 0) {
+            const y = parseInt(fad.slice(0, 4), 10);
+            if (!isNaN(y) && y >= 1900) {
+                const yr = String(y);
+                if (!mostSeasonsByYearMap[yr] || seasonCount > mostSeasonsByYearMap[yr].seasonCount) {
+                    mostSeasonsByYearMap[yr] = {
+                        id: show.id,
+                        title: show.title,
+                        poster_path: show.poster_path,
+                        seasonCount
+                    };
+                }
+            }
+        }
+        // Longest show by total episode runtime
+        const totalMinutes = seasons.reduce((sum, season)=>{
+            if (!season.episodes) return sum;
+            return sum + season.episodes.reduce((s, ep)=>s + (ep.runtime ?? 0), 0);
+        }, 0);
+        if (totalMinutes > (longestShow?.totalMinutes ?? 0)) {
+            longestShow = {
+                id: show.id,
+                title: show.title,
+                poster_path: show.poster_path,
+                totalMinutes,
+                rating: item.rating
+            };
+        }
+    }
+    const mostSeasonsByYear = Object.entries(mostSeasonsByYearMap).sort(([a], [b])=>a.localeCompare(b)).map(([year, entry])=>({
+            year,
+            ...entry
+        }));
     return {
         totalCount,
         ratedCount,
@@ -505,7 +564,10 @@ async function getListAnalytics(listId) {
         decadeAvgRatings,
         yearAvgRatings,
         showsByRating,
-        showsByYear
+        showsByYear,
+        mostSeasonsShow,
+        mostSeasonsByYear,
+        longestShow
     };
 }
 async function getListItemsPage(listId, page, pageSize = 50) {

@@ -7,6 +7,7 @@ import {
   searchMovies,
   getShowDetails,
   getMovieDetails,
+  getSeasonDetails,
   normalizeMovieAsShow,
   extractTrailerUrl,
 } from "@/lib/tmdb/client";
@@ -153,14 +154,30 @@ export async function fetchTmdbData(showId: string) {
 
   // Build extra fields from extended TMDB response
   const seasonsData = found.seasons
-    ? found.seasons
-        .filter((s) => s.season_number > 0) // exclude "Specials" (season 0)
-        .map((s) => ({
-          season_number: s.season_number,
-          name: s.name,
-          episode_count: s.episode_count,
-          air_date: s.air_date || null,
-        }))
+    ? await Promise.all(
+        found.seasons
+          .filter((s) => s.season_number > 0) // exclude "Specials" (season 0)
+          .map(async (s) => {
+            let episodes: { episode_number: number; name: string; runtime: number | null }[] = [];
+            try {
+              const details = await getSeasonDetails(found!.id, s.season_number);
+              episodes = details.episodes.map((e) => ({
+                episode_number: e.episode_number,
+                name: e.name,
+                runtime: e.runtime ?? null,
+              }));
+            } catch {
+              /* episodi non disponibili — procedi senza */
+            }
+            return {
+              season_number: s.season_number,
+              name: s.name,
+              episode_count: s.episode_count,
+              air_date: s.air_date || null,
+              episodes,
+            };
+          }),
+      )
     : null;
 
   const trailerUrl = extractTrailerUrl(found.videos);
@@ -176,6 +193,7 @@ export async function fetchTmdbData(showId: string) {
     first_air_date: found.first_air_date || null,
     overview: found.overview || null,
     tmdb_fetched: true,
+    episodes_fetched: true,
     seasons_data: seasonsData,
     trailer_url: trailerUrl,
     watch_providers: watchProviders,

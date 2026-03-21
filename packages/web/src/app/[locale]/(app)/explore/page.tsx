@@ -16,11 +16,13 @@ import {
   getRecommendations,
   getSimilarUsers,
   getPopularShows,
+  getOrCreateShowByTmdbId,
   type RecommendedShow,
   type SimilarUser,
   type PopularShow,
 } from "./actions";
 import { addShowToMyList, addTmdbShowToMyList } from "../lists/actions";
+import { useRouter } from "next/navigation";
 
 type UserResult = {
   id: string;
@@ -40,6 +42,7 @@ type ShowResult = {
 
 export default function ExplorePage() {
   const t = useTranslations("explore");
+  const router = useRouter();
   const [userResults, setUserResults] = useState<UserResult[]>([]);
   const [showResults, setShowResults] = useState<ShowResult[]>([]);
   const [searched, setSearched] = useState(false);
@@ -53,6 +56,7 @@ export default function ExplorePage() {
   const [addingShowId, setAddingShowId] = useState<string | null>(null);
   const [addedTmdbIds, setAddedTmdbIds] = useState<Set<number>>(new Set());
   const [addingTmdbId, setAddingTmdbId] = useState<number | null>(null);
+  const [navigatingTmdbId, setNavigatingTmdbId] = useState<number | null>(null);
   const [activeShowId, setActiveShowId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -144,6 +148,22 @@ export default function ExplorePage() {
       }
     });
   }, []);
+
+  const handleShowClick = useCallback(async (show: ShowResult) => {
+    setNavigatingTmdbId(show.tmdb_id);
+    try {
+      const id = await getOrCreateShowByTmdbId({
+        tmdb_id: show.tmdb_id,
+        title: show.title,
+        poster_path: show.poster_path,
+        first_air_date: show.first_air_date,
+        overview: show.overview,
+      });
+      router.push(`/shows/${id}`);
+    } catch {
+      setNavigatingTmdbId(null);
+    }
+  }, [router]);
 
   const handleSearch = useCallback(async (query: string) => {
     if (query.length < 2) {
@@ -342,31 +362,40 @@ export default function ExplorePage() {
                     key={show.tmdb_id}
                     className="flex items-center gap-3 rounded-[var(--radius-lg)] border border-border bg-bg-surface p-3 transition-colors hover:border-border-hover"
                   >
-                    <div className="relative h-12 w-8 shrink-0 overflow-hidden rounded-[var(--radius-sm)] bg-bg-elevated">
-                      {show.poster_path ? (
-                        <Image
-                          src={getPosterUrl(show.poster_path, "w92")!}
-                          alt={show.title}
-                          fill
-                          className="object-cover"
-                          sizes="32px"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center">
-                          <Television size={14} className="text-text-faint" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-text-primary">
-                        {show.title}
-                      </p>
-                      {show.first_air_date && (
-                        <p className="text-xs text-text-muted">
-                          {show.first_air_date.slice(0, 4)}
+                    <button
+                      onClick={() => handleShowClick(show)}
+                      disabled={navigatingTmdbId === show.tmdb_id}
+                      className="flex items-center gap-3 min-w-0 flex-1 text-left"
+                    >
+                      <div className="relative h-12 w-8 shrink-0 overflow-hidden rounded-[var(--radius-sm)] bg-bg-elevated">
+                        {show.poster_path ? (
+                          <Image
+                            src={getPosterUrl(show.poster_path, "w92")!}
+                            alt={show.title}
+                            fill
+                            className="object-cover"
+                            sizes="32px"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center">
+                            <Television size={14} className="text-text-faint" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className={`truncate text-sm font-medium transition-colors ${navigatingTmdbId === show.tmdb_id ? "text-text-muted" : "text-text-primary"}`}>
+                          {show.title}
                         </p>
+                        {show.first_air_date && (
+                          <p className="text-xs text-text-muted">
+                            {show.first_air_date.slice(0, 4)}
+                          </p>
+                        )}
+                      </div>
+                      {navigatingTmdbId === show.tmdb_id && (
+                        <SpinnerGap size={14} className="animate-spin text-text-muted shrink-0" />
                       )}
-                    </div>
+                    </button>
                     <button
                       onClick={() =>
                         !addedTmdbIds.has(show.tmdb_id) &&

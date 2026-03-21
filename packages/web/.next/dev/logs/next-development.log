@@ -1,8 +1,58 @@
-[00:00:01.532] Server  WARN    ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
-[00:00:01.650] Server  LOG     ✓ Ready in 1448ms
-[00:00:04.305] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:02:03.113] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:09:27.516] Server  LOG     ✓ Compiled in 103ms
-[00:10:14.717] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[01:12:21.877] Browser WARN    Image with src "https://image.tmdb.org/t/p/w342/5fhZdwP1DVJ0FyVH6vrFdHwpXIn.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
-Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[00:00:00.931] Server  WARN    ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[00:00:01.006] Server  LOG     ✓ Ready in 869ms
+[00:00:02.365] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {title: ..., backToList: ..., totalShows: ..., ratedShows: ..., avgRating: ..., tagDistribution: ..., ratingDistribution: ..., noTags: ..., noRatings: ..., shows: ..., emptyHint: ..., avgRatingPerTag: ..., addedOverTime: ..., releaseDecades: ..., avgRatingByDecade: ..., backToDecades: ..., noData: ..., mostSeasonsShow: ..., mostSeasonsByYear: ..., longestShow: ..., seasonCount: function seasonCount, noSeasonData: ...}
+                                                                                                                                                                                                                                                                                                                                                                                               ^^^^^^^^^^^^^^^^^^^^
+[00:00:03.239] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {title: ..., backToList: ..., totalShows: ..., ratedShows: ..., avgRating: ..., tagDistribution: ..., ratingDistribution: ..., noTags: ..., noRatings: ..., shows: ..., emptyHint: ..., avgRatingPerTag: ..., addedOverTime: ..., releaseDecades: ..., avgRatingByDecade: ..., backToDecades: ..., noData: ..., mostSeasonsShow: ..., mostSeasonsByYear: ..., longestShow: ..., seasonCount: function seasonCount, noSeasonData: ...}
+                                                                                                                                                                                                                                                                                                                                                                                               ^^^^^^^^^^^^^^^^^^^^
+[00:00:03.329] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:03.450] Browser ERROR   uncaughtError: Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {title: ..., backToList: ..., totalShows: ..., ratedShows: ..., avgRating: ..., tagDistribution: ..., ratingDistribution: ..., noTags: ..., noRatings: ..., shows: ..., emptyHint: ..., avgRatingPerTag: ..., addedOverTime: ..., releaseDecades: ..., avgRatingByDecade: ..., backToDecades: ..., noData: ..., mostSeasonsShow: ..., mostSeasonsByYear: ..., longestShow: ..., seasonCount: function seasonCount, noSeasonData: ...}
+                                                                                                                                                                                                                                                                                                                                                                                               ^^^^^^^^^^^^^^^^^^^^
+[00:00:38.047] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:00:38.075] Server  LOG     ✓ Compiled in 344ms
+[00:00:38.149] Browser ERROR   unhandledRejection: Error: No link element found for chunk /_next/static/chunks/%5Broot-of-the-server%5D__b019a79e._.css
+[00:00:39.000] Server  ERROR   ⨯ TypeError: labels.seasonCount is not a function
+[00:00:39.107] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:39.284] Browser ERROR   uncaughtError: TypeError: labels.seasonCount is not a function
+[00:00:44.926] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:00:44.950] Server  LOG     ✓ Compiled in 52ms
+[00:00:45.935] Server  ERROR   ⨯ TypeError: labels.seasonCount is not a function
+[00:00:46.015] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:46.173] Browser ERROR   uncaughtError: TypeError: labels.seasonCount is not a function
+[00:00:49.635] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:00:49.659] Server  LOG     ✓ Compiled in 26ms
+[00:00:51.272] Server  ERROR   ⨯ TypeError: labels.seasonCount is not a function
+[00:00:51.368] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:51.514] Browser ERROR   uncaughtError: TypeError: labels.seasonCount is not a function
+[00:00:55.250] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:00:55.272] Server  LOG     ✓ Compiled in 196ms
+[00:00:56.167] Server  ERROR   ⨯ TypeError: labels.seasonCount is not a function
+[00:00:56.248] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:56.404] Browser ERROR   uncaughtError: TypeError: labels.seasonCount is not a function
+[00:01:02.155] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:01:02.176] Server  LOG     ✓ Compiled in 44ms
+[00:01:03.540] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:05:47.868] Server  LOG     ✓ Compiled in 112ms
+[00:05:54.064] Server  LOG     ✓ Compiled in 103ms
+[00:06:06.111] Server  LOG     ✓ Compiled in 89ms
+[00:06:11.339] Server  LOG     ✓ Compiled in 96ms
+[00:06:19.296] Server  LOG     ✓ Compiled in 36ms
+[00:06:32.534] Server  LOG     ✓ Compiled in 23ms
+[00:06:44.873] Server  LOG     ✓ Compiled in 44ms
+[00:06:49.678] Server  LOG     ✓ Compiled in 40ms
+[00:06:58.581] Server  LOG     ✓ Compiled in 36ms
+[00:07:25.875] Server  LOG     ✓ Compiled in 52ms
+[00:07:25.962] Browser ERROR   uncaughtError: ReferenceError: ShowStatRow is not defined
+[00:07:36.777] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:07:36.801] Server  LOG     ✓ Compiled in 58ms
+[00:07:36.903] Browser ERROR   uncaughtError: TypeError: Failed to construct 'Image': Please use the 'new' operator, this DOM object constructor cannot be called as a function.
+[00:07:38.356] Server  ERROR   ⨯ ReferenceError: Image is not defined
+[00:07:38.482] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:07:38.650] Browser ERROR   uncaughtError: TypeError: Failed to construct 'Image': Please use the 'new' operator, this DOM object constructor cannot be called as a function.
+[00:07:41.745] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:07:41.767] Server  LOG     ✓ Compiled in 340ms
+[00:07:42.779] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:09:43.245] Server  LOG     ✓ Compiled in 92ms
+[00:09:59.359] Server  LOG     ✓ Compiled in 66ms

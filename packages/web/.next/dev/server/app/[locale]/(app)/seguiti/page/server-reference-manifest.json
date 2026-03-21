@@ -1,49 +1,49 @@
 {
   "node": {
-    "00df629b158a891a1c8a0acec522d9c8b425db3f21": {
+    "007a996769763bf09b53a2f8eb1b8a31670e3379c0": {
       "workers": {
         "app/[locale]/(app)/seguiti/page": {
-          "moduleId": "[project]/.next-internal/server/app/[locale]/(app)/seguiti/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/[locale]/(app)/follows/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/seguiti/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/follows/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "getFollowing",
-          "filename": "src/app/[locale]/(app)/follows/actions.ts"
+          "filename": "packages/web/src/app/[locale]/(app)/follows/actions.ts"
         }
       },
       "layer": {
         "app/[locale]/(app)/seguiti/page": "rsc"
       },
       "exportedName": "getFollowing",
-      "filename": "src/app/[locale]/(app)/follows/actions.ts"
+      "filename": "packages/web/src/app/[locale]/(app)/follows/actions.ts"
     },
-    "401b0557fadc9e5b3c25bd473cdc965fc6d95aa4bf": {
+    "400bd16a58a58e16e8e184740c50ca3cbcc7d9fa04": {
       "workers": {
         "app/[locale]/(app)/seguiti/page": {
-          "moduleId": "[project]/.next-internal/server/app/[locale]/(app)/seguiti/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/[locale]/(app)/follows/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/seguiti/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/follows/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "unfollowUser",
-          "filename": "src/app/[locale]/(app)/follows/actions.ts"
+          "filename": "packages/web/src/app/[locale]/(app)/follows/actions.ts"
         }
       },
       "layer": {
         "app/[locale]/(app)/seguiti/page": "rsc"
       },
       "exportedName": "unfollowUser",
-      "filename": "src/app/[locale]/(app)/follows/actions.ts"
+      "filename": "packages/web/src/app/[locale]/(app)/follows/actions.ts"
     },
-    "40bbc9ce8487a3d31a6b3b60316f37cc379c620508": {
+    "40ed3c806216f68c6815da405ef9973cbb9d521785": {
       "workers": {
         "app/[locale]/(app)/seguiti/page": {
-          "moduleId": "[project]/.next-internal/server/app/[locale]/(app)/seguiti/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/[locale]/(app)/follows/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/packages/web/.next-internal/server/app/[locale]/(app)/seguiti/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/web/src/app/[locale]/(app)/follows/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "followUser",
-          "filename": "src/app/[locale]/(app)/follows/actions.ts"
+          "filename": "packages/web/src/app/[locale]/(app)/follows/actions.ts"
         }
       },
       "layer": {
         "app/[locale]/(app)/seguiti/page": "rsc"
       },
       "exportedName": "followUser",
-      "filename": "src/app/[locale]/(app)/follows/actions.ts"
+      "filename": "packages/web/src/app/[locale]/(app)/follows/actions.ts"
     }
   },
   "edge": {}

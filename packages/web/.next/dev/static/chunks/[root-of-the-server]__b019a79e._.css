@@ -103,6 +103,7 @@
       --tw-skew-x: initial;
       --tw-skew-y: initial;
       --tw-space-y-reverse: 0;
+      --tw-divide-y-reverse: 0;
       --tw-border-style: solid;
       --tw-gradient-position: initial;
       --tw-gradient-from: #0000;
@@ -973,6 +974,14 @@
     max-height: calc(var(--spacing) * 48);
   }
 
+  .max-h-56 {
+    max-height: calc(var(--spacing) * 56);
+  }
+
+  .max-h-\[28rem\] {
+    max-height: 28rem;
+  }
+
   .max-h-\[75vh\] {
     max-height: 75vh;
   }
@@ -1013,6 +1022,10 @@
     width: calc(var(--spacing) * 6);
   }
 
+  .w-7 {
+    width: calc(var(--spacing) * 7);
+  }
+
   .w-8 {
     width: calc(var(--spacing) * 8);
   }
@@ -1041,8 +1054,16 @@
     width: calc(var(--spacing) * 64);
   }
 
+  .w-\[13px\] {
+    width: 13px;
+  }
+
   .w-full {
     width: 100%;
+  }
+
+  .max-w-0 {
+    max-width: calc(var(--spacing) * 0);
   }
 
   .max-w-2xl {
@@ -1174,6 +1195,14 @@
     grid-template-columns: repeat(10, minmax(0, 1fr));
   }
 
+  .grid-cols-\[3rem_1fr_1fr\] {
+    grid-template-columns: 3rem 1fr 1fr;
+  }
+
+  .grid-cols-\[3rem_2\.5rem_1fr\] {
+    grid-template-columns: 3rem 2.5rem 1fr;
+  }
+
   .grid-rows-\[0fr\] {
     grid-template-rows: 0fr;
   }
@@ -1296,6 +1325,18 @@
 
   .gap-y-1\.5 {
     row-gap: calc(var(--spacing) * 1.5);
+  }
+
+  :where(.divide-y > :not(:last-child)) {
+    --tw-divide-y-reverse: 0;
+    border-bottom-style: var(--tw-border-style);
+    border-top-style: var(--tw-border-style);
+    border-top-width: calc(1px * var(--tw-divide-y-reverse));
+    border-bottom-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));
+  }
+
+  :where(.divide-border > :not(:last-child)) {
+    border-color: var(--border);
   }
 
   .truncate {
@@ -2749,12 +2790,6 @@
   }
 
   @media (min-width: 64rem) {
-    .lg\:grid-cols-3 {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-  }
-
-  @media (min-width: 64rem) {
     .lg\:grid-cols-5 {
       grid-template-columns: repeat(5, minmax(0, 1fr));
     }
@@ -2944,6 +2979,12 @@ body {
 }
 
 @property --tw-space-y-reverse {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --tw-divide-y-reverse {
   syntax: "*";
   inherits: false;
   initial-value: 0;
