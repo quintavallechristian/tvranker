@@ -27,7 +27,8 @@ export default async function ListDetailPage({
   if (!list) notFound();
 
   const isOwner = user?.id === list.user_id;
-  if (!list.is_public && !isOwner) notFound();
+  // RLS on lists table already enforces visibility (is_public, visible_to_followers, visible_to_following)
+  // If the list was returned, the viewer has access.
 
   // Fetch first page of items sorted by rating desc (nulls last), then position
   const { data: firstPageData } = await supabase

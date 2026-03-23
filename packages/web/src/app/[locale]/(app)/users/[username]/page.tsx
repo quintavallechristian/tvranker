@@ -26,6 +26,8 @@ export default async function UserProfilePage({
   if (!profile) notFound();
 
   // Fetch the user's single list
+  // RLS enforces visibility (is_public, visible_to_followers, visible_to_following):
+  // if the list is returned, the viewer has access.
   const { data: list } = await supabase
     .from("lists")
     .select("id, name, description, is_public")
@@ -55,7 +57,7 @@ export default async function UserProfilePage({
   } = await supabase.auth.getUser();
 
   let similarityScore: number | null = null;
-  if (user && user.id !== profile.id && list?.is_public) {
+  if (user && user.id !== profile.id && list) {
     // Fetch viewer's list items
     const { data: viewerList } = await supabase
       .from("lists")
@@ -107,7 +109,7 @@ export default async function UserProfilePage({
 
   // Fetch the viewer's own show IDs + ratings so we can mark already-added shows
   let viewerItems: { show_id: string; rating: number | null }[] = [];
-  if (user && !isOwnProfile && list?.is_public) {
+  if (user && !isOwnProfile && list) {
     const { data: viewerList } = await supabase
       .from("lists")
       .select("id")
@@ -159,7 +161,7 @@ export default async function UserProfilePage({
       </div>
 
       {/* List */}
-      {list?.is_public ? (
+      {list ? (
         <div>
           <div className="mb-3 flex items-center justify-between">
             <div>
