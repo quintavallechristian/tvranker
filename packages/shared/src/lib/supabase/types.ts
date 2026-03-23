@@ -56,6 +56,8 @@ export type Database = {
           name: string;
           description: string | null;
           is_public: boolean;
+          visible_to_followers: boolean;
+          visible_to_following: boolean;
           position: number;
           created_at: string;
           updated_at: string;
@@ -66,6 +68,8 @@ export type Database = {
           name: string;
           description?: string | null;
           is_public?: boolean;
+          visible_to_followers?: boolean;
+          visible_to_following?: boolean;
           position?: number;
           created_at?: string;
           updated_at?: string;
@@ -74,6 +78,8 @@ export type Database = {
           name?: string;
           description?: string | null;
           is_public?: boolean;
+          visible_to_followers?: boolean;
+          visible_to_following?: boolean;
           position?: number;
           updated_at?: string;
         };

@@ -12,6 +12,10 @@ import {
   Plus,
   X,
   GlobeSimple,
+  Globe,
+  LockSimple,
+  Users,
+  UserList,
 } from "@phosphor-icons/react";
 import { DEFAULT_RATING_LABELS } from "@/lib/rating-labels";
 import {
@@ -20,6 +24,7 @@ import {
   updateTagColor,
   type TagRow,
 } from "@/app/[locale]/(app)/tags/actions";
+import { updateList } from "@/app/[locale]/(app)/lists/actions";
 import {
   TAG_COLORS,
   TAG_COLOR_HEX,
@@ -39,12 +44,19 @@ type ProfilePageClientProps = {
   };
   publicListCount: number;
   initialTags?: TagRow[];
+  list?: {
+    id: string;
+    is_public: boolean;
+    visible_to_followers: boolean;
+    visible_to_following: boolean;
+  } | null;
 };
 
 export function ProfilePageClient({
   profile,
   publicListCount,
   initialTags = [],
+  list,
 }: ProfilePageClientProps) {
   const t = useTranslations("profile");
   const tSettings = useTranslations("settings");
@@ -68,6 +80,16 @@ export function ProfilePageClient({
   const [newTagColor, setNewTagColor] = useState<TagColor>("slate");
   const [tagsPending, startTagTransition] = useTransition();
   const [colorPickerTagId, setColorPickerTagId] = useState<string | null>(null);
+
+  // Visibility state
+  const [isPublic, setIsPublic] = useState(list?.is_public ?? true);
+  const [visibleToFollowers, setVisibleToFollowers] = useState(
+    list?.visible_to_followers ?? false,
+  );
+  const [visibleToFollowing, setVisibleToFollowing] = useState(
+    list?.visible_to_following ?? false,
+  );
+  const [visibilityPending, startVisibilityTransition] = useTransition();
 
   async function handleSave() {
     if (username.length < 3) return;
@@ -115,6 +137,27 @@ export function ProfilePageClient({
     startTagTransition(async () => {
       await deleteTag(tagId);
       setTags((prev) => prev.filter((t) => t.id !== tagId));
+    });
+  }
+
+  function handleVisibilityChange(
+    field: "is_public" | "visible_to_followers" | "visible_to_following",
+    value: boolean,
+  ) {
+    if (!list) return;
+    const next = {
+      is_public: field === "is_public" ? value : isPublic,
+      visible_to_followers:
+        field === "visible_to_followers" ? value : visibleToFollowers,
+      visible_to_following:
+        field === "visible_to_following" ? value : visibleToFollowing,
+    };
+    if (field === "is_public") setIsPublic(value);
+    if (field === "visible_to_followers") setVisibleToFollowers(value);
+    if (field === "visible_to_following") setVisibleToFollowing(value);
+    startVisibilityTransition(async () => {
+      await updateList(list.id, next);
+      router.refresh();
     });
   }
 
@@ -425,6 +468,158 @@ export function ProfilePageClient({
           </form>
         </div>
       </div>
+
+      {/* Visibility card */}
+      {list && (
+        <div className="rounded-[var(--radius-lg)] border border-border bg-bg-surface p-4 md:p-6">
+          <div className="mb-4 flex items-center gap-2">
+            <LockSimple size={16} className="text-text-muted" />
+            <div>
+              <h3 className="text-sm font-semibold text-text-primary">
+                {t("visibilityTitle")}
+              </h3>
+              <p className="mt-0.5 text-xs text-text-muted">
+                {t("visibilityDesc")}
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {/* General visibility */}
+            <div className="flex items-center justify-between rounded-md border border-border bg-bg-elevated px-4 py-3">
+              <div className="flex items-center gap-3">
+                <Globe
+                  size={16}
+                  className={isPublic ? "text-accent" : "text-text-faint"}
+                />
+                <div>
+                  <p className="text-sm font-medium text-text-primary">
+                    {t("visibilityGeneral")}
+                  </p>
+                  <p className="text-xs text-text-muted">
+                    {t("visibilityGeneralDesc")}
+                  </p>
+                </div>
+              </div>
+              <button
+                role="switch"
+                aria-checked={isPublic}
+                disabled={visibilityPending}
+                onClick={() => handleVisibilityChange("is_public", !isPublic)}
+                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none disabled:opacity-50 ${
+                  isPublic ? "bg-accent" : "bg-bg-surface-hover"
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-lg ring-0 transition-transform ${
+                    isPublic ? "translate-x-4" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Visible to followers */}
+            <div
+              className={`flex items-center justify-between rounded-md border px-4 py-3 transition-opacity ${
+                isPublic
+                  ? "border-border/50 bg-bg-elevated/50 opacity-50"
+                  : "border-border bg-bg-elevated"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Users
+                  size={16}
+                  className={
+                    visibleToFollowers && !isPublic
+                      ? "text-accent"
+                      : "text-text-faint"
+                  }
+                />
+                <div>
+                  <p className="text-sm font-medium text-text-primary">
+                    {t("visibilityFollowers")}
+                  </p>
+                  <p className="text-xs text-text-muted">
+                    {t("visibilityFollowersDesc")}
+                  </p>
+                </div>
+              </div>
+              <button
+                role="switch"
+                aria-checked={visibleToFollowers}
+                disabled={visibilityPending || isPublic}
+                onClick={() =>
+                  handleVisibilityChange(
+                    "visible_to_followers",
+                    !visibleToFollowers,
+                  )
+                }
+                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${
+                  visibleToFollowers && !isPublic
+                    ? "bg-accent"
+                    : "bg-bg-surface-hover"
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-lg ring-0 transition-transform ${
+                    visibleToFollowers ? "translate-x-4" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Visible to following */}
+            <div
+              className={`flex items-center justify-between rounded-md border px-4 py-3 transition-opacity ${
+                isPublic
+                  ? "border-border/50 bg-bg-elevated/50 opacity-50"
+                  : "border-border bg-bg-elevated"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <UserList
+                  size={16}
+                  className={
+                    visibleToFollowing && !isPublic
+                      ? "text-accent"
+                      : "text-text-faint"
+                  }
+                />
+                <div>
+                  <p className="text-sm font-medium text-text-primary">
+                    {t("visibilityFollowing")}
+                  </p>
+                  <p className="text-xs text-text-muted">
+                    {t("visibilityFollowingDesc")}
+                  </p>
+                </div>
+              </div>
+              <button
+                role="switch"
+                aria-checked={visibleToFollowing}
+                disabled={visibilityPending || isPublic}
+                onClick={() =>
+                  handleVisibilityChange(
+                    "visible_to_following",
+                    !visibleToFollowing,
+                  )
+                }
+                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${
+                  visibleToFollowing && !isPublic
+                    ? "bg-accent"
+                    : "bg-bg-surface-hover"
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-lg ring-0 transition-transform ${
+                    visibleToFollowing ? "translate-x-4" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Settings card */}
       <div className="rounded-[var(--radius-lg)] border border-border bg-bg-surface p-4 md:p-6">

@@ -24,6 +24,13 @@ export default async function ProfilePage() {
     .eq("user_id", user.id)
     .eq("is_public", true);
 
+  // Fetch the user's single list for visibility settings
+  const { data: userList } = await supabase
+    .from("lists")
+    .select("id, is_public, visible_to_followers, visible_to_following")
+    .eq("user_id", user.id)
+    .single();
+
   // Fetch all tags visible to user (default + custom)
   const { data: tags } = await supabase
     .from("tags")
@@ -36,6 +43,7 @@ export default async function ProfilePage() {
       profile={profile}
       publicListCount={count ?? 0}
       initialTags={(tags ?? []) as TagResult[]}
+      list={userList ?? null}
     />
   );
 }

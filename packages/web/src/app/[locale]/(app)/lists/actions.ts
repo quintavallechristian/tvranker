@@ -18,7 +18,13 @@ async function getUserList(
 
 export async function updateList(
   listId: string,
-  updates: { name?: string; description?: string; is_public?: boolean },
+  updates: {
+    name?: string;
+    description?: string;
+    is_public?: boolean;
+    visible_to_followers?: boolean;
+    visible_to_following?: boolean;
+  },
 ) {
   const supabase = await createClient();
   const {

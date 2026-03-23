@@ -360,13 +360,6 @@ export function ListDetailClient({
     [list.id, startTransition],
   );
 
-  const handleTogglePublic = useCallback(() => {
-    startTransition(async () => {
-      await updateList(list.id, { is_public: !list.is_public });
-      router.refresh();
-    });
-  }, [list.id, list.is_public, router, startTransition]);
-
   const handleAddShow = useCallback(
     async (show: {
       tmdb_id: number;
@@ -523,7 +516,6 @@ export function ListDetailClient({
             description={listDescription}
             isPublic={list.is_public}
             onDescriptionChange={isOwner ? handleDescriptionChange : undefined}
-            onTogglePublic={isOwner ? handleTogglePublic : undefined}
             readOnly={!isOwner}
             saveStatus={isOwner ? saveStatus : undefined}
           />

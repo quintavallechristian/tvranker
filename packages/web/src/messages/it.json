@@ -237,7 +237,15 @@
     "newTagPlaceholder": "Nuovo tag personalizzato...",
     "addTag": "Aggiungi",
     "changeColor": "Cambia colore",
-    "deleteTag": "Elimina tag {name}"
+    "deleteTag": "Elimina tag {name}",
+    "visibilityTitle": "Visibilità Lista",
+    "visibilityDesc": "Controlla chi può vedere la tua lista",
+    "visibilityGeneral": "Pubblica",
+    "visibilityGeneralDesc": "Visibile a tutti",
+    "visibilityFollowers": "Visibile ai tuoi follower",
+    "visibilityFollowersDesc": "Chi ti segue può vederla anche se privata",
+    "visibilityFollowing": "Visibile a chi segui",
+    "visibilityFollowingDesc": "Chi segui può vederla anche se privata"
   },
   "settings": {
     "title": "Impostazioni",

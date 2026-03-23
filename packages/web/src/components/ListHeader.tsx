@@ -7,7 +7,6 @@ type ListHeaderProps = {
   description?: string | null;
   isPublic: boolean;
   onDescriptionChange?: (description: string) => void;
-  onTogglePublic?: () => void;
   readOnly?: boolean;
   saveStatus?: "idle" | "saving" | "saved";
 };
@@ -16,7 +15,6 @@ export function ListHeader({
   description,
   isPublic,
   onDescriptionChange,
-  onTogglePublic,
   readOnly = false,
   saveStatus,
 }: ListHeaderProps) {
@@ -30,36 +28,15 @@ export function ListHeader({
           {tLists("title")}
         </h1>
 
-        {/* Public/Private toggle */}
-        {onTogglePublic ? (
-          <button
-            onClick={onTogglePublic}
-            className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-              isPublic
-                ? "border-accent/30 bg-accent-muted text-accent"
-                : "border-border bg-bg-surface text-text-muted"
-            }`}
-          >
-            {isPublic ? (
-              <>
-                <Globe size={12} /> {t("public")}
-              </>
-            ) : (
-              <>
-                <LockSimple size={12} /> {t("private")}
-              </>
-            )}
-          </button>
-        ) : (
-          <span
-            className={`flex items-center gap-1.5 text-xs ${
-              isPublic ? "text-accent" : "text-text-muted"
-            }`}
-          >
-            {isPublic ? <Globe size={12} /> : <LockSimple size={12} />}
-            {isPublic ? t("public") : t("private")}
-          </span>
-        )}
+        {/* Read-only visibility badge */}
+        <span
+          className={`flex items-center gap-1.5 text-xs ${
+            isPublic ? "text-accent" : "text-text-muted"
+          }`}
+        >
+          {isPublic ? <Globe size={12} /> : <LockSimple size={12} />}
+          {isPublic ? t("public") : t("private")}
+        </span>
 
         {/* Save status indicator */}
         {saveStatus && saveStatus !== "idle" && (

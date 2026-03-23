@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   ScrollView,
   TextInput,
+  Switch,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { supabase } from "../../lib/supabase";
@@ -20,10 +21,16 @@ export default function ProfileScreen() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [showCount, setShowCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [listId, setListId] = useState<string | null>(null);
 
   // Rating labels
   const [labels, setLabels] = useState<string[]>([...DEFAULT_RATING_LABELS]);
   const [labelsSaved, setLabelsSaved] = useState(false);
+
+  // Visibility
+  const [isPublic, setIsPublic] = useState(true);
+  const [visibleToFollowers, setVisibleToFollowers] = useState(false);
+  const [visibleToFollowing, setVisibleToFollowing] = useState(false);
 
   const ACCENT = "#00d4aa";
 
@@ -41,11 +48,16 @@ export default function ProfileScreen() {
 
       const { data: lists } = await supabase
         .from("lists")
-        .select("id")
+        .select("id, is_public, visible_to_followers, visible_to_following")
         .eq("user_id", user.id)
         .limit(1);
 
       if (lists?.[0]) {
+        setListId(lists[0].id);
+        setIsPublic(lists[0].is_public);
+        setVisibleToFollowers(lists[0].visible_to_followers ?? false);
+        setVisibleToFollowing(lists[0].visible_to_following ?? false);
+
         const { count } = await supabase
           .from("list_items")
           .select("id", { count: "exact", head: true })
@@ -81,6 +93,17 @@ export default function ProfileScreen() {
 
   const handleResetLabels = () => {
     setLabels([...DEFAULT_RATING_LABELS]);
+  };
+
+  const handleVisibilityChange = async (
+    field: "is_public" | "visible_to_followers" | "visible_to_following",
+    value: boolean,
+  ) => {
+    if (!listId) return;
+    if (field === "is_public") setIsPublic(value);
+    if (field === "visible_to_followers") setVisibleToFollowers(value);
+    if (field === "visible_to_following") setVisibleToFollowing(value);
+    await supabase.from("lists").update({ [field]: value }).eq("id", listId);
   };
 
   if (loading) {
@@ -150,6 +173,74 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* List Visibility */}
+      {listId && (
+        <View style={styles.visibilitySection}>
+          <Text style={styles.sectionTitle}>{t("profile.visibilityTitle")}</Text>
+          <Text style={styles.sectionDesc}>{t("profile.visibilityDesc")}</Text>
+
+          {/* General visibility */}
+          <View style={styles.visibilityRow}>
+            <View style={styles.visibilityTextGroup}>
+              <Text style={styles.visibilityLabel}>
+                {t("profile.visibilityGeneral")}
+              </Text>
+              <Text style={styles.visibilityDesc2}>
+                {t("profile.visibilityGeneralDesc")}
+              </Text>
+            </View>
+            <Switch
+              value={isPublic}
+              onValueChange={(v) => handleVisibilityChange("is_public", v)}
+              trackColor={{ false: "#27272a", true: ACCENT }}
+              thumbColor="#ffffff"
+            />
+          </View>
+
+          {/* Visible to followers */}
+          <View style={[styles.visibilityRow, isPublic && styles.dimmed]}>
+            <View style={styles.visibilityTextGroup}>
+              <Text style={styles.visibilityLabel}>
+                {t("profile.visibilityFollowers")}
+              </Text>
+              <Text style={styles.visibilityDesc2}>
+                {t("profile.visibilityFollowersDesc")}
+              </Text>
+            </View>
+            <Switch
+              value={visibleToFollowers}
+              disabled={isPublic}
+              onValueChange={(v) =>
+                handleVisibilityChange("visible_to_followers", v)
+              }
+              trackColor={{ false: "#27272a", true: ACCENT }}
+              thumbColor="#ffffff"
+            />
+          </View>
+
+          {/* Visible to following */}
+          <View style={[styles.visibilityRow, isPublic && styles.dimmed]}>
+            <View style={styles.visibilityTextGroup}>
+              <Text style={styles.visibilityLabel}>
+                {t("profile.visibilityFollowing")}
+              </Text>
+              <Text style={styles.visibilityDesc2}>
+                {t("profile.visibilityFollowingDesc")}
+              </Text>
+            </View>
+            <Switch
+              value={visibleToFollowing}
+              disabled={isPublic}
+              onValueChange={(v) =>
+                handleVisibilityChange("visible_to_following", v)
+              }
+              trackColor={{ false: "#27272a", true: ACCENT }}
+              thumbColor="#ffffff"
+            />
+          </View>
+        </View>
+      )}
 
       <TouchableOpacity style={styles.logoutButton} onPress={signOut}>
         <Text style={styles.logoutText}>{t("auth.logout")}</Text>
@@ -256,4 +347,44 @@ const styles = StyleSheet.create({
   },
   saveLabelsBtnSaved: { backgroundColor: "#22C55E" },
   saveLabelsBtnText: { color: "#000", fontSize: 14, fontWeight: "700" },
+
+  // Visibility
+  visibilitySection: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: "#141416",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.06)",
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#fafafa",
+    marginBottom: 4,
+  },
+  sectionDesc: {
+    fontSize: 13,
+    color: "#71717a",
+    marginBottom: 16,
+  },
+  visibilityRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255,255,255,0.06)",
+    gap: 12,
+  },
+  visibilityTextGroup: { flex: 1 },
+  visibilityLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#f0f0f0",
+    marginBottom: 2,
+  },
+  visibilityDesc2: { fontSize: 12, color: "#71717a" },
+  dimmed: { opacity: 0.4 },
 });

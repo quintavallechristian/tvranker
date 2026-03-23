@@ -237,7 +237,15 @@
     "newTagPlaceholder": "New custom tag...",
     "addTag": "Add",
     "changeColor": "Change color",
-    "deleteTag": "Delete tag {name}"
+    "deleteTag": "Delete tag {name}",
+    "visibilityTitle": "List Visibility",
+    "visibilityDesc": "Control who can see your list",
+    "visibilityGeneral": "Public",
+    "visibilityGeneralDesc": "Visible to everyone",
+    "visibilityFollowers": "Visible to followers",
+    "visibilityFollowersDesc": "People who follow you can see it even if private",
+    "visibilityFollowing": "Visible to following",
+    "visibilityFollowingDesc": "People you follow can see it even if private"
   },
   "settings": {
     "title": "Settings",

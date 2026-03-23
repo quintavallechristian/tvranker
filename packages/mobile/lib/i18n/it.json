@@ -88,7 +88,15 @@
         "ratingLabelsDescription": "Personalizza la tua scala di voto",
         "saveLabels": "Salva Etichette",
         "labelsSaved": "Etichette salvate!",
-        "resetDefaults": "Ripristina predefiniti"
+        "resetDefaults": "Ripristina predefiniti",
+        "visibilityTitle": "Visibilità Lista",
+        "visibilityDesc": "Controlla chi può vedere la tua lista",
+        "visibilityGeneral": "Pubblica",
+        "visibilityGeneralDesc": "Visibile a tutti",
+        "visibilityFollowers": "Visibile ai follower",
+        "visibilityFollowersDesc": "Chi ti segue può vederla anche se privata",
+        "visibilityFollowing": "Visibile a chi segui",
+        "visibilityFollowingDesc": "Chi segui può vederla anche se privata"
     },
     "rankings": {
         "title": "Classifica",
