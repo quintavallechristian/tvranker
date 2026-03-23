@@ -189,7 +189,10 @@
     "durationDays": "{days, plural, =1 {1 giorno} other {# giorni}}",
     "durationHours": "{hours, plural, =1 {1 ora} other {# ore}}",
     "durationMinutes": "{minutes, plural, =1 {1 minuto} other {# minuti}}",
-    "noEpisodeData": "Nessun dato sugli episodi disponibile."
+    "noEpisodeData": "Nessun dato sugli episodi disponibile.",
+    "addToList": "Aggiungi alla lista",
+    "inMyList": "Nella mia lista",
+    "myRating": "Mio voto"
   },
   "profile": {
     "title": "Profilo",

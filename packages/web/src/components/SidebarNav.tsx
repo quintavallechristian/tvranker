@@ -76,13 +76,7 @@ export function SidebarNav({
   return (
     <>
       {/* ── Mobile top bar ── */}
-      <header className="fixed inset-x-0 top-0 z-40 flex md:hidden items-center justify-between border-b border-border bg-bg-primary/95 backdrop-blur-md px-4 h-12">
-        <div className="flex items-center gap-2">
-          <Television size={20} weight="duotone" className="text-accent" />
-          <span className="text-sm font-bold tracking-tight text-text-primary">
-            TV Ranker
-          </span>
-        </div>
+      <header className="fixed inset-x-0 top-0 z-40 flex md:hidden items-center border-b border-border bg-bg-primary/95 backdrop-blur-md px-4 h-12 gap-3">
         <button
           onClick={() => setMobileOpen((v) => !v)}
           className="p-1 text-text-secondary"
@@ -94,6 +88,12 @@ export function SidebarNav({
             <HamburgerIcon size={22} weight="bold" />
           )}
         </button>
+        <Link href="/lists" className="flex items-center gap-2">
+          <Television size={20} weight="duotone" className="text-accent" />
+          <span className="text-sm font-bold tracking-tight text-text-primary">
+            TV Ranker
+          </span>
+        </Link>
       </header>
 
       {/* ── Mobile overlay menu ── */}
@@ -169,7 +169,7 @@ export function SidebarNav({
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="rounded-[var(--radius-sm)] p-1.5 text-text-faint transition-colors hover:text-error"
+                  className="rounded-sm p-1.5 text-text-faint transition-colors hover:text-error"
                   aria-label="Sign out"
                 >
                   <SignOut size={16} />
@@ -182,12 +182,12 @@ export function SidebarNav({
 
       {/* ── Desktop sidebar ── */}
       <aside className="hidden md:flex h-screen w-56 shrink-0 flex-col border-r border-border bg-bg-primary">
-        <div className="flex items-center gap-2 px-4 py-5">
+        <Link href="/lists" className="flex items-center gap-2 px-4 py-5">
           <Television size={22} weight="duotone" className="text-accent" />
           <span className="text-sm font-bold tracking-tight text-text-primary">
             TV Ranker
           </span>
-        </div>
+        </Link>
 
         <nav className="flex-1 px-2">
           {links.map(({ href, label, icon: Icon, badge }) => {
@@ -229,7 +229,7 @@ export function SidebarNav({
             </Link>
             <button
               onClick={handleLogout}
-              className="rounded-[var(--radius-sm)] p-1 text-text-faint transition-colors hover:text-error"
+              className="rounded-sm p-1 text-text-faint transition-colors hover:text-error"
               aria-label="Sign out"
             >
               <SignOut size={16} />

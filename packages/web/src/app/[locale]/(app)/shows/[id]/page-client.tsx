@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import type { JSX } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
@@ -15,6 +15,9 @@ import {
   CaretDown,
   CaretRight,
   Clock,
+  Plus,
+  Check,
+  SpinnerGap,
 } from "@phosphor-icons/react";
 import { Link } from "@/i18n/navigation";
 import { getPosterUrl } from "@/lib/tmdb/client";
@@ -25,6 +28,10 @@ import type {
   WatchProvider,
   WatchProviderRegion,
 } from "@/lib/supabase/types";
+import {
+  addShowToMyList,
+  removeShowFromMyList,
+} from "@/app/[locale]/(app)/lists/actions";
 
 function formatDuration(
   totalMinutes: number,
@@ -81,6 +88,7 @@ type PublicList = {
   id: string;
   name: string;
   rating: number | null;
+  similarity: number | null;
   owner: {
     username: string;
     avatarUrl: string | null;
@@ -96,6 +104,9 @@ type ShowDetailClientProps = {
   };
   publicLists: PublicList[];
   analyticsData: ShowAnalyticsData;
+  userItem: { id: string; rating: number | null } | null;
+  isLoggedIn: boolean;
+  showScore?: number | null;
   analyticsLabels: {
     title: string;
     inLists: string;
@@ -114,12 +125,17 @@ export function ShowDetailClient({
   stats,
   publicLists,
   analyticsData,
+  userItem: initialUserItem,
+  isLoggedIn,
+  showScore,
   analyticsLabels,
 }: ShowDetailClientProps) {
   const t = useTranslations();
   const posterUrl = getPosterUrl(show.poster_path, "w500");
   const [activeTab, setActiveTab] = useState<Tab>("seasons");
   const [expandedSeasons, setExpandedSeasons] = useState<Set<number>>(new Set());
+  const [inList, setInList] = useState(initialUserItem !== null);
+  const [isPending, startTransition] = useTransition();
 
   function toggleSeason(seasonNumber: number) {
     setExpandedSeasons((prev) => {
@@ -224,6 +240,60 @@ export function ShowDetailClient({
                 {stats.avgRating}/10
                 <span className="text-text-faint">({stats.ratingCount})</span>
               </div>
+            )}
+            {/* Personal rating badge */}
+            {initialUserItem?.rating !== null && initialUserItem?.rating !== undefined && (
+              <div className="inline-flex items-center gap-1.5 rounded-md border border-accent/30 bg-accent/10 px-2.5 py-1.5 text-xs text-accent">
+                <Star size={14} weight="fill" />
+                {t("showDetail.myRating")}: {initialUserItem.rating}/10
+              </div>
+            )}
+            {/* Recommendation score badge */}
+            {showScore !== null && showScore !== undefined && !inList && (
+              <div className="inline-flex items-center rounded-md border border-accent/30 bg-accent/10 px-2.5 py-1.5 text-xs font-mono font-bold text-accent tabular-nums">
+                {showScore}%
+              </div>
+            )}
+            {/* Add / Remove from list button */}
+            {isLoggedIn && (
+              <button
+                disabled={isPending}
+                onClick={() => {
+                  startTransition(async () => {
+                    if (inList) {
+                      await removeShowFromMyList(show.id);
+                      setInList(false);
+                    } else {
+                      await addShowToMyList({
+                        id: show.id,
+                        tmdb_id: show.tmdb_id,
+                        imdb_id: show.imdb_id,
+                        title: show.title,
+                        poster_path: show.poster_path,
+                        first_air_date: show.first_air_date,
+                        overview: show.overview,
+                      });
+                      setInList(true);
+                    }
+                  });
+                }}
+                className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors disabled:opacity-60 ${
+                  inList
+                    ? "border-border bg-bg-surface text-text-secondary hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-400"
+                    : "border-accent/40 bg-accent/10 text-accent hover:bg-accent/20"
+                }`}
+              >
+                {isPending ? (
+                  <SpinnerGap size={14} className="animate-spin" />
+                ) : inList ? (
+                  <Check size={14} weight="bold" />
+                ) : (
+                  <Plus size={14} weight="bold" />
+                )}
+                {inList
+                  ? t("showDetail.inMyList")
+                  : t("showDetail.addToList")}
+              </button>
             )}
           </div>
 
@@ -465,16 +535,23 @@ export function ShowDetailClient({
                             </span>
                           </div>
                         </div>
-                        {list.rating !== null && (
-                          <div className="ml-3 flex shrink-0 items-center gap-1 text-xs text-text-secondary">
-                            <Star
-                              size={12}
-                              weight="fill"
-                              className="text-accent"
-                            />
-                            {list.rating}/10
-                          </div>
-                        )}
+                        <div className="ml-3 flex shrink-0 items-center gap-2">
+                          {list.similarity !== null && (
+                            <span className="text-xs font-medium text-accent">
+                              {list.similarity}%
+                            </span>
+                          )}
+                          {list.rating !== null && (
+                            <div className="flex items-center gap-1 text-xs text-text-secondary">
+                              <Star
+                                size={12}
+                                weight="fill"
+                                className="text-accent"
+                              />
+                              {list.rating}/10
+                            </div>
+                          )}
+                        </div>
                       </Link>
                     ))}
                   </div>

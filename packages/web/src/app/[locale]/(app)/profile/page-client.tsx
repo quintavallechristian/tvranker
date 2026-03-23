@@ -286,10 +286,10 @@ export function ProfilePageClient({
                       next[idx] = e.target.value;
                       setLabels(next);
                     }}
-                    className="flex-1 rounded-[var(--radius-sm)] border border-border bg-bg-elevated px-2.5 py-1 text-xs text-text-primary outline-none focus:border-accent"
+                    className="flex-1 rounded-sm border border-border bg-bg-elevated px-2.5 py-1 text-xs text-text-primary outline-none focus:border-accent"
                   />
                 ) : (
-                  <span className="flex-1 truncate rounded-[var(--radius-sm)] px-2.5 py-1 text-xs text-text-secondary">
+                  <span className="flex-1 truncate rounded-sm px-2.5 py-1 text-xs text-text-secondary">
                     {labels[idx] ?? DEFAULT_RATING_LABELS[idx]}
                   </span>
                 )}

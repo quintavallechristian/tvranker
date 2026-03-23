@@ -970,6 +970,27 @@ export async function addTmdbShowToMyList(show: {
   return { alreadyExists: false };
 }
 
+export async function removeShowFromMyList(showId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const myList = await getUserList(supabase, user.id);
+  if (!myList) throw new Error("List not found");
+
+  const { error } = await supabase
+    .from("list_items")
+    .delete()
+    .eq("list_id", myList.id)
+    .eq("show_id", showId);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/lists");
+}
+
 export async function copyListToMine(sourceListId: string) {
   const supabase = await createClient();
   const {

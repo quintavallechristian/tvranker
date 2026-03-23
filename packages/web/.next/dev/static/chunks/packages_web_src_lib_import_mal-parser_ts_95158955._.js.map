@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///Users/christianquintavalle/Documents/tvranker/packages/web/src/lib/import/mal-parser.ts"],"sourcesContent":["// Re-export from shared package\nexport {\n  parseMalXml,\n  extractBaseTitle,\n  validateMalXml,\n} from \"@tvranker/shared\";\n"],"names":[],"mappings":";AAAA,gCAAgC;AAChC"}}]
-}

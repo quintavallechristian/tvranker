@@ -178,9 +178,7 @@ export function ListDetailClient({
   // Copy list (only available when viewer's list is empty)
   const [isCopying, setIsCopying] = useState(false);
   // Track which ShowRow has its mobile rating bar open (only one at a time)
-  const [openRatingItemId, setOpenRatingItemId] = useState<string | null>(
-    null,
-  );
+  const [openRatingItemId, setOpenRatingItemId] = useState<string | null>(null);
 
   // Pagination state
   const [hasMore, setHasMore] = useState(initialHasMore);
@@ -830,9 +828,7 @@ export function ListDetailClient({
                               onMobileRatingChange={
                                 isOwner
                                   ? (open) =>
-                                      setOpenRatingItemId(
-                                        open ? item.id : null,
-                                      )
+                                      setOpenRatingItemId(open ? item.id : null)
                                   : undefined
                               }
                             />

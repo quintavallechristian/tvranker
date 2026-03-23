@@ -104,7 +104,7 @@ export function AddShowDialog({
                   disabled={isAdded}
                   className="flex w-full items-center gap-3 border-b border-border px-4 py-3 text-left transition-colors last:border-0 hover:bg-bg-surface-hover disabled:opacity-40"
                 >
-                  <div className="relative h-14 w-10 shrink-0 overflow-hidden rounded-[var(--radius-sm)] bg-bg-elevated">
+                  <div className="relative h-14 w-10 shrink-0 overflow-hidden rounded-sm bg-bg-elevated">
                     {posterUrl ? (
                       <Image
                         src={posterUrl}
@@ -130,7 +130,7 @@ export function AddShowDialog({
                   </div>
 
                   {scoreMap?.has(show.tmdb_id) && (
-                    <span className="shrink-0 rounded-[var(--radius-sm)] bg-accent-muted border border-accent/30 px-1.5 py-0.5 text-xs font-mono font-semibold text-accent tabular-nums">
+                    <span className="shrink-0 rounded-sm bg-accent-muted border border-accent/30 px-1.5 py-0.5 text-xs font-mono font-semibold text-accent tabular-nums">
                       {scoreMap.get(show.tmdb_id)}%
                     </span>
                   )}

@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { fetchTmdbData } from "../actions";
 import { ShowDetailClient } from "./page-client";
 import type { ShowAnalyticsData } from "@/components/ShowAnalytics";
+import { computeListSimilarity, type ListEntry } from "@/lib/similarity";
 
 export default async function ShowDetailPage({
   params,
@@ -104,12 +105,115 @@ export default async function ShowDetailPage({
     };
   });
 
+  // Fetch current user's session and their list item for this show
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let userItem: { id: string; rating: number | null } | null = null;
+  let viewerListEntries: ListEntry[] = [];
+
+  if (user) {
+    const { data: myList } = await supabase
+      .from("lists")
+      .select("id")
+      .eq("user_id", user.id)
+      .single();
+
+    if (myList) {
+      // Check if the user has this show in their list
+      const { data: myItem } = await supabase
+        .from("list_items")
+        .select("id, rating")
+        .eq("list_id", myList.id)
+        .eq("show_id", id)
+        .maybeSingle();
+
+      if (myItem) {
+        userItem = { id: myItem.id, rating: myItem.rating };
+      }
+
+      // Fetch user's full list for similarity computation
+      const { data: allMyItems } = await supabase
+        .from("list_items")
+        .select("show_id, rating, position")
+        .eq("list_id", myList.id)
+        .order("position", { ascending: true });
+
+      viewerListEntries = (allMyItems ?? []).map((i) => ({
+        showId: i.show_id,
+        rating: i.rating,
+        position: i.position ?? 0,
+      }));
+    }
+  }
+
+  // Compute similarity for each public list (batch fetch their items)
+  let publicListsWithSimilarity = publicLists.map((l) => ({
+    ...l,
+    similarity: null as number | null,
+  }));
+  let showRecommendationScore: number | null = null;
+
+  if (viewerListEntries.length > 0 && publicLists.length > 0) {
+    const publicListIds = publicLists.map((l) => l.id);
+    const { data: allPublicItems } = await supabase
+      .from("list_items")
+      .select("list_id, show_id, rating, position")
+      .in("list_id", publicListIds);
+
+    if (allPublicItems) {
+      const itemsByList = new Map<string, ListEntry[]>();
+      for (const item of allPublicItems) {
+        if (!itemsByList.has(item.list_id)) itemsByList.set(item.list_id, []);
+        itemsByList.get(item.list_id)!.push({
+          showId: item.show_id,
+          rating: item.rating,
+          position: item.position ?? 0,
+        });
+      }
+
+      publicListsWithSimilarity = publicLists.map((list) => {
+        const otherEntries = itemsByList.get(list.id) ?? [];
+        const score = computeListSimilarity(viewerListEntries, otherEntries);
+        return { ...list, similarity: score > 0 ? score : null };
+      });
+
+      // Compute recommendation score for this show:
+      // avg(sim_i/100 * normalizedRating_i) * 100, same formula as scoreRecommendations
+      let weightedSum = 0;
+      let count = 0;
+      for (const list of publicListsWithSimilarity) {
+        if (!list.similarity) continue;
+        const showEntry = allPublicItems.find(
+          (item) => item.list_id === list.id && item.show_id === id,
+        );
+        if (!showEntry) continue;
+        const listLen = allPublicItems.filter(
+          (item) => item.list_id === list.id,
+        ).length;
+        const normalizedRating =
+          showEntry.rating !== null
+            ? showEntry.rating / 10
+            : 1 - (showEntry.position ?? 0) / Math.max(listLen, 1);
+        weightedSum += (list.similarity / 100) * normalizedRating;
+        count++;
+      }
+      if (count > 0) {
+        showRecommendationScore = Math.round((weightedSum / count) * 100);
+      }
+    }
+  }
+
   return (
     <ShowDetailClient
       show={finalShow}
       stats={{ listCount, avgRating, ratingCount: ratings.length }}
-      publicLists={publicLists}
+      publicLists={publicListsWithSimilarity}
       analyticsData={analyticsData}
+      userItem={userItem}
+      isLoggedIn={!!user}
+      showScore={showRecommendationScore}
       analyticsLabels={{
         title: t("analyticsTitle"),
         inLists: t("inLists", { count: listCount }),

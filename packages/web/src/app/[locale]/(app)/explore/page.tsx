@@ -11,7 +11,13 @@ import { FollowButton } from "@/components/FollowButton";
 import { createClient } from "@/lib/supabase/client";
 import { computeListSimilarity } from "@/lib/similarity";
 import { getPosterUrl } from "@/lib/tmdb/client";
-import { Television, Plus, Check, SpinnerGap, ArrowRight } from "@phosphor-icons/react";
+import {
+  Television,
+  Plus,
+  Check,
+  SpinnerGap,
+  ArrowRight,
+} from "@phosphor-icons/react";
 import {
   getRecommendations,
   getSimilarUsers,
@@ -149,21 +155,24 @@ export default function ExplorePage() {
     });
   }, []);
 
-  const handleShowClick = useCallback(async (show: ShowResult) => {
-    setNavigatingTmdbId(show.tmdb_id);
-    try {
-      const id = await getOrCreateShowByTmdbId({
-        tmdb_id: show.tmdb_id,
-        title: show.title,
-        poster_path: show.poster_path,
-        first_air_date: show.first_air_date,
-        overview: show.overview,
-      });
-      router.push(`/shows/${id}`);
-    } catch {
-      setNavigatingTmdbId(null);
-    }
-  }, [router]);
+  const handleShowClick = useCallback(
+    async (show: ShowResult) => {
+      setNavigatingTmdbId(show.tmdb_id);
+      try {
+        const id = await getOrCreateShowByTmdbId({
+          tmdb_id: show.tmdb_id,
+          title: show.title,
+          poster_path: show.poster_path,
+          first_air_date: show.first_air_date,
+          overview: show.overview,
+        });
+        router.push(`/shows/${id}`);
+      } catch {
+        setNavigatingTmdbId(null);
+      }
+    },
+    [router],
+  );
 
   const handleSearch = useCallback(async (query: string) => {
     if (query.length < 2) {
@@ -367,7 +376,7 @@ export default function ExplorePage() {
                       disabled={navigatingTmdbId === show.tmdb_id}
                       className="flex items-center gap-3 min-w-0 flex-1 text-left"
                     >
-                      <div className="relative h-12 w-8 shrink-0 overflow-hidden rounded-[var(--radius-sm)] bg-bg-elevated">
+                      <div className="relative h-12 w-8 shrink-0 overflow-hidden rounded-sm bg-bg-elevated">
                         {show.poster_path ? (
                           <Image
                             src={getPosterUrl(show.poster_path, "w92")!}
@@ -383,7 +392,9 @@ export default function ExplorePage() {
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className={`truncate text-sm font-medium transition-colors ${navigatingTmdbId === show.tmdb_id ? "text-text-muted" : "text-text-primary"}`}>
+                        <p
+                          className={`truncate text-sm font-medium transition-colors ${navigatingTmdbId === show.tmdb_id ? "text-text-muted" : "text-text-primary"}`}
+                        >
                           {show.title}
                         </p>
                         {show.first_air_date && (
@@ -393,7 +404,10 @@ export default function ExplorePage() {
                         )}
                       </div>
                       {navigatingTmdbId === show.tmdb_id && (
-                        <SpinnerGap size={14} className="animate-spin text-text-muted shrink-0" />
+                        <SpinnerGap
+                          size={14}
+                          className="animate-spin text-text-muted shrink-0"
+                        />
                       )}
                     </button>
                     <button
@@ -530,7 +544,7 @@ export default function ExplorePage() {
                     }}
                   >
                     {/* Score badge */}
-                    <div className="absolute top-2 right-2 z-10 flex items-center justify-center rounded-[var(--radius-sm)] bg-bg-primary/80 px-1.5 py-0.5 text-xs font-mono font-bold text-accent tabular-nums backdrop-blur-sm">
+                    <div className="absolute top-2 right-2 z-10 flex items-center justify-center rounded-sm bg-bg-primary/80 px-1.5 py-0.5 text-xs font-mono font-bold text-accent tabular-nums backdrop-blur-sm">
                       {show.score}%
                     </div>
 
@@ -563,7 +577,11 @@ export default function ExplorePage() {
                         }}
                       >
                         {isAdded ? (
-                          <Check size={24} weight="bold" className="text-accent" />
+                          <Check
+                            size={24}
+                            weight="bold"
+                            className="text-accent"
+                          />
                         ) : (
                           <>
                             <button
@@ -575,7 +593,10 @@ export default function ExplorePage() {
                               className="flex items-center gap-1.5 rounded-full border border-white/40 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/25 transition-colors disabled:opacity-50"
                             >
                               {isAdding ? (
-                                <SpinnerGap size={13} className="animate-spin" />
+                                <SpinnerGap
+                                  size={13}
+                                  className="animate-spin"
+                                />
                               ) : (
                                 <Plus size={13} weight="bold" />
                               )}
@@ -632,7 +653,8 @@ export default function ExplorePage() {
                         key={show.id}
                         className="group relative overflow-hidden rounded-lg border border-border bg-bg-surface transition-colors hover:border-border-hover"
                         onPointerEnter={(e) => {
-                          if (e.pointerType === "mouse") setActiveShowId(show.id);
+                          if (e.pointerType === "mouse")
+                            setActiveShowId(show.id);
                         }}
                         onPointerLeave={(e) => {
                           if (e.pointerType === "mouse") setActiveShowId(null);
@@ -673,7 +695,11 @@ export default function ExplorePage() {
                             }}
                           >
                             {isAdded ? (
-                              <Check size={24} weight="bold" className="text-accent" />
+                              <Check
+                                size={24}
+                                weight="bold"
+                                className="text-accent"
+                              />
                             ) : (
                               <>
                                 <button

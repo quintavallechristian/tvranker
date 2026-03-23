@@ -1,1 +1,0 @@
-{"version":3,"sources":["../../../../../../packages/web/src/lib/import/mal-parser.ts"],"sourcesContent":["// Re-export from shared package\nexport {\n  parseMalXml,\n  extractBaseTitle,\n  validateMalXml,\n} from \"@tvranker/shared\";\n"],"names":[],"mappings":"uCACA,EAAA,CAAA,CAAA"}

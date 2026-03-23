@@ -142,7 +142,7 @@ export function ShowRow({
         </span>
 
         {/* Poster */}
-        <div className="relative h-12 w-8 shrink-0 overflow-hidden rounded-[var(--radius-sm)] bg-bg-elevated">
+        <div className="relative h-12 w-8 shrink-0 overflow-hidden rounded-sm bg-bg-elevated">
           {posterUrl ? (
             <Image
               src={posterUrl}
@@ -252,7 +252,7 @@ export function ShowRow({
                 >
                   <NotePencil
                     size={11}
-                    className="mt-0.5 shrink-0 text-text-faint"
+                    className="mt-1 shrink-0 text-text-faint"
                   />
                   <span>{localNote}</span>
                 </button>
@@ -290,7 +290,7 @@ export function ShowRow({
         {onQuickAdd && (
           <button
             onClick={onQuickAdd}
-            className="rounded-[var(--radius-sm)] p-1.5 text-accent transition-colors hover:bg-accent/10 hover:text-accent-hover"
+            className="rounded-sm p-1.5 text-accent transition-colors hover:bg-accent/10 hover:text-accent-hover"
             aria-label={quickAddLabel || "Add to my list"}
             title={quickAddLabel || "Add to my list"}
           >
@@ -302,7 +302,7 @@ export function ShowRow({
         {onRemove && (
           <button
             onClick={onRemove}
-            className="rounded-[var(--radius-sm)] p-1.5 text-text-faint transition-colors hover:bg-error/10 hover:text-error"
+            className="rounded-sm p-1.5 text-text-faint transition-colors hover:bg-error/10 hover:text-error"
             aria-label="Remove from list"
           >
             <Trash size={16} />

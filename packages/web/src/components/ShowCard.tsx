@@ -34,7 +34,7 @@ export function ShowCard({
     <div className="group relative overflow-hidden rounded-[var(--radius-lg)] border border-border bg-bg-surface transition-colors hover:border-border-hover">
       {/* Position badge */}
       {position !== undefined && (
-        <div className="absolute top-2 left-2 z-10 flex h-6 w-6 items-center justify-center rounded-[var(--radius-sm)] bg-bg-primary/80 text-xs font-mono font-bold text-text-primary tabular-nums backdrop-blur-sm">
+        <div className="absolute top-2 left-2 z-10 flex h-6 w-6 items-center justify-center rounded-sm bg-bg-primary/80 text-xs font-mono font-bold text-text-primary tabular-nums backdrop-blur-sm">
           {position}
         </div>
       )}

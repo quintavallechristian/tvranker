@@ -127,7 +127,7 @@ export function TagPicker({
                 <button
                   key={tag.id}
                   onClick={() => handleToggle(tag)}
-                  className="flex w-full items-center gap-2 rounded-[var(--radius-sm)] px-2 py-1.5 text-left text-xs transition-colors hover:bg-bg-elevated"
+                  className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-xs transition-colors hover:bg-bg-elevated"
                 >
                   <span
                     className="h-2 w-2 shrink-0 rounded-full"
@@ -177,12 +177,12 @@ export function TagPicker({
                 onChange={(e) => setNewTagName(e.target.value)}
                 placeholder="Nuovo tag..."
                 maxLength={50}
-                className="min-w-0 flex-1 rounded-[var(--radius-sm)] border border-border bg-bg-elevated px-2 py-1 text-xs text-text-primary placeholder:text-text-faint outline-none focus:border-accent"
+                className="min-w-0 flex-1 rounded-sm border border-border bg-bg-elevated px-2 py-1 text-xs text-text-primary placeholder:text-text-faint outline-none focus:border-accent"
               />
               <button
                 type="submit"
                 disabled={!newTagName.trim() || isPending}
-                className="rounded-[var(--radius-sm)] bg-accent px-2 py-1 text-xs font-medium text-bg-primary hover:bg-accent-hover disabled:opacity-40"
+                className="rounded-sm bg-accent px-2 py-1 text-xs font-medium text-bg-primary hover:bg-accent-hover disabled:opacity-40"
               >
                 <Plus size={12} weight="bold" />
               </button>
