@@ -48,6 +48,7 @@ export function ProfilePageClient({
 }: ProfilePageClientProps) {
   const t = useTranslations("profile");
   const tSettings = useTranslations("settings");
+  const tCommon = useTranslations("common");
   const currentLocale = useLocale();
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -193,7 +194,7 @@ export function ProfilePageClient({
                   disabled={isPending || username.length < 3}
                   className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-bg-primary hover:bg-accent-hover disabled:opacity-50"
                 >
-                  Save
+                  {tCommon("save")}
                 </button>
                 <button
                   onClick={() => {
@@ -202,7 +203,7 @@ export function ProfilePageClient({
                   }}
                   className="px-2 py-1.5 text-xs text-text-muted hover:text-text-secondary"
                 >
-                  Cancel
+                  {tCommon("cancel")}
                 </button>
               </div>
             ) : (
@@ -231,10 +232,10 @@ export function ProfilePageClient({
         <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h3 className="text-sm font-semibold text-text-primary">
-              Rating labels
+              {t("ratingLabelsTitle")}
             </h3>
             <p className="mt-0.5 text-xs text-text-muted">
-              Customize the name for each rating level (1–10)
+              {t("ratingLabelsDesc")}
             </p>
           </div>
           {labelsEditing ? (
@@ -245,7 +246,7 @@ export function ProfilePageClient({
                 className="flex items-center gap-1 rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-bg-primary hover:bg-accent-hover disabled:opacity-50"
               >
                 <Check size={12} />
-                Save
+                {tCommon("save")}
               </button>
               <button
                 onClick={() => {
@@ -254,7 +255,7 @@ export function ProfilePageClient({
                 }}
                 className="px-2 py-1.5 text-xs text-text-muted hover:text-text-secondary"
               >
-                Cancel
+                {tCommon("cancel")}
               </button>
             </div>
           ) : (
@@ -263,7 +264,7 @@ export function ProfilePageClient({
               className="flex items-center gap-1 text-xs text-text-faint hover:text-text-muted"
             >
               <PencilSimple size={13} />
-              Edit
+              {tCommon("edit")}
             </button>
           )}
         </div>
@@ -304,9 +305,9 @@ export function ProfilePageClient({
         <div className="mb-4 flex items-center gap-2">
           <Tag size={16} className="text-text-muted" />
           <div>
-            <h3 className="text-sm font-semibold text-text-primary">Tag</h3>
+            <h3 className="text-sm font-semibold text-text-primary">{t("tagsTitle")}</h3>
             <p className="mt-0.5 text-xs text-text-muted">
-              I tag di default non possono essere modificati o eliminati
+              {t("tagsDesc")}
             </p>
           </div>
         </div>
@@ -335,7 +336,7 @@ export function ProfilePageClient({
                         )
                       }
                       className="opacity-50 hover:opacity-100"
-                      title="Cambia colore"
+                      title={t("changeColor")}
                     >
                       <span
                         className="inline-block h-2.5 w-2.5 rounded-full border border-white/30"
@@ -346,7 +347,7 @@ export function ProfilePageClient({
                       onClick={() => handleDeleteTag(tag.id)}
                       disabled={tagsPending}
                       className="opacity-50 transition-opacity hover:opacity-100 disabled:opacity-20"
-                      aria-label={`Elimina tag ${tag.name}`}
+                      aria-label={t("deleteTag", { name: tag.name })}
                     >
                       <X size={11} weight="bold" />
                     </button>
@@ -378,7 +379,7 @@ export function ProfilePageClient({
             </div>
           ))}
           {tags.length === 0 && (
-            <span className="text-xs text-text-faint">Nessun tag</span>
+            <span className="text-xs text-text-faint">{t("noTags")}</span>
           )}
         </div>
 
@@ -409,7 +410,7 @@ export function ProfilePageClient({
               type="text"
               value={newTagName}
               onChange={(e) => setNewTagName(e.target.value)}
-              placeholder="Nuovo tag personalizzato..."
+              placeholder={t("newTagPlaceholder")}
               maxLength={50}
               className="min-w-0 flex-1 rounded-md border border-border bg-bg-elevated px-3 py-1.5 text-xs text-text-primary placeholder:text-text-faint outline-none focus:border-accent"
             />
@@ -419,7 +420,7 @@ export function ProfilePageClient({
               className="flex items-center gap-1 rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-bg-primary hover:bg-accent-hover disabled:opacity-40"
             >
               <Plus size={12} weight="bold" />
-              Aggiungi
+              {t("addTag")}
             </button>
           </form>
         </div>

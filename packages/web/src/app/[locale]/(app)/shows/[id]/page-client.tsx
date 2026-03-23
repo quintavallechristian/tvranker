@@ -321,7 +321,7 @@ export function ShowDetailClient({
                 rel="noopener noreferrer"
                 className="text-xs text-text-muted transition-colors hover:text-accent"
               >
-                View on TMDB &rarr;
+                {t("shows.viewOnTmdb")} &rarr;
               </a>
             </div>
           )}

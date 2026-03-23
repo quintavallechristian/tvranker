@@ -58,18 +58,6 @@ type Props = {
 
 const RATING_BAR_COLOR = "#00d4aa";
 
-function formatDuration(totalMinutes: number): string {
-  if (totalMinutes <= 0) return "—";
-  const days = Math.floor(totalMinutes / (60 * 24));
-  const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
-  const minutes = totalMinutes % 60;
-  const parts: string[] = [];
-  if (days > 0) parts.push(`${days} giorni`);
-  if (hours > 0) parts.push(`${hours} ore`);
-  if (minutes > 0) parts.push(`${minutes} min`);
-  return parts.join(" ") || "—";
-}
-
 function ShowStatRow({
   id,
   title,
@@ -145,6 +133,19 @@ export function ListAnalyticsPage({
   labels,
 }: Props) {
   const tLists = useTranslations("lists");
+
+  function formatDuration(totalMinutes: number): string {
+    if (totalMinutes <= 0) return "—";
+    const days = Math.floor(totalMinutes / (60 * 24));
+    const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+    const minutes = totalMinutes % 60;
+    const parts: string[] = [];
+    if (days > 0) parts.push(tLists("durationDays", { days }));
+    if (hours > 0) parts.push(tLists("durationHours", { hours }));
+    if (minutes > 0) parts.push(tLists("durationMinutes", { minutes }));
+    return parts.join(" ") || "—";
+  }
+
   const hasTagData = data.tagCounts.length > 0;
   const hasRatingData = data.ratingCounts.some((d) => d.count > 0);
   const ratedPct =

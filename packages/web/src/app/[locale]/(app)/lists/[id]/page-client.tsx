@@ -143,6 +143,7 @@ export function ListDetailClient({
   const i18nRouter = useI18nRouter();
   const t = useTranslations("lists");
   const tCommon = useTranslations("common");
+  const tShows = useTranslations("shows");
   const [isPending, startTransition] = useTransition();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [recScoreMap, setRecScoreMap] = useState<Map<number, number>>(
@@ -477,7 +478,7 @@ export function ListDetailClient({
           }));
         }
       } catch {
-        setQuickAddFeedback((prev) => ({ ...prev, [showKey]: "Error" }));
+        setQuickAddFeedback((prev) => ({ ...prev, [showKey]: tCommon("error") }));
       }
       setTimeout(() => {
         setQuickAddFeedback((prev) => {
@@ -544,7 +545,7 @@ export function ListDetailClient({
                 className="hidden items-center gap-1.5 rounded-md bg-accent px-3 py-2 text-xs font-medium text-black transition-colors hover:bg-accent-hover sm:flex"
               >
                 <Plus size={14} />
-                Add show
+                {tShows("addShow")}
               </button>
             )}
             {isOwner && items.length > 0 && (
@@ -577,7 +578,7 @@ export function ListDetailClient({
               className="flex items-center gap-1.5 rounded-md bg-accent px-3 py-2 text-xs font-medium text-black transition-colors hover:bg-accent-hover"
             >
               <Plus size={14} />
-              Add show
+              {tShows("addShow")}
             </button>
             <button
               onClick={() => setShowImport(true)}
@@ -619,7 +620,7 @@ export function ListDetailClient({
             }`}
           >
             <FunnelSimple size={14} />
-            Filters
+            {t("filters")}
             {activeFilterCount > 0 && (
               <span className="flex h-4 w-4 items-center justify-center rounded-full bg-surface-hover font-mono text-[10px] font-semibold text-text-primary">
                 {activeFilterCount}
@@ -635,7 +636,7 @@ export function ListDetailClient({
           {/* Rating filter */}
           <div>
             <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-text-faint">
-              Rating
+              {t("ratingFilter")}
             </p>
             <div className="flex flex-wrap gap-1.5">
               {allRatings.map((rating) => {
@@ -643,7 +644,7 @@ export function ListDetailClient({
                 const label =
                   rating !== null
                     ? `${rating} · ${getRatingLabel(rating, ratingLabels)}`
-                    : "Unrated";
+                    : t("unrated");
                 return (
                   <button
                     key={rating ?? "unrated"}
@@ -726,7 +727,7 @@ export function ListDetailClient({
             onImport={() => setShowImport(true)}
           />
         ) : (
-          <EmptyState title="No shows in this list yet" />
+          <EmptyState title={t("noShowsYet")} />
         )
       ) : filteredItems.length === 0 ? (
         <EmptyState
@@ -751,7 +752,7 @@ export function ListDetailClient({
                 const tierLabel =
                   group.rating !== null
                     ? `${group.rating} · ${getRatingLabel(group.rating, ratingLabels)}`
-                    : "Unrated";
+                    : t("unrated");
                 return (
                   <div key={group.rating ?? "unrated"}>
                     {/* Tier header */}
@@ -854,7 +855,7 @@ export function ListDetailClient({
       {items.length > 0 && (
         <div ref={sentinelRef} className="mt-4 flex justify-center py-4">
           {loadingMore && (
-            <span className="text-xs text-text-faint">Loading more…</span>
+            <span className="text-xs text-text-faint">{t("loadingMore")}</span>
           )}
         </div>
       )}

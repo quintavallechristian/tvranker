@@ -12,6 +12,7 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { Television, PlusCircle, Check, Funnel } from "@phosphor-icons/react";
 import { getPosterUrl } from "@/lib/tmdb/client";
+import { useTranslations } from "next-intl";
 import {
   getListItemsPage,
   addShowToMyList,
@@ -42,6 +43,8 @@ export function UserListClient({
   const [showCommonOnly, setShowCommonOnly] = useState(false);
   const nextPageRef = useRef(1);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const t = useTranslations("users");
+  const tLists = useTranslations("lists");
 
   // Track which shows have been added during this session
   const [addedShowIds, setAddedShowIds] = useState<Set<string>>(new Set());
@@ -183,7 +186,7 @@ export function UserListClient({
             }`}
           >
             <Funnel size={12} weight={showCommonOnly ? "fill" : "regular"} />
-            In comune ({commonCount})
+            {t("inCommon", { count: commonCount })}
           </button>
         </div>
       )}
@@ -192,7 +195,7 @@ export function UserListClient({
         const tierLabel =
           group.rating !== null
             ? `${group.rating} · ${getRatingLabel(group.rating, ratingLabels)}`
-            : "Unrated";
+            : tLists("unrated");
         return (
           <div key={group.rating ?? "unrated"}>
             {/* Tier header */}
@@ -260,7 +263,7 @@ export function UserListClient({
                         viewerRating != null ? (
                           <span
                             className="shrink-0 ml-1 font-mono text-xs tabular-nums text-text-muted"
-                            title="Il tuo voto"
+                            title={t("yourRating")}
                           >
                             {viewerRating}/10
                           </span>
@@ -272,7 +275,7 @@ export function UserListClient({
                           onClick={() => handleQuickAdd(item.shows)}
                           disabled={feedback === "adding"}
                           className="shrink-0 ml-1 text-text-faint transition-colors hover:text-accent disabled:cursor-default"
-                          title="Add to my list"
+                          title={tLists("addToMyList")}
                         >
                           <PlusCircle size={18} />
                         </button>
@@ -288,13 +291,13 @@ export function UserListClient({
 
       {/* Common filter empty state */}
       {showCommonOnly && ratingGroups.length === 0 && (
-        <p className="text-sm text-text-muted">Nessuna serie in comune.</p>
+        <p className="text-sm text-text-muted">{t("noCommon")}</p>
       )}
 
       {/* Infinite scroll sentinel */}
       <div ref={sentinelRef} className="flex justify-center py-2">
         {loadingMore && (
-          <span className="text-xs text-text-faint">Loading more…</span>
+          <span className="text-xs text-text-faint">{tLists("loadingMore")}</span>
         )}
       </div>
     </div>

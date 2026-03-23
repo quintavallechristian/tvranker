@@ -14,6 +14,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { RatingBar } from "./ShowCard";
 import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { getRatingLabel } from "@/lib/rating-labels";
 import { TagPicker } from "./TagPicker";
 import type { TagRow } from "@/app/[locale]/(app)/tags/actions";
@@ -97,6 +98,7 @@ export function ShowRow({
   const [editingNote, setEditingNote] = useState(false);
   const [localNote, setLocalNote] = useState(notes ?? "");
   const noteInputRef = useRef<HTMLTextAreaElement>(null);
+  const t = useTranslations("shows");
 
   const handleNoteBlur = () => {
     setEditingNote(false);
@@ -130,7 +132,7 @@ export function ShowRow({
             {...attributes}
             {...listeners}
             className="cursor-grab touch-none text-text-faint hover:text-text-muted active:cursor-grabbing"
-            aria-label="Drag to reorder"
+            aria-label={t("dragToReorder")}
           >
             <DotsSixVertical size={20} weight="bold" />
           </button>
@@ -234,8 +236,8 @@ export function ShowRow({
                   onChange={(e) => setLocalNote(e.target.value)}
                   onBlur={handleNoteBlur}
                   onKeyDown={handleNoteKeyDown}
-                  placeholder="Aggiungi una nota..."
-                  aria-label="Nota personale"
+                  placeholder={t("addNote")}
+                  aria-label={t("personalNote")}
                   rows={2}
                   className="w-full resize-none bg-transparent text-xs text-text-secondary border-b border-dashed border-border focus:border-border-hover focus:outline-none placeholder:text-text-faint transition-colors leading-relaxed"
                 />
@@ -262,7 +264,7 @@ export function ShowRow({
                   className="flex items-center gap-1 text-xs text-text-faint transition-opacity hover:text-text-muted sm:opacity-0 sm:group-hover:opacity-100"
                 >
                   <NotePencil size={11} />
-                  Aggiungi una nota...
+                  {t("addNote")}
                 </button>
               ) : null}
             </div>
@@ -303,7 +305,7 @@ export function ShowRow({
           <button
             onClick={onRemove}
             className="rounded-sm p-1.5 text-text-faint transition-colors hover:bg-error/10 hover:text-error"
-            aria-label="Remove from list"
+            aria-label={t("removeFromList")}
           >
             <Trash size={16} />
           </button>
@@ -329,8 +331,8 @@ export function ShowRow({
               className="flex items-center gap-0.5"
               aria-label={
                 rating
-                  ? `Voto: ${rating}/10. Tocca per cambiare.`
-                  : "Tocca per votare"
+                  ? t("ratingTapToChange", { rating })
+                  : t("tapToRate")
               }
             >
               {rating ? (

@@ -11,7 +11,8 @@
     "confirm": "Confirm",
     "public": "Public",
     "private": "Private",
-    "noResults": "No results found"
+    "noResults": "No results found",
+    "error": "Error"
   },
   "auth": {
     "login": "Sign In",
@@ -54,6 +55,16 @@
     "emptyTitle": "No notifications yet",
     "emptyDescription": "You'll see notifications here when someone follows you",
     "newFollower": "started following you"
+  },
+  "users": {
+    "showCount": "{count, plural, =0 {No shows} =1 {1 show} other {# shows}}",
+    "compatible": "compatible",
+    "analytics": "Analytics",
+    "noShows": "No shows yet.",
+    "privateList": "This user's list is private.",
+    "inCommon": "In common ({count})",
+    "noCommon": "No shows in common.",
+    "yourRating": "Your rating"
   },
   "lists": {
     "title": "My List",
@@ -98,7 +109,16 @@
     "longestShowByYear": "Longest show per year",
     "seasonsByYearTitle": "By premiere year",
     "seasonCount": "{count, plural, =1 {1 season} other {# seasons}}",
-    "noSeasonData": "No season data available yet"
+    "noSeasonData": "No season data available yet",
+    "filters": "Filters",
+    "clearFilters": "Clear",
+    "ratingFilter": "Rating",
+    "tagsFilter": "Tags",
+    "noShowsYet": "No shows in this list yet",
+    "loadingMore": "Loading more...",
+    "durationDays": "{days, plural, =1 {1 day} other {# days}}",
+    "durationHours": "{hours, plural, =1 {1 h} other {# h}}",
+    "durationMinutes": "{minutes, plural, =1 {1 min} other {# min}}"
   },
   "shows": {
     "addShow": "Add Show",
@@ -108,7 +128,15 @@
     "removeFromList": "Remove from list",
     "position": "#",
     "title": "Title",
-    "dragToReorder": "Drag to reorder"
+    "dragToReorder": "Drag to reorder",
+    "manageTags": "Manage tags",
+    "removeTag": "Remove tag {name}",
+    "newTagPlaceholder": "New tag...",
+    "addNote": "Add a note...",
+    "personalNote": "Personal note",
+    "ratingTapToChange": "Rating: {rating}/10. Tap to change.",
+    "tapToRate": "Tap to rate",
+    "viewOnTmdb": "View on TMDB"
   },
   "import": {
     "title": "Import Shows",
@@ -192,14 +220,24 @@
     "noEpisodeData": "No episode data available.",
     "addToList": "Add to my list",
     "inMyList": "In my list",
-    "myRating": "My rating"
+    "myRating": "My rating",
+    "viewOnTmdb": "View on TMDB"
   },
   "profile": {
     "title": "Profile",
     "editProfile": "Edit Profile",
     "changeAvatar": "Change avatar",
     "usernamePlaceholder": "Choose a username",
-    "publicLists": "Public Lists"
+    "publicLists": "Public Lists",
+    "ratingLabelsTitle": "Rating labels",
+    "ratingLabelsDesc": "Customize the name for each rating level (1–10)",
+    "tagsTitle": "Tags",
+    "tagsDesc": "Default tags cannot be modified or deleted",
+    "noTags": "No tags",
+    "newTagPlaceholder": "New custom tag...",
+    "addTag": "Add",
+    "changeColor": "Change color",
+    "deleteTag": "Delete tag {name}"
   },
   "settings": {
     "title": "Settings",

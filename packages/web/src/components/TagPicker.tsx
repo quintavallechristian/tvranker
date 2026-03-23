@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useTransition } from "react";
 import { Tag as TagIcon, Plus, X, Check } from "@phosphor-icons/react";
+import { useTranslations } from "next-intl";
 import type { TagRow } from "@/app/[locale]/(app)/tags/actions";
 import {
   TAG_COLORS,
@@ -33,6 +34,7 @@ export function TagPicker({
   const [newTagColor, setNewTagColor] = useState<TagColor>("slate");
   const [isPending, startTransition] = useTransition();
   const containerRef = useRef<HTMLDivElement>(null);
+  const t = useTranslations("shows");
 
   // Close on outside click
   useEffect(() => {
@@ -94,7 +96,7 @@ export function TagPicker({
               onRemove(tag.id);
             }}
             className="opacity-60 hover:opacity-100"
-            aria-label={`Remove tag ${tag.name}`}
+            aria-label={`${t("removeTag", { name: tag.name })}`}
           >
             <X size={10} weight="bold" />
           </button>
@@ -108,7 +110,7 @@ export function TagPicker({
           setOpen((v) => !v);
         }}
         className="inline-flex items-center gap-0.5 rounded-full border border-dashed border-border px-2 py-0.5 text-[10px] text-text-faint transition-colors hover:border-border-hover hover:text-text-muted"
-        aria-label="Manage tags"
+        aria-label={t("manageTags")}
       >
         <TagIcon size={10} />
         <Plus size={8} weight="bold" />
@@ -175,7 +177,7 @@ export function TagPicker({
                 type="text"
                 value={newTagName}
                 onChange={(e) => setNewTagName(e.target.value)}
-                placeholder="Nuovo tag..."
+                placeholder={t("newTagPlaceholder")}
                 maxLength={50}
                 className="min-w-0 flex-1 rounded-sm border border-border bg-bg-elevated px-2 py-1 text-xs text-text-primary placeholder:text-text-faint outline-none focus:border-accent"
               />

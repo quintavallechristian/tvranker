@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { UserAvatar } from "@/components/UserAvatar";
 import { FollowButton } from "@/components/FollowButton";
 import { computeListSimilarity } from "@/lib/similarity";
@@ -14,6 +15,7 @@ export default async function UserProfilePage({
 }) {
   const { username } = await params;
   const supabase = await createClient();
+  const tUsers = await getTranslations("users");
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -136,7 +138,7 @@ export default async function UserProfilePage({
           <h1 className="text-xl font-semibold tracking-tight text-text-primary">
             @{profile.username}
           </h1>
-          <p className="text-sm text-text-muted">{itemCount} shows</p>
+          <p className="text-sm text-text-muted">{tUsers("showCount", { count: itemCount })}</p>
         </div>
         <div className="ml-auto flex items-center gap-3">
           {similarityScore !== null && (
@@ -144,7 +146,7 @@ export default async function UserProfilePage({
               <span className="text-sm font-semibold text-accent">
                 {similarityScore}%
               </span>
-              <span className="text-xs text-text-muted">compatible</span>
+              <span className="text-xs text-text-muted">{tUsers("compatible")}</span>
             </div>
           )}
           {user && !isOwnProfile && (
@@ -171,18 +173,18 @@ export default async function UserProfilePage({
               )}
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-xs text-text-faint">{itemCount} shows</span>
+              <span className="text-xs text-text-faint">{tUsers("showCount", { count: itemCount })}</span>
               <Link
                 href={`/users/${profile.username}/analytics`}
                 className="rounded-md border border-border px-2.5 py-1 text-xs text-text-muted transition-colors hover:border-border-hover hover:text-text-secondary"
               >
-                Analytics
+                {tUsers("analytics")}
               </Link>
             </div>
           </div>
 
           {listItems.length === 0 ? (
-            <p className="text-sm text-text-muted">No shows yet.</p>
+            <p className="text-sm text-text-muted">{tUsers("noShows")}</p>
           ) : (
             <UserListClient
               listId={list.id}
@@ -196,7 +198,7 @@ export default async function UserProfilePage({
         </div>
       ) : (
         <p className="text-sm text-text-muted">
-          This user&apos;s list is private.
+          {tUsers("privateList")}
         </p>
       )}
     </div>

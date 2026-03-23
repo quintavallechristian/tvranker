@@ -11,7 +11,8 @@
     "confirm": "Conferma",
     "public": "Pubblico",
     "private": "Privato",
-    "noResults": "Nessun risultato trovato"
+    "noResults": "Nessun risultato trovato",
+    "error": "Errore"
   },
   "auth": {
     "login": "Accedi",
@@ -54,6 +55,16 @@
     "emptyTitle": "Nessuna notifica",
     "emptyDescription": "Riceverai una notifica quando qualcuno inizia a seguirti",
     "newFollower": "ha iniziato a seguirti"
+  },
+  "users": {
+    "showCount": "{count, plural, =0 {Nessuna serie} =1 {1 serie} other {# serie}}",
+    "compatible": "compatibile",
+    "analytics": "Analytics",
+    "noShows": "Nessuna serie ancora.",
+    "privateList": "La lista di questo utente \u00e8 privata.",
+    "inCommon": "In comune ({count})",
+    "noCommon": "Nessuna serie in comune.",
+    "yourRating": "Il tuo voto"
   },
   "lists": {
     "title": "La mia Lista",
@@ -98,7 +109,16 @@
     "longestShowByYear": "Serie più lunga per anno",
     "seasonsByYearTitle": "Per anno di uscita",
     "seasonCount": "{count, plural, =1 {1 stagione} other {# stagioni}}",
-    "noSeasonData": "Dati sulle stagioni non ancora disponibili"
+    "noSeasonData": "Dati sulle stagioni non ancora disponibili",
+    "filters": "Filtri",
+    "clearFilters": "Cancella",
+    "ratingFilter": "Voto",
+    "tagsFilter": "Tag",
+    "noShowsYet": "Nessuna serie in questa lista",
+    "loadingMore": "Caricamento...",
+    "durationDays": "{days, plural, =1 {1 giorno} other {# giorni}}",
+    "durationHours": "{hours, plural, =1 {1 h} other {# h}}",
+    "durationMinutes": "{minutes, plural, =1 {1 min} other {# min}}"
   },
   "shows": {
     "addShow": "Aggiungi Serie",
@@ -108,7 +128,15 @@
     "removeFromList": "Rimuovi dalla lista",
     "position": "#",
     "title": "Titolo",
-    "dragToReorder": "Trascina per riordinare"
+    "dragToReorder": "Trascina per riordinare",
+    "manageTags": "Gestisci tag",
+    "removeTag": "Rimuovi tag {name}",
+    "newTagPlaceholder": "Nuovo tag...",
+    "addNote": "Aggiungi una nota...",
+    "personalNote": "Nota personale",
+    "ratingTapToChange": "Voto: {rating}/10. Tocca per cambiare.",
+    "tapToRate": "Tocca per votare",
+    "viewOnTmdb": "Visualizza su TMDB"
   },
   "import": {
     "title": "Importa Serie",
@@ -192,14 +220,24 @@
     "noEpisodeData": "Nessun dato sugli episodi disponibile.",
     "addToList": "Aggiungi alla lista",
     "inMyList": "Nella mia lista",
-    "myRating": "Mio voto"
+    "myRating": "Mio voto",
+    "viewOnTmdb": "Visualizza su TMDB"
   },
   "profile": {
     "title": "Profilo",
     "editProfile": "Modifica Profilo",
     "changeAvatar": "Cambia avatar",
     "usernamePlaceholder": "Scegli un username",
-    "publicLists": "Liste Pubbliche"
+    "publicLists": "Liste Pubbliche",
+    "ratingLabelsTitle": "Etichette voto",
+    "ratingLabelsDesc": "Personalizza il nome per ogni livello di voto (1\u201310)",
+    "tagsTitle": "Tag",
+    "tagsDesc": "I tag di default non possono essere modificati o eliminati",
+    "noTags": "Nessun tag",
+    "newTagPlaceholder": "Nuovo tag personalizzato...",
+    "addTag": "Aggiungi",
+    "changeColor": "Cambia colore",
+    "deleteTag": "Elimina tag {name}"
   },
   "settings": {
     "title": "Impostazioni",
