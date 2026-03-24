@@ -140,7 +140,9 @@ export default async function UserProfilePage({
           <h1 className="text-xl font-semibold tracking-tight text-text-primary">
             @{profile.username}
           </h1>
-          <p className="text-sm text-text-muted">{tUsers("showCount", { count: itemCount })}</p>
+          <p className="text-sm text-text-muted">
+            {tUsers("showCount", { count: itemCount })}
+          </p>
         </div>
         <div className="ml-auto flex items-center gap-3">
           {similarityScore !== null && (
@@ -148,7 +150,9 @@ export default async function UserProfilePage({
               <span className="text-sm font-semibold text-accent">
                 {similarityScore}%
               </span>
-              <span className="text-xs text-text-muted">{tUsers("compatible")}</span>
+              <span className="text-xs text-text-muted">
+                {tUsers("compatible")}
+              </span>
             </div>
           )}
           {user && !isOwnProfile && (
@@ -175,7 +179,9 @@ export default async function UserProfilePage({
               )}
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-xs text-text-faint">{tUsers("showCount", { count: itemCount })}</span>
+              <span className="text-xs text-text-faint">
+                {tUsers("showCount", { count: itemCount })}
+              </span>
               <Link
                 href={`/users/${profile.username}/analytics`}
                 className="rounded-md border border-border px-2.5 py-1 text-xs text-text-muted transition-colors hover:border-border-hover hover:text-text-secondary"
@@ -199,9 +205,7 @@ export default async function UserProfilePage({
           )}
         </div>
       ) : (
-        <p className="text-sm text-text-muted">
-          {tUsers("privateList")}
-        </p>
+        <p className="text-sm text-text-muted">{tUsers("privateList")}</p>
       )}
     </div>
   );

@@ -348,10 +348,10 @@ export function ProfilePageClient({
         <div className="mb-4 flex items-center gap-2">
           <Tag size={16} className="text-text-muted" />
           <div>
-            <h3 className="text-sm font-semibold text-text-primary">{t("tagsTitle")}</h3>
-            <p className="mt-0.5 text-xs text-text-muted">
-              {t("tagsDesc")}
-            </p>
+            <h3 className="text-sm font-semibold text-text-primary">
+              {t("tagsTitle")}
+            </h3>
+            <p className="mt-0.5 text-xs text-text-muted">{t("tagsDesc")}</p>
           </div>
         </div>
 

@@ -471,7 +471,10 @@ export function ListDetailClient({
           }));
         }
       } catch {
-        setQuickAddFeedback((prev) => ({ ...prev, [showKey]: tCommon("error") }));
+        setQuickAddFeedback((prev) => ({
+          ...prev,
+          [showKey]: tCommon("error"),
+        }));
       }
       setTimeout(() => {
         setQuickAddFeedback((prev) => {

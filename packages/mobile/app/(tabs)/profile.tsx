@@ -103,7 +103,10 @@ export default function ProfileScreen() {
     if (field === "is_public") setIsPublic(value);
     if (field === "visible_to_followers") setVisibleToFollowers(value);
     if (field === "visible_to_following") setVisibleToFollowing(value);
-    await supabase.from("lists").update({ [field]: value }).eq("id", listId);
+    await supabase
+      .from("lists")
+      .update({ [field]: value })
+      .eq("id", listId);
   };
 
   if (loading) {
@@ -177,7 +180,9 @@ export default function ProfileScreen() {
       {/* List Visibility */}
       {listId && (
         <View style={styles.visibilitySection}>
-          <Text style={styles.sectionTitle}>{t("profile.visibilityTitle")}</Text>
+          <Text style={styles.sectionTitle}>
+            {t("profile.visibilityTitle")}
+          </Text>
           <Text style={styles.sectionDesc}>{t("profile.visibilityDesc")}</Text>
 
           {/* General visibility */}

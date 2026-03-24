@@ -435,11 +435,13 @@ export async function getListAnalytics(
       title: string;
       poster_path: string | null;
       first_air_date: string | null;
-      seasons_data: {
-        season_number: number;
-        episode_count: number;
-        episodes?: { runtime: number | null }[];
-      }[] | null;
+      seasons_data:
+        | {
+            season_number: number;
+            episode_count: number;
+            episodes?: { runtime: number | null }[];
+          }[]
+        | null;
     } | null;
   };
   const { data: rawItems } = await supabase
@@ -637,12 +639,23 @@ export async function getListAnalytics(
   // mostSeasonsByYear: for each premiere year, the show with the most seasons
   const mostSeasonsByYearMap: Record<
     string,
-    { id: string; title: string; poster_path: string | null; seasonCount: number }
+    {
+      id: string;
+      title: string;
+      poster_path: string | null;
+      seasonCount: number;
+    }
   > = {};
   // longestShowByYear: for each premiere year, the show with the most total runtime
   const longestShowByYearMap: Record<
     string,
-    { id: string; title: string; poster_path: string | null; totalMinutes: number; seasonCount: number }
+    {
+      id: string;
+      title: string;
+      poster_path: string | null;
+      totalMinutes: number;
+      seasonCount: number;
+    }
   > = {};
 
   for (const item of items) {
@@ -669,7 +682,10 @@ export async function getListAnalytics(
       const y = parseInt(fad.slice(0, 4), 10);
       if (!isNaN(y) && y >= 1900) {
         const yr = String(y);
-        if (!mostSeasonsByYearMap[yr] || seasonCount > mostSeasonsByYearMap[yr].seasonCount) {
+        if (
+          !mostSeasonsByYearMap[yr] ||
+          seasonCount > mostSeasonsByYearMap[yr].seasonCount
+        ) {
           mostSeasonsByYearMap[yr] = {
             id: show.id,
             title: show.title,
@@ -701,7 +717,10 @@ export async function getListAnalytics(
       const y = parseInt(fadForDuration.slice(0, 4), 10);
       if (!isNaN(y) && y >= 1900) {
         const yr = String(y);
-        if (!longestShowByYearMap[yr] || totalMinutes > longestShowByYearMap[yr].totalMinutes) {
+        if (
+          !longestShowByYearMap[yr] ||
+          totalMinutes > longestShowByYearMap[yr].totalMinutes
+        ) {
           longestShowByYearMap[yr] = {
             id: show.id,
             title: show.title,
