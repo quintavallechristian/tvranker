@@ -9,9 +9,10 @@ import {
   SpinnerGap,
   ArrowLeft,
   TelevisionSimple,
+  FilmStrip,
 } from "@phosphor-icons/react";
 
-type ImportService = "tvtime" | "mal";
+type ImportService = "tvtime" | "mal" | "imdb";
 
 type ImportDialogProps = {
   open: boolean;
@@ -107,6 +108,28 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
     [t],
   );
 
+  const handleFileSelectImdb = useCallback(
+    async (selectedFile: File) => {
+      setError(null);
+      try {
+        const text = await selectedFile.text();
+        const { parseImdbCsv } = await import("@/lib/import/imdb-parser");
+        const parsed = parseImdbCsv(text);
+
+        setFile(selectedFile);
+        setPreview({
+          name: selectedFile.name,
+          showCount: parsed.shows.length,
+          moviesSkipped: parsed.moviesSkipped,
+          seasonsSkipped: parsed.seasonsSkipped,
+        });
+      } catch {
+        setError(t("invalidFormatCsv"));
+      }
+    },
+    [t],
+  );
+
   const handleImport = async () => {
     if (!file) return;
     setLoading(true);
@@ -126,6 +149,22 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
             title: s.title,
             id: s.imdb_id ? { imdb: s.imdb_id } : undefined,
             score: s.score ?? undefined,
+          })),
+        };
+        await onImport(asJson);
+      } else if (service === "imdb") {
+        const text = await file.text();
+        const { parseImdbCsv } = await import("@/lib/import/imdb-parser");
+        const parsed = parseImdbCsv(text);
+        const asJson = {
+          name: parsed.name,
+          description: parsed.description,
+          is_public: parsed.is_public,
+          shows: parsed.shows.map((s) => ({
+            title: s.title,
+            id: s.imdb_id ? { imdb: s.imdb_id } : undefined,
+            score: s.score ?? undefined,
+            added_at: s.added_at ?? undefined,
           })),
         };
         await onImport(asJson);
@@ -191,6 +230,19 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
                 <p className="text-xs text-text-secondary">{t("malDesc")}</p>
               </div>
             </button>
+
+            <button
+              onClick={() => setService("imdb")}
+              className="flex items-center gap-4 rounded-md border border-border p-4 text-left transition-colors hover:border-border-hover hover:bg-bg-surface-hover"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-[#F5C518]/10 text-[#F5C518]">
+                <FilmStrip size={22} weight="duotone" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-text-primary">IMDb</p>
+                <p className="text-xs text-text-secondary">{t("imdbDesc")}</p>
+              </div>
+            </button>
           </div>
         </div>
       </div>
@@ -198,9 +250,14 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
   }
 
   // ── File upload step ──
+  const isImdb = service === "imdb";
   const isMal = service === "mal";
-  const fileAccept = isMal ? ".xml" : ".json";
-  const handleFileSelect = isMal ? handleFileSelectMal : handleFileSelectTvTime;
+  const fileAccept = isImdb ? ".csv" : isMal ? ".xml" : ".json";
+  const handleFileSelect = isImdb
+    ? handleFileSelectImdb
+    : isMal
+      ? handleFileSelectMal
+      : handleFileSelectTvTime;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -222,10 +279,14 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
         </button>
 
         <h2 className="mb-1 text-lg font-semibold text-text-primary">
-          {isMal ? t("malTitle") : t("tvtimeTitle")}
+          {isImdb ? t("imdbTitle") : isMal ? t("malTitle") : t("tvtimeTitle")}
         </h2>
         <p className="mb-6 text-sm text-text-secondary">
-          {isMal ? t("malDescription") : t("tvtimeDescription")}
+          {isImdb
+            ? t("imdbDescription")
+            : isMal
+              ? t("malDescription")
+              : t("tvtimeDescription")}
         </p>
 
         {/* Dropzone */}
@@ -235,7 +296,11 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
         >
           <UploadSimple size={28} className="text-text-muted" />
           <span className="text-sm text-text-secondary">
-            {isMal ? t("selectFileXml") : t("selectFileJson")}
+            {isImdb
+              ? t("selectFileCsv")
+              : isMal
+                ? t("selectFileXml")
+                : t("selectFileJson")}
           </span>
           <input
             ref={fileInputRef}

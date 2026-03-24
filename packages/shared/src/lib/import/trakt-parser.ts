@@ -48,6 +48,7 @@ export type ParsedShow = {
   title: string;
   imdb_id: string | null;
   score?: number | null;
+  added_at?: string | null;
 };
 
 export type ParseResult = {
@@ -76,6 +77,7 @@ export function parseTraktJson(input: unknown): ParseResult {
         title: show.title,
         imdb_id: normalizeImdb(show.id?.imdb),
         score: show.score ?? null,
+        added_at: show.created_at ?? null,
       })),
       moviesSkipped: 0,
       seasonsSkipped: 0,
@@ -92,6 +94,7 @@ export function parseTraktJson(input: unknown): ParseResult {
       title: show.title,
       imdb_id: normalizeImdb(show.id?.imdb),
       score: show.score ?? null,
+      added_at: show.added_at ?? null,
     })),
     moviesSkipped: parsed.movies?.length ?? 0,
     seasonsSkipped: 0,

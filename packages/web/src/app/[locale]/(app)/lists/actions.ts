@@ -281,7 +281,13 @@ export async function importToMyList(jsonData: unknown) {
             : null;
         const { error } = await supabase
           .from("list_items")
-          .insert({ list_id: myList.id, show_id: dbShowId, position, rating });
+          .insert({
+            list_id: myList.id,
+            show_id: dbShowId,
+            position,
+            rating,
+            ...(show.added_at ? { added_at: show.added_at } : {}),
+          });
         if (!error) {
           if (animeTagId) {
             // Best-effort: keep import resilient even if tag assignment fails.
