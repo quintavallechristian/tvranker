@@ -76,7 +76,11 @@ export function parseImdbCsv(csvText: string): ImdbParseResult {
 
     // Skip non-TV types
     if (!TV_TYPES.has(titleType)) {
-      if (titleType === "Movie" || titleType === "Short" || titleType === "Video") {
+      if (
+        titleType === "Movie" ||
+        titleType === "Short" ||
+        titleType === "Video"
+      ) {
         moviesSkipped++;
       }
       continue;
