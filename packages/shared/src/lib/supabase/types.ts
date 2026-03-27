@@ -32,6 +32,7 @@ export type Database = {
           username: string;
           avatar_url: string | null;
           rating_labels: string[] | null;
+          homepage_widgets: Record<string, unknown>[] | null;
           created_at: string;
         };
         Insert: {
@@ -39,6 +40,7 @@ export type Database = {
           username: string;
           avatar_url?: string | null;
           rating_labels?: string[] | null;
+          homepage_widgets?: Record<string, unknown>[] | null;
           created_at?: string;
         };
         Update: {
@@ -46,6 +48,7 @@ export type Database = {
           username?: string;
           avatar_url?: string | null;
           rating_labels?: string[] | null;
+          homepage_widgets?: Record<string, unknown>[] | null;
         };
         Relationships: [];
       };
@@ -317,6 +320,123 @@ export type Database = {
           },
         ];
       };
+      movies: {
+        Row: {
+          id: string;
+          tmdb_id: number | null;
+          imdb_id: string | null;
+          title: string;
+          poster_path: string | null;
+          release_date: string | null;
+          overview: string | null;
+          runtime: number | null;
+          tmdb_fetched: boolean;
+          trailer_url: string | null;
+          watch_providers: WatchProviderRegion | null;
+        };
+        Insert: {
+          id?: string;
+          tmdb_id?: number | null;
+          imdb_id?: string | null;
+          title: string;
+          poster_path?: string | null;
+          release_date?: string | null;
+          overview?: string | null;
+          runtime?: number | null;
+          tmdb_fetched?: boolean;
+          trailer_url?: string | null;
+          watch_providers?: WatchProviderRegion | null;
+        };
+        Update: {
+          tmdb_id?: number | null;
+          imdb_id?: string | null;
+          title?: string;
+          poster_path?: string | null;
+          release_date?: string | null;
+          overview?: string | null;
+          runtime?: number | null;
+          tmdb_fetched?: boolean;
+          trailer_url?: string | null;
+          watch_providers?: WatchProviderRegion | null;
+        };
+        Relationships: [];
+      };
+      movie_lists: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          description: string | null;
+          is_public: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name?: string;
+          description?: string | null;
+          is_public?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          name?: string;
+          description?: string | null;
+          is_public?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "movie_lists_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      movie_list_items: {
+        Row: {
+          id: string;
+          movie_list_id: string;
+          movie_id: string;
+          rating: number | null;
+          position: number;
+          added_at: string;
+          notes: string | null;
+        };
+        Insert: {
+          id?: string;
+          movie_list_id: string;
+          movie_id: string;
+          rating?: number | null;
+          position?: number;
+          added_at?: string;
+          notes?: string | null;
+        };
+        Update: {
+          rating?: number | null;
+          position?: number;
+          notes?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "movie_list_items_movie_list_id_fkey";
+            columns: ["movie_list_id"];
+            isOneToOne: false;
+            referencedRelation: "movie_lists";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "movie_list_items_movie_id_fkey";
+            columns: ["movie_id"];
+            isOneToOne: false;
+            referencedRelation: "movies";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -342,6 +462,10 @@ export type Tag = Database["public"]["Tables"]["tags"]["Row"];
 export type ShowTag = Database["public"]["Tables"]["show_tags"]["Row"];
 export type Follow = Database["public"]["Tables"]["follows"]["Row"];
 export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
+export type Movie = Database["public"]["Tables"]["movies"]["Row"];
+export type MovieList = Database["public"]["Tables"]["movie_lists"]["Row"];
+export type MovieListItem =
+  Database["public"]["Tables"]["movie_list_items"]["Row"];
 
 export type ListWithItems = List & {
   list_items: (ListItem & { shows: Show })[];

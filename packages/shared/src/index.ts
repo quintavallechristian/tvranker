@@ -53,6 +53,9 @@ export type {
   SeasonInfo,
   WatchProvider,
   WatchProviderRegion,
+  Movie,
+  MovieList,
+  MovieListItem,
 } from "./lib/supabase/types";
 
 // Import parsers

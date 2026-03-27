@@ -6,8 +6,8 @@ import { usePathname } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { UserAvatar } from "./UserAvatar";
 import {
-  ListBullets,
   Compass,
+  House,
   SignOut,
   Television,
   Question,
@@ -54,7 +54,7 @@ export function SidebarNav({
   }, [mobileOpen]);
 
   const links = [
-    { href: "/lists", label: t("myList"), icon: ListBullets, badge: 0 },
+    { href: "/home", label: t("home"), icon: House, badge: 0 },
     { href: "/explore", label: t("explore"), icon: Compass, badge: 0 },
     { href: "/rankings", label: t("rankings"), icon: Trophy, badge: 0 },
     { href: "/seguiti", label: t("seguiti"), icon: UsersThree, badge: 0 },
@@ -88,7 +88,7 @@ export function SidebarNav({
             <HamburgerIcon size={22} weight="bold" />
           )}
         </button>
-        <Link href="/lists" className="flex items-center gap-2">
+        <Link href="/home" className="flex items-center gap-2">
           <Television size={20} weight="duotone" className="text-accent" />
           <span className="text-sm font-bold tracking-tight text-text-primary">
             TV Ranker
@@ -182,7 +182,7 @@ export function SidebarNav({
 
       {/* ── Desktop sidebar ── */}
       <aside className="hidden md:flex h-screen w-56 shrink-0 flex-col border-r border-border bg-bg-primary">
-        <Link href="/lists" className="flex items-center gap-2 px-4 py-5">
+        <Link href="/home" className="flex items-center gap-2 px-4 py-5">
           <Television size={22} weight="duotone" className="text-accent" />
           <span className="text-sm font-bold tracking-tight text-text-primary">
             TV Ranker

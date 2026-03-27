@@ -327,6 +327,192 @@ export async function getOrCreateShowByTmdbId(show: {
     .select("id")
     .single();
 
-  if (error || !newShow) throw new Error(error?.message ?? "Failed to create show");
+  if (error || !newShow)
+    throw new Error(error?.message ?? "Failed to create show");
   return newShow.id;
+}
+
+// ── Movies ────────────────────────────────────────────────────────────────────
+
+export type PopularMovie = {
+  id: string;
+  tmdb_id: number | null;
+  title: string;
+  poster_path: string | null;
+  release_date: string | null;
+  overview: string | null;
+  addedCount: number;
+};
+
+export async function getPopularMovies(): Promise<PopularMovie[]> {
+  const supabase = await createClient();
+
+  const { data: publicLists } = await supabase
+    .from("movie_lists")
+    .select("id")
+    .eq("is_public", true);
+
+  if (!publicLists || publicLists.length === 0) return [];
+
+  const publicListIds = publicLists.map((l) => l.id);
+
+  const { data: items } = await supabase
+    .from("movie_list_items")
+    .select("movie_id")
+    .in("movie_list_id", publicListIds);
+
+  if (!items || items.length === 0) return [];
+
+  const countMap = new Map<string, number>();
+  for (const item of items) {
+    countMap.set(item.movie_id, (countMap.get(item.movie_id) ?? 0) + 1);
+  }
+
+  const topEntries = Array.from(countMap.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 12);
+
+  const movieIds = topEntries.map(([id]) => id);
+
+  const { data: movies } = await supabase
+    .from("movies")
+    .select("id, tmdb_id, title, poster_path, release_date, overview")
+    .in("id", movieIds);
+
+  if (!movies) return [];
+
+  const movieMap = new Map(movies.map((m) => [m.id, m]));
+
+  return topEntries
+    .map(([id, count]) => {
+      const movie = movieMap.get(id);
+      if (!movie) return null;
+      return {
+        id: movie.id,
+        tmdb_id: movie.tmdb_id,
+        title: movie.title,
+        poster_path: movie.poster_path,
+        release_date: movie.release_date ?? null,
+        overview: movie.overview,
+        addedCount: count,
+      };
+    })
+    .filter((r): r is PopularMovie => r !== null);
+}
+
+export async function addTmdbMovieToMyList(movie: {
+  tmdb_id: number;
+  title: string;
+  poster_path: string | null;
+  release_date: string | null;
+  overview: string | null;
+}): Promise<{ alreadyExists: boolean }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  // Get or create user's movie list
+  let { data: movieList } = await supabase
+    .from("movie_lists")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!movieList) {
+    const { data: newList, error } = await supabase
+      .from("movie_lists")
+      .insert({ user_id: user.id })
+      .select("id")
+      .single();
+    if (error || !newList)
+      throw new Error(error?.message ?? "Failed to create movie list");
+    movieList = newList;
+  }
+
+  // Upsert movie in movies table
+  let { data: existingMovie } = await supabase
+    .from("movies")
+    .select("id")
+    .eq("tmdb_id", movie.tmdb_id)
+    .single();
+
+  if (!existingMovie) {
+    const { data: newMovie, error } = await supabase
+      .from("movies")
+      .insert({
+        tmdb_id: movie.tmdb_id,
+        title: movie.title,
+        poster_path: movie.poster_path,
+        release_date: movie.release_date,
+        overview: movie.overview,
+      })
+      .select("id")
+      .single();
+    if (error || !newMovie)
+      throw new Error(error?.message ?? "Failed to create movie");
+    existingMovie = newMovie;
+  }
+
+  // Check for duplicate
+  const { data: duplicate } = await supabase
+    .from("movie_list_items")
+    .select("id")
+    .eq("movie_list_id", movieList.id)
+    .eq("movie_id", existingMovie.id)
+    .single();
+
+  if (duplicate) return { alreadyExists: true };
+
+  const { data: posItems } = await supabase
+    .from("movie_list_items")
+    .select("position")
+    .eq("movie_list_id", movieList.id)
+    .order("position", { ascending: false })
+    .limit(1);
+
+  const nextPosition = (posItems?.[0]?.position ?? -1) + 1;
+
+  await supabase.from("movie_list_items").insert({
+    movie_list_id: movieList.id,
+    movie_id: existingMovie.id,
+    position: nextPosition,
+  });
+
+  return { alreadyExists: false };
+}
+
+export async function getOrCreateMovieByTmdbId(movie: {
+  tmdb_id: number;
+  title: string;
+  poster_path: string | null;
+  release_date: string | null;
+  overview: string | null;
+}): Promise<string> {
+  const supabase = await createClient();
+
+  const { data: existing } = await supabase
+    .from("movies")
+    .select("id")
+    .eq("tmdb_id", movie.tmdb_id)
+    .single();
+
+  if (existing) return existing.id;
+
+  const { data: newMovie, error } = await supabase
+    .from("movies")
+    .insert({
+      tmdb_id: movie.tmdb_id,
+      title: movie.title,
+      poster_path: movie.poster_path,
+      release_date: movie.release_date,
+      overview: movie.overview,
+    })
+    .select("id")
+    .single();
+
+  if (error || !newMovie)
+    throw new Error(error?.message ?? "Failed to create movie");
+  return newMovie.id;
 }

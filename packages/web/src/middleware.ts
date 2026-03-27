@@ -6,8 +6,8 @@ import { routing } from "@/i18n/routing";
 const intlMiddleware = createMiddleware(routing);
 
 // Auth-protected routes
-const protectedPatterns = ["/lists", "/profile", "/import"];
-// Auth routes (redirect to /lists if already logged in)
+const protectedPatterns = ["/lists", "/profile", "/import", "/home"];
+// Auth routes (redirect to /home if already logged in)
 const authPatterns = ["/login", "/register"];
 
 export async function middleware(request: NextRequest) {
@@ -33,7 +33,7 @@ export async function middleware(request: NextRequest) {
 
   // Redirect authenticated users away from auth pages
   if (authPatterns.some((p) => pathname.startsWith(p)) && user) {
-    return Response.redirect(new URL("/lists", request.url));
+    return Response.redirect(new URL("/home", request.url));
   }
 
   return response;

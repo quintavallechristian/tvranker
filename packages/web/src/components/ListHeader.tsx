@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { Globe, LockSimple } from "@phosphor-icons/react";
 
 type ListHeaderProps = {
+  title?: string;
   description?: string | null;
   isPublic: boolean;
   onDescriptionChange?: (description: string) => void;
@@ -12,6 +13,7 @@ type ListHeaderProps = {
 };
 
 export function ListHeader({
+  title,
   description,
   isPublic,
   onDescriptionChange,
@@ -25,7 +27,7 @@ export function ListHeader({
     <div className="space-y-2">
       <div className="flex items-center gap-3">
         <h1 className="text-xl font-semibold tracking-tight text-text-primary">
-          {tLists("title")}
+          {title ?? tLists("title")}
         </h1>
 
         {/* Read-only visibility badge */}

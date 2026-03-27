@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 
 export type TopRatedShow = {
   id: string;
@@ -14,7 +14,7 @@ export type TopRatedShow = {
 };
 
 export async function getTopRatedShows(): Promise<TopRatedShow[]> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   // Get all public list IDs
   const { data: publicLists } = await supabase
@@ -26,12 +26,25 @@ export async function getTopRatedShows(): Promise<TopRatedShow[]> {
 
   const publicListIds = publicLists.map((l) => l.id);
 
-  // Get all rated items from public lists
-  const { data: items } = await supabase
-    .from("list_items")
-    .select("show_id, rating")
-    .in("list_id", publicListIds)
-    .not("rating", "is", null);
+  // Fetch all rated items in pages (Supabase default cap is 1000 rows)
+  const PAGE_SIZE = 1000;
+  const allItems: Array<{ show_id: string; rating: number }> = [];
+  let page = 0;
+  while (true) {
+    const { data: batch } = await supabase
+      .from("list_items")
+      .select("show_id, rating")
+      .in("list_id", publicListIds)
+      .not("rating", "is", null)
+      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+
+    if (!batch || batch.length === 0) break;
+    allItems.push(...(batch as Array<{ show_id: string; rating: number }>));
+    if (batch.length < PAGE_SIZE) break;
+    page++;
+  }
+
+  const items = allItems;
 
   if (!items || items.length === 0) return [];
 

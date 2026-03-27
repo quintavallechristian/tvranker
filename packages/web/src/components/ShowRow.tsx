@@ -30,6 +30,7 @@ type ShowRowProps = {
   onRemove?: () => void;
   readOnly?: boolean;
   showId?: string;
+  detailHref?: string;
   ratingLabels?: string[] | null;
   // Tags
   allTags?: TagRow[];
@@ -58,6 +59,7 @@ export function ShowRow({
   onRemove,
   readOnly = false,
   showId,
+  detailHref,
   ratingLabels,
   allTags,
   selectedTagIds,
@@ -162,9 +164,9 @@ export function ShowRow({
 
         {/* Title */}
         <div className="min-w-0 flex-1">
-          {showId ? (
+          {(showId || detailHref) ? (
             <Link
-              href={`/shows/${showId}`}
+              href={detailHref ?? `/shows/${showId}`}
               className="block truncate text-sm font-medium text-text-primary hover:text-accent transition-colors"
             >
               {title}

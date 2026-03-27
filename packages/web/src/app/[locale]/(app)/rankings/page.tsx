@@ -1,14 +1,25 @@
 import { getTranslations } from "next-intl/server";
 import { getTopRatedShows } from "./actions";
-import { EmptyState } from "@/components/EmptyState";
+import { getTopRatedMovies } from "./movies/actions";
 import { getPosterUrl } from "@/lib/tmdb/client";
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
-import { Television, Trophy } from "@phosphor-icons/react/dist/ssr";
+import {
+  Television,
+  FilmSlate,
+  Trophy,
+  ArrowRight,
+} from "@phosphor-icons/react/dist/ssr";
 
 export default async function RankingsPage() {
   const t = await getTranslations("rankings");
-  const shows = await getTopRatedShows();
+  const [shows, movies] = await Promise.all([
+    getTopRatedShows(),
+    getTopRatedMovies(),
+  ]);
+
+  const top3Shows = shows.slice(0, 3);
+  const top3Movies = movies.slice(0, 3);
 
   return (
     <div className="space-y-6">
@@ -21,100 +32,181 @@ export default async function RankingsPage() {
         <p className="text-sm text-text-secondary">{t("subtitle")}</p>
       </div>
 
-      {shows.length === 0 ? (
-        <EmptyState
-          title={t("emptyTitle")}
-          description={t("emptyDescription")}
+      {/* Two podium cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <RankingPodiumCard
+          title={t("shows.title")}
+          href="/rankings/shows"
+          viewAllLabel={t("viewAll")}
+          emptyLabel={t("shows.emptyTitle")}
+          items={top3Shows.map((s) => ({
+            id: s.id,
+            title: s.title,
+            poster_path: s.poster_path,
+            avg_rating: s.avg_rating,
+          }))}
+          icon="tv"
         />
+        <RankingPodiumCard
+          title={t("movies.title")}
+          href="/rankings/movies"
+          viewAllLabel={t("viewAll")}
+          emptyLabel={t("movies.emptyTitle")}
+          items={top3Movies.map((m) => ({
+            id: m.id,
+            title: m.title,
+            poster_path: m.poster_path,
+            avg_rating: m.avg_rating,
+          }))}
+          icon="film"
+        />
+      </div>
+    </div>
+  );
+}
+
+type PodiumItem = {
+  id: string;
+  title: string;
+  poster_path: string | null;
+  avg_rating: number;
+};
+
+function RankingPodiumCard({
+  title,
+  href,
+  viewAllLabel,
+  emptyLabel,
+  items,
+  icon,
+}: {
+  title: string;
+  href: string;
+  viewAllLabel: string;
+  emptyLabel: string;
+  items: PodiumItem[];
+  icon: "tv" | "film";
+}) {
+  const Icon = icon === "tv" ? Television : FilmSlate;
+
+  return (
+    <Link
+      href={href}
+      className="group flex flex-col overflow-hidden rounded-xl border border-border bg-bg-surface p-4 transition-colors hover:border-border-hover"
+    >
+      {/* Card header */}
+      <div className="mb-4 flex shrink-0 items-center justify-between">
+        <p className="text-xs font-medium uppercase tracking-widest text-text-muted">
+          {title}
+        </p>
+        <span className="flex items-center gap-1 text-xs text-text-muted transition-colors group-hover:text-accent">
+          {viewAllLabel}
+          <ArrowRight
+            size={12}
+            weight="bold"
+            className="transition-transform group-hover:translate-x-0.5"
+          />
+        </span>
+      </div>
+
+      {items.length > 0 ? (
+        <div className="flex flex-1 items-end justify-center gap-4">
+          {/* 2nd place */}
+          {items[1] ? (
+            <PodiumSlot
+              item={items[1]}
+              rank={2}
+              posterHeight="h-20"
+              rankColor="text-slate-400"
+              icon={icon}
+            />
+          ) : (
+            <div className="w-14" />
+          )}
+
+          {/* 1st place — center, tallest */}
+          <PodiumSlot
+            item={items[0]}
+            rank={1}
+            posterHeight="h-28"
+            rankColor="text-yellow-400"
+            featured
+            icon={icon}
+          />
+
+          {/* 3rd place */}
+          {items[2] ? (
+            <PodiumSlot
+              item={items[2]}
+              rank={3}
+              posterHeight="h-14"
+              rankColor="text-amber-600"
+              icon={icon}
+            />
+          ) : (
+            <div className="w-14" />
+          )}
+        </div>
       ) : (
-        <div className="space-y-1">
-          {shows.map((show, index) => {
-            const posterUrl = getPosterUrl(show.poster_path, "w92");
-            const rank = index + 1;
-
-            return (
-              /* Mirror ShowRow container classes exactly */
-              <div
-                key={show.id}
-                className="group rounded-md border border-border bg-bg-surface p-2.5 md:p-3 transition-colors hover:border-border-hover"
-              >
-                <div className="flex items-center gap-2 md:gap-3">
-                  {/* Rank — same slot as the drag handle + position in ShowRow */}
-                  <span
-                    className={`w-5 md:w-6 shrink-0 text-center font-mono text-xs font-bold tabular-nums ${
-                      rank === 1
-                        ? "text-yellow-500"
-                        : rank === 2
-                          ? "text-slate-400"
-                          : rank === 3
-                            ? "text-amber-600"
-                            : "text-text-muted"
-                    }`}
-                  >
-                    {rank}
-                  </span>
-
-                  {/* Poster */}
-                  <div className="relative h-12 w-8 shrink-0 overflow-hidden rounded-sm bg-bg-elevated">
-                    {posterUrl ? (
-                      <Image
-                        src={posterUrl}
-                        alt={show.title}
-                        fill
-                        className="object-cover"
-                        sizes="32px"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center">
-                        <Television size={14} className="text-text-faint" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Title + year */}
-                  <div className="min-w-0 flex-1">
-                    <Link
-                      href={`/shows/${show.id}`}
-                      className="block truncate text-sm font-medium text-text-primary hover:text-accent transition-colors"
-                    >
-                      {show.title}
-                    </Link>
-                    {show.first_air_date && (
-                      <p className="text-xs text-text-faint">
-                        {new Date(show.first_air_date).getFullYear()}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Rating — desktop, mirrors ShowRow read-only rating pill */}
-                  <div className="hidden md:flex shrink-0 items-center gap-2">
-                    <span className="whitespace-nowrap font-mono text-xs tabular-nums text-accent">
-                      {show.avg_rating.toFixed(1)}{" "}
-                      <span className="text-text-faint">
-                        · {t("votes", { count: show.vote_count })}
-                      </span>
-                    </span>
-                  </div>
-                </div>
-
-                {/* Mobile rating row — mirrors ShowRow bottom row */}
-                <div className="md:hidden mt-2 pl-7">
-                  <span className="font-mono text-xs tabular-nums text-accent">
-                    {show.avg_rating.toFixed(1)}/10{" "}
-                    <span className="text-text-faint">
-                      · {t("votes", { count: show.vote_count })}
-                    </span>
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+        <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border py-8">
+          <Icon size={24} className="text-text-faint" />
+          <p className="text-xs text-text-muted">{emptyLabel}</p>
         </div>
       )}
+    </Link>
+  );
+}
 
-      {shows.length > 0 && (
-        <p className="text-xs text-text-faint">{t("minVotesHint")}</p>
-      )}
+function PodiumSlot({
+  item,
+  rank,
+  posterHeight,
+  rankColor,
+  featured,
+  icon,
+}: {
+  item: PodiumItem;
+  rank: number;
+  posterHeight: string;
+  rankColor: string;
+  featured?: boolean;
+  icon: "tv" | "film";
+}) {
+  const posterUrl = getPosterUrl(item.poster_path, "w92");
+  const Icon = icon === "tv" ? Television : FilmSlate;
+
+  return (
+    <div className="flex w-14 flex-col items-center gap-1">
+      <span className={`text-[10px] font-bold tabular-nums ${rankColor}`}>
+        #{rank}
+      </span>
+      <div
+        className={`relative w-full overflow-hidden rounded-md border bg-bg-elevated ${posterHeight} ${
+          featured
+            ? "border-accent/40 shadow-[0_0_14px_rgba(0,212,170,0.15)]"
+            : "border-border"
+        }`}
+      >
+        {posterUrl ? (
+          <Image
+            src={posterUrl}
+            alt={item.title}
+            fill
+            className="object-cover"
+            sizes="56px"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <Icon size={16} className="text-text-faint" />
+          </div>
+        )}
+      </div>
+      <p className="w-full truncate text-center text-[9px] leading-tight text-text-secondary">
+        {item.title}
+      </p>
+      <span className="font-mono text-[9px] tabular-nums text-accent">
+        {item.avg_rating.toFixed(1)}
+      </span>
     </div>
   );
 }
