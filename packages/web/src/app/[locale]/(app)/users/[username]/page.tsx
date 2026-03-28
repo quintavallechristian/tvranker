@@ -146,7 +146,10 @@ export default async function UserProfilePage({
         rating: i.rating,
         position: i.position ?? idx,
       }));
-      showSimilarityScore = computeListSimilarity(listA, listB);
+      // Only compute similarity if both lists are non-empty (compiled)
+      if (listA.length > 0 && listB.length > 0) {
+        showSimilarityScore = computeListSimilarity(listA, listB);
+      }
     }
 
     if (viewerMovieList && movieList) {
@@ -172,11 +175,17 @@ export default async function UserProfilePage({
         rating: i.rating,
         position: i.position ?? idx,
       }));
-      movieSimilarityScore = computeMovieListSimilarity(movieListA, movieListB);
+      // Only compute similarity if both lists are non-empty (compiled)
+      if (movieListA.length > 0 && movieListB.length > 0) {
+        movieSimilarityScore = computeMovieListSimilarity(
+          movieListA,
+          movieListB,
+        );
+      }
     }
   }
 
-  // Compatibility = average of available similarity scores
+  // Compatibility = average similarity of all lists both profiles have compiled
   let compatibilityScore: number | null = null;
   if (showSimilarityScore !== null && movieSimilarityScore !== null) {
     compatibilityScore = Math.round(
@@ -251,7 +260,10 @@ export default async function UserProfilePage({
           />
         </Link>
 
-        <Link href={`/users/${profile.username}/movies`} className="block h-105">
+        <Link
+          href={`/users/${profile.username}/movies`}
+          className="block h-105"
+        >
           <MoviePodiumWidget
             items={moviePodiumItems}
             rowSpan={2}

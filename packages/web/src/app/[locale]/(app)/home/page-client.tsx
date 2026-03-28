@@ -137,8 +137,8 @@ export function HomeClient({ data }: { data: HomeData }) {
                 config.colSpan === 2 ? "col-span-2" : "col-span-1"
               } ${config.rowSpan === 2 ? "row-span-2" : "row-span-1"}`}
             >
-              {/* Widget controls (visible on hover) */}
-              <div className="absolute -top-2 right-1 z-10 flex gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+              {/* Widget controls (always visible on mobile, hover on desktop) */}
+              <div className="absolute -top-2 right-1 z-10 flex gap-0.5 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
                 <button
                   onClick={() => toggleColSpan(config.id)}
                   className="flex h-5 w-5 items-center justify-center rounded bg-bg-elevated text-text-muted shadow-sm transition-colors hover:bg-bg-surface-hover hover:text-text-primary"
