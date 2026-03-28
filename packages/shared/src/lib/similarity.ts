@@ -1,3 +1,63 @@
+export type MovieListEntry = {
+  movieId: string;
+  rating: number | null;
+  position: number;
+};
+
+/**
+ * Compute similarity between two movie lists (0–100).
+ * Same formula as computeListSimilarity but keyed by movieId.
+ */
+export function computeMovieListSimilarity(
+  listA: MovieListEntry[],
+  listB: MovieListEntry[],
+): number {
+  if (listA.length === 0 || listB.length === 0) return 0;
+
+  const mapA = new Map(
+    listA.map((e) => [e.movieId, { rating: e.rating, position: e.position }]),
+  );
+  const mapB = new Map(
+    listB.map((e) => [e.movieId, { rating: e.rating, position: e.position }]),
+  );
+
+  const commonIds: string[] = [];
+  for (const movieId of mapA.keys()) {
+    if (mapB.has(movieId)) commonIds.push(movieId);
+  }
+
+  if (commonIds.length === 0) return 0;
+
+  const overlapRatio = commonIds.length / Math.min(listA.length, listB.length);
+
+  let ratingSum = 0;
+  let ratingCount = 0;
+  let positionSum = 0;
+  const maxPosA = Math.max(listA.length - 1, 1);
+  const maxPosB = Math.max(listB.length - 1, 1);
+
+  for (const movieId of commonIds) {
+    const a = mapA.get(movieId)!;
+    const b = mapB.get(movieId)!;
+
+    if (a.rating !== null && b.rating !== null) {
+      ratingSum += 1 - Math.abs(a.rating - b.rating) / 9;
+      ratingCount++;
+    }
+
+    const normPosA = a.position / maxPosA;
+    const normPosB = b.position / maxPosB;
+    positionSum += 1 - Math.abs(normPosA - normPosB);
+  }
+
+  const ratingSimilarity = ratingCount > 0 ? ratingSum / ratingCount : 1;
+  const positionSimilarity = positionSum / commonIds.length;
+
+  const agreementScore = 0.5 * ratingSimilarity + 0.5 * positionSimilarity;
+
+  return Math.round(overlapRatio * agreementScore * 100);
+}
+
 export type ListEntry = {
   showId: string;
   rating: number | null;

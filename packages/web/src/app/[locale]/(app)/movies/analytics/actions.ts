@@ -26,21 +26,37 @@ const EMPTY_ANALYTICS: AnalyticsData = {
   longestShow: null,
 };
 
-export async function getMovieListAnalytics(): Promise<AnalyticsData> {
+export async function getMovieListAnalytics(
+  movieListId?: string,
+): Promise<AnalyticsData> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  if (!user) throw new Error("Unauthorized");
+  let listId: string;
 
-  const { data: movieList } = await supabase
-    .from("movie_lists")
-    .select("id")
-    .eq("user_id", user.id)
-    .single();
+  if (movieListId) {
+    // Fetching a specific list — must be public
+    const { data: movieList } = await supabase
+      .from("movie_lists")
+      .select("id, is_public")
+      .eq("id", movieListId)
+      .single();
+    if (!movieList || !movieList.is_public) return EMPTY_ANALYTICS;
+    listId = movieList.id;
+  } else {
+    // Fetching current user's own list
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) throw new Error("Unauthorized");
 
-  if (!movieList) return EMPTY_ANALYTICS;
+    const { data: movieList } = await supabase
+      .from("movie_lists")
+      .select("id")
+      .eq("user_id", user.id)
+      .single();
+    if (!movieList) return EMPTY_ANALYTICS;
+    listId = movieList.id;
+  }
 
   type RawItem = {
     rating: number | null;
@@ -60,7 +76,7 @@ export async function getMovieListAnalytics(): Promise<AnalyticsData> {
     .select(
       "rating, movie_id, added_at, movies(id, title, poster_path, release_date, runtime)",
     )
-    .eq("movie_list_id", movieList.id);
+    .eq("movie_list_id", listId);
 
   const items = (rawItems ?? []) as RawItem[];
   const totalCount = items.length;
@@ -146,7 +162,65 @@ export async function getMovieListAnalytics(): Promise<AnalyticsData> {
       avgRating: Math.round((sum / count) * 10) / 10,
     }));
 
-  // Longest movie by runtime
+  // showsByRating + showsByYear + longestShowByYear — for clickable charts
+  const showsByRating: Record<number, AnalyticsData["showsByRating"][number]> =
+    {};
+  const showsByYear: Record<string, AnalyticsData["showsByYear"][string]> = {};
+  const longestShowByYearMap: Record<
+    string,
+    {
+      id: string;
+      title: string;
+      poster_path: string | null;
+      totalMinutes: number;
+    }
+  > = {};
+
+  for (const item of items) {
+    const movie = item.movies;
+    if (!movie) continue;
+
+    const summary = {
+      id: movie.id,
+      title: movie.title,
+      poster_path: movie.poster_path,
+      rating: item.rating,
+      first_air_date: movie.release_date,
+    };
+
+    if (item.rating !== null) {
+      showsByRating[item.rating] ??= [];
+      showsByRating[item.rating].push(summary);
+    }
+
+    const releaseDate = movie.release_date;
+    if (releaseDate) {
+      const y = parseInt(releaseDate.slice(0, 4), 10);
+      if (!isNaN(y) && y >= 1900) {
+        const yr = String(y);
+        showsByYear[yr] ??= [];
+        showsByYear[yr].push(summary);
+
+        if (
+          movie.runtime &&
+          movie.runtime > (longestShowByYearMap[yr]?.totalMinutes ?? 0)
+        ) {
+          longestShowByYearMap[yr] = {
+            id: movie.id,
+            title: movie.title,
+            poster_path: movie.poster_path,
+            totalMinutes: movie.runtime,
+          };
+        }
+      }
+    }
+  }
+
+  const longestShowByYear = Object.entries(longestShowByYearMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([year, entry]) => ({ year, ...entry, seasonCount: 0 }));
+
+  // Longest movie by runtime (overall)
   let longestShow: AnalyticsData["longestShow"] = null;
   for (const item of items) {
     const movie = item.movies;
@@ -174,11 +248,11 @@ export async function getMovieListAnalytics(): Promise<AnalyticsData> {
     yearCounts,
     decadeAvgRatings,
     yearAvgRatings,
-    showsByRating: {},
-    showsByYear: {},
+    showsByRating,
+    showsByYear,
     mostSeasonsShow: null,
     mostSeasonsByYear: [],
-    longestShowByYear: [],
+    longestShowByYear,
     longestShow,
   };
 }

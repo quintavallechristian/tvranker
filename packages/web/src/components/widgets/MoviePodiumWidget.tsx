@@ -1,19 +1,23 @@
 "use client";
 
+import React from "react";
 import { getPosterUrl } from "@/lib/tmdb/client";
 import Image from "next/image";
 import { FilmSlate } from "@phosphor-icons/react";
 import type { MoviePodiumItem } from "@/app/[locale]/(app)/home/actions";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { getRatingLabel } from "@/lib/rating-labels";
 
 export function MoviePodiumWidget({
   items,
   rowSpan = 1,
+  viewAllHref,
+  badge,
 }: {
   items: MoviePodiumItem[];
   rowSpan?: 1 | 2;
+  viewAllHref?: string;
+  badge?: React.ReactNode;
 }) {
   const t = useTranslations("home");
 
@@ -21,14 +25,16 @@ export function MoviePodiumWidget({
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-bg-surface p-4">
       <div className="mb-3 flex shrink-0 items-center justify-between">
         <p className="text-xs font-medium uppercase tracking-widest text-text-muted">
-          {t("widgets.moviePodium")}
+          {rowSpan === 2 ? t("widgets.top10Movie") : t("widgets.moviePodium")}
         </p>
-        <Link
-          href="/movies"
-          className="text-xs text-text-muted transition-colors hover:text-accent"
-        >
-          {t("widgets.viewAll")}
-        </Link>
+        {badge ?? (
+          <Link
+            href={viewAllHref ?? "/movies"}
+            className="text-xs text-text-muted transition-colors hover:text-accent"
+          >
+            {t("widgets.viewAll")}
+          </Link>
+        )}
       </div>
 
       {items.length > 0 ? (
@@ -135,7 +141,6 @@ function PodiumSlot({
 
 function RankRow({ item, rank }: { item: MoviePodiumItem; rank: number }) {
   const posterUrl = getPosterUrl(item.poster_path, "w92");
-  const label = item.rating != null ? getRatingLabel(item.rating) : null;
 
   return (
     <div className="flex items-center gap-2 py-0.5">
@@ -158,9 +163,9 @@ function RankRow({ item, rank }: { item: MoviePodiumItem; rank: number }) {
       <p className="min-w-0 flex-1 truncate text-[11px] text-text-primary">
         {item.title}
       </p>
-      {label && (
-        <span className="shrink-0 text-[10px] font-medium text-accent">
-          {label}
+      {item.rating != null && (
+        <span className="shrink-0 font-mono text-[10px] font-medium tabular-nums text-accent">
+          {item.rating}
         </span>
       )}
     </div>

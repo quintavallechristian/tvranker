@@ -3,7 +3,9 @@
 import { useState, useTransition } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { ArrowLeft,
+import { Link } from "@/i18n/navigation";
+import {
+  ArrowLeft,
   Star,
   ListBullets,
   FilmStrip,
@@ -56,6 +58,7 @@ type PublicList = {
   id: string;
   name: string;
   rating: number | null;
+  similarity: number | null;
   owner: {
     username: string;
     avatarUrl: string | null;
@@ -74,6 +77,7 @@ type MovieDetailClientProps = {
   userItem: { id: string; rating: number | null } | null;
   movieListId: string | null;
   isLoggedIn: boolean;
+  movieScore?: number | null;
 };
 
 export function MovieDetailClient({
@@ -84,6 +88,7 @@ export function MovieDetailClient({
   userItem: initialUserItem,
   movieListId,
   isLoggedIn,
+  movieScore,
 }: MovieDetailClientProps) {
   const t = useTranslations("movieDetail");
   const tCommon = useTranslations("common");
@@ -120,7 +125,7 @@ export function MovieDetailClient({
       {/* Main layout */}
       <div className="flex flex-col gap-6 sm:flex-row sm:gap-8">
         {/* Poster */}
-          <div className="relative aspect-2/3 w-full shrink-0 overflow-hidden rounded-lg border border-border bg-bg-elevated sm:w-56">
+        <div className="relative aspect-2/3 w-full shrink-0 overflow-hidden rounded-lg border border-border bg-bg-elevated sm:w-56">
           {posterUrl ? (
             <Image
               src={posterUrl}
@@ -188,6 +193,12 @@ export function MovieDetailClient({
                   {t("myRating")}: {initialUserItem.rating}/10
                 </div>
               )}
+            {/* Recommendation score badge */}
+            {movieScore !== null && movieScore !== undefined && (
+              <div className="inline-flex items-center rounded-md border border-accent/30 bg-accent/10 px-2.5 py-1.5 text-xs font-mono font-bold text-accent tabular-nums">
+                {movieScore}%
+              </div>
+            )}
             {/* Add / Remove from list button */}
             {isLoggedIn && movieListId && (
               <button
@@ -327,9 +338,10 @@ export function MovieDetailClient({
                   </h2>
                   <div className="space-y-2">
                     {publicLists.map((list) => (
-                      <div
+                      <Link
                         key={list.id}
-                        className="flex items-center justify-between rounded-md border border-border bg-bg-surface px-3 py-2.5"
+                        href={`/users/${list.owner.username}`}
+                        className="flex items-center justify-between rounded-md border border-border bg-bg-surface px-3 py-2.5 transition-colors hover:border-border-hover hover:bg-bg-elevated"
                       >
                         <div className="flex min-w-0 items-center gap-2.5">
                           <ListBullets
@@ -345,17 +357,24 @@ export function MovieDetailClient({
                             </span>
                           </div>
                         </div>
-                        {list.rating !== null && (
-                          <div className="ml-3 flex shrink-0 items-center gap-1 text-xs text-text-secondary">
-                            <Star
-                              size={12}
-                              weight="fill"
-                              className="text-accent"
-                            />
-                            {list.rating}/10
-                          </div>
-                        )}
-                      </div>
+                        <div className="ml-3 flex shrink-0 items-center gap-2">
+                          {list.similarity !== null && (
+                            <span className="text-xs font-medium text-accent">
+                              {list.similarity}%
+                            </span>
+                          )}
+                          {list.rating !== null && (
+                            <div className="flex items-center gap-1 text-xs text-text-secondary">
+                              <Star
+                                size={12}
+                                weight="fill"
+                                className="text-accent"
+                              />
+                              {list.rating}/10
+                            </div>
+                          )}
+                        </div>
+                      </Link>
                     ))}
                   </div>
                 </div>

@@ -1,24 +1,42 @@
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { ListAnalyticsPage } from "@/components/ListAnalytics";
-import { getMovieListAnalytics } from "./actions";
+import { getMovieListAnalytics } from "../../../../movies/analytics/actions";
 
-export default async function MovieAnalyticsPage() {
+export default async function UserMovieAnalyticsPage({
+  params,
+}: {
+  params: Promise<{ username: string }>;
+}) {
+  const { username } = await params;
   const supabase = await createClient();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, username, rating_labels")
+    .eq("username", username)
+    .single();
+
+  if (!profile) notFound();
+
+  const { data: movieList } = await supabase
+    .from("movie_lists")
+    .select("id, is_public")
+    .eq("user_id", profile.id)
+    .single();
+
+  if (!movieList) notFound();
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
+  const isOwner = user?.id === profile.id;
+  if (!movieList.is_public && !isOwner) notFound();
 
-  const [data, { data: profile }, t, tLists] = await Promise.all([
-    getMovieListAnalytics(),
-    supabase
-      .from("profiles")
-      .select("rating_labels")
-      .eq("id", user.id)
-      .single(),
+  const [data, t, tLists] = await Promise.all([
+    getMovieListAnalytics(movieList.id),
     getTranslations("movies"),
     getTranslations("lists"),
   ]);
@@ -27,11 +45,11 @@ export default async function MovieAnalyticsPage() {
     <ListAnalyticsPage
       data={data}
       itemType="movie"
-      ratingLabels={profile?.rating_labels as string[] | null}
-      backHref="/movies"
+      ratingLabels={profile.rating_labels as string[] | null}
+      backHref={`/users/${username}/movies`}
       labels={{
         title: t("analytics"),
-        backToList: t("title"),
+        backToList: `@${username}`,
         totalShows: t("totalMovies"),
         ratedShows: t("ratedMovies"),
         avgRating: tLists("avgRating"),

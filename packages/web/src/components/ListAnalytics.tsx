@@ -16,19 +16,29 @@ import {
   Area,
   CartesianGrid,
 } from "recharts";
-import { ArrowLeft, X, FilmStrip, Clock, Television } from "@phosphor-icons/react";
+import {
+  ArrowLeft,
+  X,
+  FilmStrip,
+  Clock,
+  Television,
+} from "@phosphor-icons/react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { TAG_COLOR_HEX, type TagColor } from "@/lib/tag-colors";
 import { getRatingLabel } from "@/lib/rating-labels";
 import { ShowRow } from "@/components/ShowRow";
-import type { AnalyticsData, ShowSummary } from "@/app/[locale]/(app)/lists/actions";
+import type {
+  AnalyticsData,
+  ShowSummary,
+} from "@/app/[locale]/(app)/lists/actions";
 
 type Props = {
   data: AnalyticsData;
   ratingLabels?: string[] | null;
   backHref: string;
+  itemType?: "show" | "movie";
   labels: {
     title: string;
     backToList: string;
@@ -64,12 +74,14 @@ function ShowStatRow({
   posterPath,
   badge,
   compact = false,
+  itemType = "show",
 }: {
   id: string;
   title: string;
   posterPath: string | null;
   badge: string;
   compact?: boolean;
+  itemType?: "show" | "movie";
 }) {
   const posterUrl = posterPath
     ? `https://image.tmdb.org/t/p/w92${posterPath}`
@@ -77,13 +89,19 @@ function ShowStatRow({
 
   return (
     <Link
-      href={`/shows/${id}`}
+      href={itemType === "movie" ? `/movies/${id}` : `/shows/${id}`}
       className={`flex items-center gap-2 rounded-md transition-colors hover:bg-bg-surface ${compact ? "" : "border border-border bg-bg-elevated px-2 py-1.5"}`}
     >
       {/* Poster thumbnail */}
       <div className="relative h-10 w-7 shrink-0 overflow-hidden rounded bg-bg-elevated">
         {posterUrl ? (
-          <Image src={posterUrl} alt={title} fill className="object-cover" sizes="28px" />
+          <Image
+            src={posterUrl}
+            alt={title}
+            fill
+            className="object-cover"
+            sizes="28px"
+          />
         ) : (
           <div className="flex h-full items-center justify-center">
             <Television size={12} className="text-text-faint" />
@@ -131,6 +149,7 @@ export function ListAnalyticsPage({
   ratingLabels,
   backHref,
   labels,
+  itemType = "show",
 }: Props) {
   const tLists = useTranslations("lists");
 
@@ -460,7 +479,10 @@ export function ListAnalyticsPage({
                         if (!drillDecadeCount && barData.decade) {
                           setDrillDecadeCount(barData.decade);
                         } else if (drillDecadeCount && barData.year) {
-                          openModal(barData.year, data.showsByYear[barData.year] ?? []);
+                          openModal(
+                            barData.year,
+                            data.showsByYear[barData.year] ?? [],
+                          );
                         }
                       }}
                     />
@@ -532,7 +554,10 @@ export function ListAnalyticsPage({
                       if (!drillDecadeRating && barData.decade) {
                         setDrillDecadeRating(barData.decade);
                       } else if (drillDecadeRating && barData.year) {
-                        openModal(barData.year, data.showsByYear[barData.year] ?? []);
+                        openModal(
+                          barData.year,
+                          data.showsByYear[barData.year] ?? [],
+                        );
                       }
                     }}
                   />
@@ -637,7 +662,9 @@ export function ListAnalyticsPage({
                       id={data.mostSeasonsShow.id}
                       title={data.mostSeasonsShow.title}
                       posterPath={data.mostSeasonsShow.poster_path}
-                      badge={tLists("seasonCount", { count: data.mostSeasonsShow.seasonCount })}
+                      badge={tLists("seasonCount", {
+                        count: data.mostSeasonsShow.seasonCount,
+                      })}
                     />
                   </div>
                 )}
@@ -654,6 +681,7 @@ export function ListAnalyticsPage({
                       title={data.longestShow.title}
                       posterPath={data.longestShow.poster_path}
                       badge={formatDuration(data.longestShow.totalMinutes)}
+                      itemType={itemType}
                     />
                   </div>
                 )}
@@ -667,41 +695,73 @@ export function ListAnalyticsPage({
                     {labels.seasonsByYearTitle}
                   </h3>
                   <div className="max-h-[28rem] overflow-y-auto space-y-1">
-                    {data.longestShowByYear.map(({ year, id, title, poster_path, totalMinutes, seasonCount }) => {
-                      const posterUrl = poster_path
-                        ? `https://image.tmdb.org/t/p/w92${poster_path}`
-                        : null;
-                      return (
-                        <Link
-                          key={year}
-                          href={`/shows/${id}`}
-                          className="grid grid-cols-[3rem_2.5rem_1fr] items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-bg-elevated"
-                        >
-                          <span className="font-mono text-xs text-text-faint">{year}</span>
-                          {/* Poster */}
-                          <div className="relative h-10 w-7 overflow-hidden rounded bg-bg-elevated shrink-0">
-                            {posterUrl ? (
-                              <Image src={posterUrl} alt={title} fill className="object-cover" sizes="28px" />
-                            ) : (
-                              <div className="flex h-full items-center justify-center">
-                                <Television size={12} className="text-text-faint" />
-                              </div>
-                            )}
-                          </div>
-                          {/* Title + stats */}
-                          <div className="min-w-0">
-                            <span className="block truncate text-[11px] font-medium text-text-primary leading-tight">
-                              {title}
+                    {data.longestShowByYear.map(
+                      ({
+                        year,
+                        id,
+                        title,
+                        poster_path,
+                        totalMinutes,
+                        seasonCount,
+                      }) => {
+                        const posterUrl = poster_path
+                          ? `https://image.tmdb.org/t/p/w92${poster_path}`
+                          : null;
+                        return (
+                          <Link
+                            key={year}
+                            href={
+                              itemType === "movie"
+                                ? `/movies/${id}`
+                                : `/shows/${id}`
+                            }
+                            className="grid grid-cols-[3rem_2.5rem_1fr] items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-bg-elevated"
+                          >
+                            <span className="font-mono text-xs text-text-faint">
+                              {year}
                             </span>
-                            <span className="font-mono text-[10px] text-text-muted">
-                              {formatDuration(totalMinutes)}
-                              <span className="mx-1 text-text-faint">·</span>
-                              {tLists("seasonCount", { count: seasonCount })}
-                            </span>
-                          </div>
-                        </Link>
-                      );
-                    })}
+                            {/* Poster */}
+                            <div className="relative h-10 w-7 overflow-hidden rounded bg-bg-elevated shrink-0">
+                              {posterUrl ? (
+                                <Image
+                                  src={posterUrl}
+                                  alt={title}
+                                  fill
+                                  className="object-cover"
+                                  sizes="28px"
+                                />
+                              ) : (
+                                <div className="flex h-full items-center justify-center">
+                                  <Television
+                                    size={12}
+                                    className="text-text-faint"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                            {/* Title + stats */}
+                            <div className="min-w-0">
+                              <span className="block truncate text-[11px] font-medium text-text-primary leading-tight">
+                                {title}
+                              </span>
+                              <span className="font-mono text-[10px] text-text-muted">
+                                {formatDuration(totalMinutes)}
+                                {itemType !== "movie" && (
+                                  <>
+                                    <span className="mx-1 text-text-faint">
+                                      ·
+                                    </span>
+                                    {tLists("seasonCount", {
+                                      count: seasonCount,
+                                    })}
+                                  </>
+                                )}
+                              </span>
+                            </div>
+                          </Link>
+                        );
+                      },
+                    )}
                   </div>
                 </div>
               )}
@@ -757,6 +817,11 @@ export function ListAnalyticsPage({
                         position={i + 1}
                         readOnly
                         showId={show.id}
+                        detailHref={
+                          itemType === "movie"
+                            ? `/movies/${show.id}`
+                            : undefined
+                        }
                         ratingLabels={ratingLabels}
                       />
                     ))}

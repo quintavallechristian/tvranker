@@ -96,8 +96,7 @@ export async function fetchMovieTmdbData(movieId: string) {
 
   const trailerUrl = extractTrailerUrl(found.videos);
   const watchProviders = found["watch/providers"]?.results ?? null;
-  const runtime =
-    (found as unknown as { runtime?: number }).runtime ?? null;
+  const runtime = (found as unknown as { runtime?: number }).runtime ?? null;
 
   const { data: updated } = await supabase
     .from("movies")
@@ -108,7 +107,10 @@ export async function fetchMovieTmdbData(movieId: string) {
       release_date: found.release_date || null,
       overview: found.overview || null,
       runtime,
-      imdb_id: (found as unknown as { imdb_id?: string }).imdb_id || movie.imdb_id || null,
+      imdb_id:
+        (found as unknown as { imdb_id?: string }).imdb_id ||
+        movie.imdb_id ||
+        null,
       trailer_url: trailerUrl,
       watch_providers: watchProviders,
       tmdb_fetched: true,
@@ -377,6 +379,61 @@ export async function importToMyMovieList(
 
   revalidatePath("/movies");
   return { importedCount };
+}
+
+export async function addMovieToMyList(movieId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  // Get or create current user's movie list
+  let { data: movieList } = await supabase
+    .from("movie_lists")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!movieList) {
+    const { data: created } = await supabase
+      .from("movie_lists")
+      .insert({ user_id: user.id, name: "My Movies" })
+      .select("id")
+      .single();
+    movieList = created;
+  }
+
+  if (!movieList) throw new Error("Failed to get movie list");
+
+  // Check if already in list
+  const { data: existing } = await supabase
+    .from("movie_list_items")
+    .select("id")
+    .eq("movie_list_id", movieList.id)
+    .eq("movie_id", movieId)
+    .maybeSingle();
+
+  if (existing) return { alreadyExists: true };
+
+  // Get max position
+  const { data: items } = await supabase
+    .from("movie_list_items")
+    .select("position")
+    .eq("movie_list_id", movieList.id)
+    .order("position", { ascending: false })
+    .limit(1);
+
+  const nextPosition = (items?.[0]?.position ?? -1) + 1;
+
+  await supabase.from("movie_list_items").insert({
+    movie_list_id: movieList.id,
+    movie_id: movieId,
+    position: nextPosition,
+  });
+
+  revalidatePath("/movies");
+  return { alreadyExists: false };
 }
 
 export async function getMovieListItemsPage(

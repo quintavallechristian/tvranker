@@ -133,7 +133,9 @@ export function ShowDetailClient({
   const t = useTranslations();
   const posterUrl = getPosterUrl(show.poster_path, "w500");
   const [activeTab, setActiveTab] = useState<Tab>("seasons");
-  const [expandedSeasons, setExpandedSeasons] = useState<Set<number>>(new Set());
+  const [expandedSeasons, setExpandedSeasons] = useState<Set<number>>(
+    new Set(),
+  );
   const [inList, setInList] = useState(initialUserItem !== null);
   const [isPending, startTransition] = useTransition();
 
@@ -242,14 +244,15 @@ export function ShowDetailClient({
               </div>
             )}
             {/* Personal rating badge */}
-            {initialUserItem?.rating !== null && initialUserItem?.rating !== undefined && (
-              <div className="inline-flex items-center gap-1.5 rounded-md border border-accent/30 bg-accent/10 px-2.5 py-1.5 text-xs text-accent">
-                <Star size={14} weight="fill" />
-                {t("showDetail.myRating")}: {initialUserItem.rating}/10
-              </div>
-            )}
+            {initialUserItem?.rating !== null &&
+              initialUserItem?.rating !== undefined && (
+                <div className="inline-flex items-center gap-1.5 rounded-md border border-accent/30 bg-accent/10 px-2.5 py-1.5 text-xs text-accent">
+                  <Star size={14} weight="fill" />
+                  {t("showDetail.myRating")}: {initialUserItem.rating}/10
+                </div>
+              )}
             {/* Recommendation score badge */}
-            {showScore !== null && showScore !== undefined && !inList && (
+            {showScore !== null && showScore !== undefined && (
               <div className="inline-flex items-center rounded-md border border-accent/30 bg-accent/10 px-2.5 py-1.5 text-xs font-mono font-bold text-accent tabular-nums">
                 {showScore}%
               </div>
@@ -290,9 +293,7 @@ export function ShowDetailClient({
                 ) : (
                   <Plus size={14} weight="bold" />
                 )}
-                {inList
-                  ? t("showDetail.inMyList")
-                  : t("showDetail.addToList")}
+                {inList ? t("showDetail.inMyList") : t("showDetail.addToList")}
               </button>
             )}
           </div>
@@ -369,8 +370,11 @@ export function ShowDetailClient({
                   )}
 
                   {show.seasons_data.map((season) => {
-                    const isExpanded = expandedSeasons.has(season.season_number);
-                    const hasEpisodes = season.episodes && season.episodes.length > 0;
+                    const isExpanded = expandedSeasons.has(
+                      season.season_number,
+                    );
+                    const hasEpisodes =
+                      season.episodes && season.episodes.length > 0;
                     const seasonMinutes = hasEpisodes
                       ? getSeasonTotalMinutes(season.episodes!)
                       : 0;
@@ -388,9 +392,15 @@ export function ShowDetailClient({
                           <div className="flex min-w-0 items-center gap-2">
                             {hasEpisodes ? (
                               isExpanded ? (
-                                <CaretDown size={13} className="shrink-0 text-text-faint" />
+                                <CaretDown
+                                  size={13}
+                                  className="shrink-0 text-text-faint"
+                                />
                               ) : (
-                                <CaretRight size={13} className="shrink-0 text-text-faint" />
+                                <CaretRight
+                                  size={13}
+                                  className="shrink-0 text-text-faint"
+                                />
                               )
                             ) : (
                               <span className="w-[13px] shrink-0" />
@@ -625,7 +635,9 @@ function StreamingProvidersInline({
                 className="rounded"
               />
             )}
-            <span className="text-xs text-text-secondary">{p.provider_name}</span>
+            <span className="text-xs text-text-secondary">
+              {p.provider_name}
+            </span>
           </div>
         ))}
       </div>

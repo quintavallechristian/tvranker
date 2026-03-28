@@ -1,5 +1,10 @@
 // Similarity & recommendations
-export { computeListSimilarity, type ListEntry } from "./lib/similarity";
+export {
+  computeListSimilarity,
+  computeMovieListSimilarity,
+  type ListEntry,
+  type MovieListEntry,
+} from "./lib/similarity";
 export {
   scoreRecommendations,
   type UserList,

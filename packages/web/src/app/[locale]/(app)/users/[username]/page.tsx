@@ -3,10 +3,17 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { UserAvatar } from "@/components/UserAvatar";
 import { FollowButton } from "@/components/FollowButton";
-import { computeListSimilarity } from "@/lib/similarity";
-import { UserListClient } from "./user-list-client";
-import { ListItemWithShow } from "../../lists/actions";
+import {
+  computeListSimilarity,
+  computeMovieListSimilarity,
+} from "@/lib/similarity";
 import { Link } from "@/i18n/navigation";
+import { ShowPodiumWidget } from "@/components/widgets/ShowPodiumWidget";
+import { MoviePodiumWidget } from "@/components/widgets/MoviePodiumWidget";
+import type {
+  ShowPodiumItem,
+  MoviePodiumItem,
+} from "@/app/[locale]/(app)/home/actions";
 
 export default async function UserProfilePage({
   params,
@@ -25,47 +32,98 @@ export default async function UserProfilePage({
 
   if (!profile) notFound();
 
-  // Fetch the user's single list
-  // RLS enforces visibility (is_public, visible_to_followers, visible_to_following):
-  // if the list is returned, the viewer has access.
-  const { data: list } = await supabase
-    .from("lists")
-    .select("id, name, description, is_public")
-    .eq("user_id", profile.id)
-    .single();
+  // Fetch both lists in parallel
+  const [{ data: list }, { data: movieList }] = await Promise.all([
+    supabase
+      .from("lists")
+      .select("id, is_public")
+      .eq("user_id", profile.id)
+      .single(),
+    supabase
+      .from("movie_lists")
+      .select("id, is_public")
+      .eq("user_id", profile.id)
+      .single(),
+  ]);
 
-  // Fetch list items (first 50, sorted by rating desc then position)
-  let listItems: ListItemWithShow[] = [];
-  let itemCount = 0;
-  let hasMore = false;
-  if (list) {
-    const { data: itemsData, count } = await supabase
-      .from("list_items")
-      .select("*, shows(*)", { count: "exact" })
-      .eq("list_id", list.id)
-      .order("rating", { ascending: false, nullsFirst: false })
-      .order("position", { ascending: true })
-      .range(0, 49);
-    listItems = (itemsData ?? []) as unknown as ListItemWithShow[];
-    itemCount = count ?? listItems.length;
-    hasMore = listItems.length === 50 && itemCount > 50;
-  }
+  // Fetch top 3 shows + count and top 3 movies + count in parallel
+  const [showTopResult, showCountResult, movieTopResult, movieCountResult] =
+    await Promise.all([
+      list
+        ? supabase
+            .from("list_items")
+            .select("rating, shows(id, title, poster_path)")
+            .eq("list_id", list.id)
+            .order("rating", { ascending: false, nullsFirst: false })
+            .order("position", { ascending: true })
+            .range(0, 9)
+        : Promise.resolve({ data: null }),
+      list
+        ? supabase
+            .from("list_items")
+            .select("id", { count: "exact", head: true })
+            .eq("list_id", list.id)
+        : Promise.resolve({ count: 0 }),
+      movieList
+        ? supabase
+            .from("movie_list_items")
+            .select("rating, movies(id, title, poster_path)")
+            .eq("movie_list_id", movieList.id)
+            .order("rating", { ascending: false, nullsFirst: false })
+            .order("position", { ascending: true })
+            .range(0, 9)
+        : Promise.resolve({ data: null }),
+      movieList
+        ? supabase
+            .from("movie_list_items")
+            .select("id", { count: "exact", head: true })
+            .eq("movie_list_id", movieList.id)
+        : Promise.resolve({ count: 0 }),
+    ]);
 
-  // Compute similarity with current user
+  const showPodiumItems: ShowPodiumItem[] = (showTopResult.data ?? []).map(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (item: any) => ({
+      id: item.shows.id,
+      title: item.shows.title,
+      poster_path: item.shows.poster_path,
+      rating: item.rating,
+    }),
+  );
+
+  const moviePodiumItems: MoviePodiumItem[] = (movieTopResult.data ?? []).map(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (item: any) => ({
+      id: item.movies.id,
+      title: item.movies.title,
+      poster_path: item.movies.poster_path,
+      rating: item.rating,
+    }),
+  );
+
+  // Current user
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const isOwnProfile = user?.id === profile.id;
 
-  let similarityScore: number | null = null;
-  if (user && user.id !== profile.id && list) {
-    // Fetch viewer's list items
-    const { data: viewerList } = await supabase
-      .from("lists")
-      .select("id")
-      .eq("user_id", user.id)
-      .single();
+  // Compute similarities for logged-in viewers
+  let showSimilarityScore: number | null = null;
+  let movieSimilarityScore: number | null = null;
 
-    if (viewerList) {
+  if (user && !isOwnProfile) {
+    const [{ data: viewerList }, { data: viewerMovieList }] = await Promise.all(
+      [
+        supabase.from("lists").select("id").eq("user_id", user.id).single(),
+        supabase
+          .from("movie_lists")
+          .select("id")
+          .eq("user_id", user.id)
+          .single(),
+      ],
+    );
+
+    if (viewerList && list) {
       const [viewerItems, profileItems] = await Promise.all([
         supabase
           .from("list_items")
@@ -78,7 +136,6 @@ export default async function UserProfilePage({
           .eq("list_id", list.id)
           .order("position", { ascending: true }),
       ]);
-
       const listA = (viewerItems.data ?? []).map((i, idx) => ({
         showId: i.show_id,
         rating: i.rating,
@@ -89,14 +146,50 @@ export default async function UserProfilePage({
         rating: i.rating,
         position: i.position ?? idx,
       }));
+      showSimilarityScore = computeListSimilarity(listA, listB);
+    }
 
-      similarityScore = computeListSimilarity(listA, listB);
+    if (viewerMovieList && movieList) {
+      const [viewerMovieItems, profileMovieItems] = await Promise.all([
+        supabase
+          .from("movie_list_items")
+          .select("movie_id, rating, position")
+          .eq("movie_list_id", viewerMovieList.id)
+          .order("position", { ascending: true }),
+        supabase
+          .from("movie_list_items")
+          .select("movie_id, rating, position")
+          .eq("movie_list_id", movieList.id)
+          .order("position", { ascending: true }),
+      ]);
+      const movieListA = (viewerMovieItems.data ?? []).map((i, idx) => ({
+        movieId: i.movie_id,
+        rating: i.rating,
+        position: i.position ?? idx,
+      }));
+      const movieListB = (profileMovieItems.data ?? []).map((i, idx) => ({
+        movieId: i.movie_id,
+        rating: i.rating,
+        position: i.position ?? idx,
+      }));
+      movieSimilarityScore = computeMovieListSimilarity(movieListA, movieListB);
     }
   }
 
-  // Check if current user follows this profile
+  // Compatibility = average of available similarity scores
+  let compatibilityScore: number | null = null;
+  if (showSimilarityScore !== null && movieSimilarityScore !== null) {
+    compatibilityScore = Math.round(
+      (showSimilarityScore + movieSimilarityScore) / 2,
+    );
+  } else if (showSimilarityScore !== null) {
+    compatibilityScore = showSimilarityScore;
+  } else if (movieSimilarityScore !== null) {
+    compatibilityScore = movieSimilarityScore;
+  }
+
+  // Follow status
   let isFollowing = false;
-  const isOwnProfile = user?.id === profile.id;
   if (user && !isOwnProfile) {
     const { data: follow } = await supabase
       .from("follows")
@@ -105,26 +198,6 @@ export default async function UserProfilePage({
       .eq("following_id", profile.id)
       .maybeSingle();
     isFollowing = !!follow;
-  }
-
-  // Fetch the viewer's own show IDs + ratings so we can mark already-added shows
-  let viewerItems: { show_id: string; rating: number | null }[] = [];
-  if (user && !isOwnProfile && list) {
-    const { data: viewerList } = await supabase
-      .from("lists")
-      .select("id")
-      .eq("user_id", user.id)
-      .single();
-    if (viewerList) {
-      const { data: fetchedViewerItems } = await supabase
-        .from("list_items")
-        .select("show_id, rating")
-        .eq("list_id", viewerList.id);
-      viewerItems = (fetchedViewerItems ?? []) as {
-        show_id: string;
-        rating: number | null;
-      }[];
-    }
   }
 
   return (
@@ -140,15 +213,12 @@ export default async function UserProfilePage({
           <h1 className="text-xl font-semibold tracking-tight text-text-primary">
             @{profile.username}
           </h1>
-          <p className="text-sm text-text-muted">
-            {tUsers("showCount", { count: itemCount })}
-          </p>
         </div>
         <div className="ml-auto flex items-center gap-3">
-          {similarityScore !== null && (
+          {compatibilityScore !== null && (
             <div className="flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent-muted px-3 py-1.5">
               <span className="text-sm font-semibold text-accent">
-                {similarityScore}%
+                {compatibilityScore}%
               </span>
               <span className="text-xs text-text-muted">
                 {tUsers("compatible")}
@@ -164,49 +234,38 @@ export default async function UserProfilePage({
         </div>
       </div>
 
-      {/* List */}
-      {list ? (
-        <div>
-          <div className="mb-3 flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-semibold text-text-primary">
-                {list.name}
-              </h2>
-              {list.description && (
-                <p className="mt-0.5 text-xs text-text-muted">
-                  {list.description}
-                </p>
-              )}
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-text-faint">
-                {tUsers("showCount", { count: itemCount })}
-              </span>
-              <Link
-                href={`/users/${profile.username}/analytics`}
-                className="rounded-md border border-border px-2.5 py-1 text-xs text-text-muted transition-colors hover:border-border-hover hover:text-text-secondary"
-              >
-                {tUsers("analytics")}
-              </Link>
-            </div>
-          </div>
+      {/* Podium cards — extended top10 with rowSpan=2 */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Link href={`/users/${profile.username}/shows`} className="block h-105">
+          <ShowPodiumWidget
+            items={showPodiumItems}
+            rowSpan={2}
+            viewAllHref={`/users/${profile.username}/shows`}
+            badge={
+              showSimilarityScore !== null ? (
+                <span className="text-xs font-semibold text-accent">
+                  {showSimilarityScore}%
+                </span>
+              ) : undefined
+            }
+          />
+        </Link>
 
-          {listItems.length === 0 ? (
-            <p className="text-sm text-text-muted">{tUsers("noShows")}</p>
-          ) : (
-            <UserListClient
-              listId={list.id}
-              initialItems={listItems}
-              initialHasMore={hasMore}
-              isLoggedIn={!!user && !isOwnProfile}
-              viewerItems={viewerItems}
-              ratingLabels={profile.rating_labels}
-            />
-          )}
-        </div>
-      ) : (
-        <p className="text-sm text-text-muted">{tUsers("privateList")}</p>
-      )}
+        <Link href={`/users/${profile.username}/movies`} className="block h-105">
+          <MoviePodiumWidget
+            items={moviePodiumItems}
+            rowSpan={2}
+            viewAllHref={`/users/${profile.username}/movies`}
+            badge={
+              movieSimilarityScore !== null ? (
+                <span className="text-xs font-semibold text-accent">
+                  {movieSimilarityScore}%
+                </span>
+              ) : undefined
+            }
+          />
+        </Link>
+      </div>
     </div>
   );
 }
