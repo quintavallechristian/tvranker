@@ -437,6 +437,129 @@ export type Database = {
           },
         ];
       };
+      animes: {
+        Row: {
+          id: string;
+          tmdb_id: number | null;
+          mal_id: number | null;
+          imdb_id: string | null;
+          title: string;
+          poster_path: string | null;
+          first_air_date: string | null;
+          overview: string | null;
+          episode_count: number | null;
+          status: string | null;
+          tmdb_fetched: boolean;
+          trailer_url: string | null;
+          watch_providers: WatchProviderRegion | null;
+        };
+        Insert: {
+          id?: string;
+          tmdb_id?: number | null;
+          mal_id?: number | null;
+          imdb_id?: string | null;
+          title: string;
+          poster_path?: string | null;
+          first_air_date?: string | null;
+          overview?: string | null;
+          episode_count?: number | null;
+          status?: string | null;
+          tmdb_fetched?: boolean;
+          trailer_url?: string | null;
+          watch_providers?: WatchProviderRegion | null;
+        };
+        Update: {
+          tmdb_id?: number | null;
+          mal_id?: number | null;
+          imdb_id?: string | null;
+          title?: string;
+          poster_path?: string | null;
+          first_air_date?: string | null;
+          overview?: string | null;
+          episode_count?: number | null;
+          status?: string | null;
+          tmdb_fetched?: boolean;
+          trailer_url?: string | null;
+          watch_providers?: WatchProviderRegion | null;
+        };
+        Relationships: [];
+      };
+      anime_lists: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          description: string | null;
+          is_public: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name?: string;
+          description?: string | null;
+          is_public?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          name?: string;
+          description?: string | null;
+          is_public?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "anime_lists_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      anime_list_items: {
+        Row: {
+          id: string;
+          anime_list_id: string;
+          anime_id: string;
+          rating: number | null;
+          position: number;
+          added_at: string;
+          notes: string | null;
+        };
+        Insert: {
+          id?: string;
+          anime_list_id: string;
+          anime_id: string;
+          rating?: number | null;
+          position?: number;
+          added_at?: string;
+          notes?: string | null;
+        };
+        Update: {
+          rating?: number | null;
+          position?: number;
+          notes?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "anime_list_items_anime_list_id_fkey";
+            columns: ["anime_list_id"];
+            isOneToOne: false;
+            referencedRelation: "anime_lists";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "anime_list_items_anime_id_fkey";
+            columns: ["anime_id"];
+            isOneToOne: false;
+            referencedRelation: "animes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -466,6 +589,10 @@ export type Movie = Database["public"]["Tables"]["movies"]["Row"];
 export type MovieList = Database["public"]["Tables"]["movie_lists"]["Row"];
 export type MovieListItem =
   Database["public"]["Tables"]["movie_list_items"]["Row"];
+export type Anime = Database["public"]["Tables"]["animes"]["Row"];
+export type AnimeList = Database["public"]["Tables"]["anime_lists"]["Row"];
+export type AnimeListItem =
+  Database["public"]["Tables"]["anime_list_items"]["Row"];
 
 export type ListWithItems = List & {
   list_items: (ListItem & { shows: Show })[];

@@ -22,10 +22,12 @@ import {
   getRecommendations,
   getPopularShows,
   getPopularMovies,
+  getPopularAnime,
   type RecommendedShow,
   type SimilarUser,
   type PopularShow,
   type PopularMovie,
+  type PopularAnime,
 } from "./actions";
 
 type UserResult = {
@@ -44,6 +46,7 @@ export default function ExplorePage() {
     (RecommendedShow | PopularShow)[]
   >([]);
   const [suggestedMovies, setSuggestedMovies] = useState<PopularMovie[]>([]);
+  const [suggestedAnime, setSuggestedAnime] = useState<PopularAnime[]>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(true);
   const [similarUsers, setSimilarUsers] = useState<SimilarUser[]>([]);
   const [similarUsersLoading, setSimilarUsersLoading] = useState(true);
@@ -61,7 +64,7 @@ export default function ExplorePage() {
         if (!cancelled) setSimilarUsersLoading(false);
       });
 
-    // Load suggestions: top 3 shows (recs or popular) + top 3 movies
+    // Load suggestions: top 3 shows (recs or popular) + top 3 movies + top 3 anime
     Promise.all([
       getRecommendations().then((recs) =>
         recs.length > 0
@@ -69,11 +72,13 @@ export default function ExplorePage() {
           : getPopularShows().then((p) => p.slice(0, 3)),
       ),
       getPopularMovies().then((m) => m.slice(0, 3)),
+      getPopularAnime().then((a) => a.slice(0, 3)),
     ])
-      .then(([shows, movies]) => {
+      .then(([shows, movies, anime]) => {
         if (!cancelled) {
           setSuggestedShows(shows);
           setSuggestedMovies(movies);
+          setSuggestedAnime(anime);
         }
       })
       .catch(() => {})
@@ -310,7 +315,7 @@ export default function ExplorePage() {
             )}
 
             {!suggestionsLoading && (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {/* Shows widget */}
                 <SuggestionCard
                   title={t("showsTitle")}
@@ -334,6 +339,19 @@ export default function ExplorePage() {
                     id: m.id,
                     title: m.title,
                     poster_path: m.poster_path,
+                  }))}
+                  icon="film"
+                />
+                {/* Anime widget */}
+                <SuggestionCard
+                  title={t("animeTitle")}
+                  href="/explore/anime"
+                  viewAllLabel={t("exploreAll")}
+                  emptyLabel={t("popularAnimeEmpty")}
+                  items={suggestedAnime.map((a) => ({
+                    id: a.id,
+                    title: a.title,
+                    poster_path: a.poster_path,
                   }))}
                   icon="film"
                 />

@@ -629,3 +629,263 @@ export async function getOrCreateMovieByTmdbId(movie: {
     throw new Error(error?.message ?? "Failed to create movie");
   return newMovie.id;
 }
+
+// ── Anime ─────────────────────────────────────────────────────────────────────
+
+export type PopularAnime = {
+  id: string;
+  tmdb_id: number | null;
+  title: string;
+  poster_path: string | null;
+  first_air_date: string | null;
+  overview: string | null;
+  addedCount: number;
+};
+
+export async function getPopularAnime(): Promise<PopularAnime[]> {
+  const supabase = await createClient();
+
+  const { data: publicLists } = await supabase
+    .from("anime_lists")
+    .select("id")
+    .eq("is_public", true);
+
+  if (!publicLists || publicLists.length === 0) return [];
+
+  const publicListIds = publicLists.map((l) => l.id);
+
+  const { data: items } = await supabase
+    .from("anime_list_items")
+    .select("anime_id")
+    .in("anime_list_id", publicListIds);
+
+  if (!items || items.length === 0) return [];
+
+  const countMap = new Map<string, number>();
+  for (const item of items) {
+    countMap.set(item.anime_id, (countMap.get(item.anime_id) ?? 0) + 1);
+  }
+
+  const topEntries = Array.from(countMap.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 12);
+
+  const animeIds = topEntries.map(([id]) => id);
+
+  const { data: animes } = await supabase
+    .from("animes")
+    .select("id, tmdb_id, title, poster_path, first_air_date, overview")
+    .in("id", animeIds);
+
+  if (!animes) return [];
+
+  const animeMap = new Map(animes.map((a) => [a.id, a]));
+
+  return topEntries
+    .map(([id, count]) => {
+      const anime = animeMap.get(id);
+      if (!anime) return null;
+      return {
+        id: anime.id,
+        tmdb_id: anime.tmdb_id,
+        title: anime.title,
+        poster_path: anime.poster_path,
+        first_air_date: anime.first_air_date ?? null,
+        overview: anime.overview,
+        addedCount: count,
+      };
+    })
+    .filter((r): r is PopularAnime => r !== null);
+}
+
+export type RecommendedAnime = {
+  id: string;
+  tmdb_id: number | null;
+  title: string;
+  poster_path: string | null;
+  first_air_date: string | null;
+  overview: string | null;
+  score: number;
+  recommendedBy: number;
+};
+
+export async function getAnimeRecommendations(): Promise<RecommendedAnime[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data: myAnimeList } = await supabase
+    .from("anime_lists")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!myAnimeList) return [];
+
+  const { data: myItems } = await supabase
+    .from("anime_list_items")
+    .select("anime_id, rating, position")
+    .eq("anime_list_id", myAnimeList.id)
+    .order("position", { ascending: true });
+
+  if (!myItems || myItems.length === 0) return [];
+
+  const viewerList: ListEntry[] = myItems.map((i, idx) => ({
+    showId: i.anime_id,
+    rating: i.rating,
+    position: i.position ?? idx,
+  }));
+
+  const { data: publicLists } = await supabase
+    .from("anime_lists")
+    .select("id, user_id")
+    .eq("is_public", true)
+    .neq("user_id", user.id);
+
+  if (!publicLists || publicLists.length === 0) return [];
+
+  const listIds = publicLists.map((l) => l.id);
+
+  const { data: allItems } = await supabase
+    .from("anime_list_items")
+    .select("anime_list_id, anime_id, rating, position")
+    .in("anime_list_id", listIds)
+    .order("position", { ascending: true });
+
+  if (!allItems || allItems.length === 0) return [];
+
+  const listToUser = new Map<string, string>();
+  for (const l of publicLists) {
+    listToUser.set(l.id, l.user_id);
+  }
+
+  const userItemsMap = new Map<string, ListEntry[]>();
+  for (const item of allItems) {
+    const userId = listToUser.get(item.anime_list_id);
+    if (!userId) continue;
+    if (!userItemsMap.has(userId)) userItemsMap.set(userId, []);
+    userItemsMap.get(userId)!.push({
+      showId: item.anime_id,
+      rating: item.rating,
+      position: item.position,
+    });
+  }
+
+  const otherLists: UserList[] = [];
+  for (const [userId, items] of userItemsMap) {
+    otherLists.push({ userId, items });
+  }
+
+  const scored = scoreRecommendations(viewerList, otherLists);
+
+  if (scored.length === 0) return [];
+
+  const animeIds = scored.map((s) => s.showId);
+  const { data: animes } = await supabase
+    .from("animes")
+    .select("id, tmdb_id, title, poster_path, first_air_date, overview")
+    .in("id", animeIds);
+
+  if (!animes) return [];
+
+  const animeMap = new Map(animes.map((a) => [a.id, a]));
+
+  return scored
+    .map((s) => {
+      const anime = animeMap.get(s.showId);
+      if (!anime) return null;
+      return {
+        id: anime.id,
+        tmdb_id: anime.tmdb_id,
+        title: anime.title,
+        poster_path: anime.poster_path,
+        first_air_date: anime.first_air_date ?? null,
+        overview: anime.overview,
+        score: Math.round(s.score * 100) / 100,
+        recommendedBy: s.recommendedBy,
+      };
+    })
+    .filter((r): r is RecommendedAnime => r !== null);
+}
+
+export async function addTmdbAnimeToMyList(anime: {
+  tmdb_id: number;
+  title: string;
+  poster_path: string | null;
+  first_air_date: string | null;
+  overview: string | null;
+}): Promise<{ alreadyExists: boolean }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  let { data: animeList } = await supabase
+    .from("anime_lists")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!animeList) {
+    const { data: newList, error } = await supabase
+      .from("anime_lists")
+      .insert({ user_id: user.id })
+      .select("id")
+      .single();
+    if (error || !newList)
+      throw new Error(error?.message ?? "Failed to create anime list");
+    animeList = newList;
+  }
+
+  let { data: existingAnime } = await supabase
+    .from("animes")
+    .select("id")
+    .eq("tmdb_id", anime.tmdb_id)
+    .single();
+
+  if (!existingAnime) {
+    const { data: newAnime, error } = await supabase
+      .from("animes")
+      .insert({
+        tmdb_id: anime.tmdb_id,
+        title: anime.title,
+        poster_path: anime.poster_path,
+        first_air_date: anime.first_air_date,
+        overview: anime.overview,
+      })
+      .select("id")
+      .single();
+    if (error || !newAnime)
+      throw new Error(error?.message ?? "Failed to create anime");
+    existingAnime = newAnime;
+  }
+
+  const { data: duplicate } = await supabase
+    .from("anime_list_items")
+    .select("id")
+    .eq("anime_list_id", animeList.id)
+    .eq("anime_id", existingAnime.id)
+    .single();
+
+  if (duplicate) return { alreadyExists: true };
+
+  const { data: posItems } = await supabase
+    .from("anime_list_items")
+    .select("position")
+    .eq("anime_list_id", animeList.id)
+    .order("position", { ascending: false })
+    .limit(1);
+
+  const nextPosition = (posItems?.[0]?.position ?? -1) + 1;
+
+  await supabase.from("anime_list_items").insert({
+    anime_list_id: animeList.id,
+    anime_id: existingAnime.id,
+    position: nextPosition,
+  });
+
+  return { alreadyExists: false };
+}

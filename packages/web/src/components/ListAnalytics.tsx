@@ -38,7 +38,7 @@ type Props = {
   data: AnalyticsData;
   ratingLabels?: string[] | null;
   backHref: string;
-  itemType?: "show" | "movie";
+  itemType?: "show" | "movie" | "anime";
   labels: {
     title: string;
     backToList: string;
@@ -81,7 +81,7 @@ function ShowStatRow({
   posterPath: string | null;
   badge: string;
   compact?: boolean;
-  itemType?: "show" | "movie";
+  itemType?: "show" | "movie" | "anime";
 }) {
   const posterUrl = posterPath
     ? `https://image.tmdb.org/t/p/w92${posterPath}`
@@ -89,7 +89,13 @@ function ShowStatRow({
 
   return (
     <Link
-      href={itemType === "movie" ? `/movies/${id}` : `/shows/${id}`}
+      href={
+        itemType === "movie"
+          ? `/movies/${id}`
+          : itemType === "anime"
+            ? `/anime/${id}`
+            : `/shows/${id}`
+      }
       className={`flex items-center gap-2 rounded-md transition-colors hover:bg-bg-surface ${compact ? "" : "border border-border bg-bg-elevated px-2 py-1.5"}`}
     >
       {/* Poster thumbnail */}

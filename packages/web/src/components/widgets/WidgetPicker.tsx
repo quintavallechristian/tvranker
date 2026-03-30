@@ -18,14 +18,18 @@ import { WIDGET_TYPES, DEFAULT_COL_SPAN } from "@/lib/widgets";
 const WIDGET_ICONS: Record<WidgetType, React.ReactNode> = {
   show_podium: <Television size={18} weight="duotone" />,
   movie_podium: <FilmSlate size={18} weight="duotone" />,
+  anime_podium: <FilmSlate size={18} weight="duotone" />,
   show_count: <NumberCircleOne size={18} weight="duotone" />,
   movie_count: <NumberCircleOne size={18} weight="duotone" />,
+  anime_count: <NumberCircleOne size={18} weight="duotone" />,
   last_show_added: <Television size={18} weight="duotone" />,
   last_movie_added: <FilmSlate size={18} weight="duotone" />,
+  last_anime_added: <FilmSlate size={18} weight="duotone" />,
   notifications: <Bell size={18} weight="duotone" />,
   recent_follows: <Users size={18} weight="duotone" />,
   show_suggestions: <Compass size={18} weight="duotone" />,
   movie_suggestions: <Compass size={18} weight="duotone" />,
+  anime_suggestions: <Compass size={18} weight="duotone" />,
 };
 
 export function WidgetPicker({

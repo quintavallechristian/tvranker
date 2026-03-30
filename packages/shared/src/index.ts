@@ -2,8 +2,10 @@
 export {
   computeListSimilarity,
   computeMovieListSimilarity,
+  computeAnimeListSimilarity,
   type ListEntry,
   type MovieListEntry,
+  type AnimeListEntry,
 } from "./lib/similarity";
 export {
   scoreRecommendations,
@@ -61,6 +63,9 @@ export type {
   Movie,
   MovieList,
   MovieListItem,
+  Anime,
+  AnimeList,
+  AnimeListItem,
 } from "./lib/supabase/types";
 
 // Import parsers

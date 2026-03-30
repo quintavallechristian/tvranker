@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { getTopRatedShows } from "./actions";
 import { getTopRatedMovies } from "./movies/actions";
+import { getTopRatedAnime } from "./anime/actions";
 import { getPosterUrl } from "@/lib/tmdb/client";
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
@@ -13,13 +14,15 @@ import {
 
 export default async function RankingsPage() {
   const t = await getTranslations("rankings");
-  const [shows, movies] = await Promise.all([
+  const [shows, movies, animes] = await Promise.all([
     getTopRatedShows(),
     getTopRatedMovies(),
+    getTopRatedAnime(),
   ]);
 
   const top3Shows = shows.slice(0, 3);
   const top3Movies = movies.slice(0, 3);
+  const top3Animes = animes.slice(0, 3);
 
   return (
     <div className="space-y-6">
@@ -33,7 +36,7 @@ export default async function RankingsPage() {
       </div>
 
       {/* Two podium cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <RankingPodiumCard
           title={t("shows.title")}
           href="/rankings/shows"
@@ -57,6 +60,19 @@ export default async function RankingsPage() {
             title: m.title,
             poster_path: m.poster_path,
             avg_rating: m.avg_rating,
+          }))}
+          icon="film"
+        />
+        <RankingPodiumCard
+          title={t("anime.title")}
+          href="/rankings/anime"
+          viewAllLabel={t("viewAll")}
+          emptyLabel={t("anime.emptyTitle")}
+          items={top3Animes.map((a) => ({
+            id: a.id,
+            title: a.title,
+            poster_path: a.poster_path,
+            avg_rating: a.avg_rating,
           }))}
           icon="film"
         />

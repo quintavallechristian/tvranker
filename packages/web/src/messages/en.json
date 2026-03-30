@@ -57,6 +57,10 @@
     "moviesCardTitle": "My Movies",
     "moviesCardSubtitle": "Your personal movie rankings",
     "emptyMovieList": "Add some movies to see your podium",
+    "animeCardLabel": "Your anime",
+    "animeCardTitle": "My Anime",
+    "animeCardSubtitle": "Your personal anime rankings",
+    "emptyAnimeList": "Add some anime to see your podium",
     "widgets": {
       "showPodium": "Show Podium",
       "moviePodium": "Movie Podium",
@@ -91,8 +95,18 @@
         "notifications": "Notifications",
         "recent_follows": "Recent Follows",
         "show_suggestions": "Show Suggestions",
-        "movie_suggestions": "Movie Suggestions"
+        "movie_suggestions": "Movie Suggestions",
+        "anime_podium": "Anime Podium",
+        "anime_count": "Anime Count",
+        "last_anime_added": "Last Anime Added",
+        "anime_suggestions": "Anime Suggestions"
       },
+      "animePodium": "Anime Podium",
+      "top10Anime": "Top 10 Anime",
+      "animeCount": "Anime",
+      "lastAnimeAdded": "Last Anime Added",
+      "animeRankings": "Top Rated Anime",
+      "animeSuggestions": "Anime Suggestions",
       "showSuggestions": "Discover Shows",
       "movieSuggestions": "Discover Movies",
       "explore": "Explore all",
@@ -121,6 +135,31 @@
     "longestMovie": "Longest movie",
     "longestMovieByYear": "Longest movie per year",
     "longestMovieByYearTitle": "By release year",
+    "loadingMore": "Loading more...",
+    "importExternal": "Import"
+  },
+  "anime": {
+    "title": "My Anime",
+    "addAnime": "Add anime",
+    "searchAnime": "Search anime...",
+    "added": "Added",
+    "emptyTitle": "No anime yet",
+    "emptyDescription": "Search for anime and add them to your list",
+    "loading": "Loading...",
+    "loadMore": "Load more",
+    "searchPlaceholder": "Search in your anime...",
+    "noSearchResults": "No anime match your search",
+    "noSearchResultsHint": "Try a different search term",
+    "noFilterResults": "No anime match the selected filters",
+    "noFilterResultsHint": "Try removing some filters",
+    "analytics": "Analytics",
+    "analyticsEmptyHint": "Add and rate anime to see analytics",
+    "totalAnime": "Total anime",
+    "ratedAnime": "Rated",
+    "animeCount": "anime",
+    "longestAnime": "Longest anime",
+    "longestAnimeByYear": "Longest anime per year",
+    "longestAnimeByYearTitle": "By release year",
     "loadingMore": "Loading more...",
     "importExternal": "Import"
   },
@@ -163,6 +202,11 @@
     "moviesInCommon": "In common ({count})",
     "noCommon": "No shows in common.",
     "noMoviesInCommon": "No movies in common.",
+    "animeCount": "{count, plural, =0 {No anime} =1 {1 anime} other {# anime}}",
+    "noAnime": "No anime yet.",
+    "privateAnimeList": "This user's anime list is private.",
+    "animeInCommon": "In common ({count})",
+    "noAnimeInCommon": "No anime in common.",
     "yourRating": "Your rating"
   },
   "lists": {
@@ -280,6 +324,21 @@
     "showsSkipped": "{count, plural, =1 {1 TV show excluded} other {# TV shows excluded}}",
     "importButton": "{count, plural, =0 {Import} =1 {Import 1 movie} other {Import # movies}}"
   },
+  "importAnime": {
+    "malTitle": "Import from MyAnimeList",
+    "malDescription": "Upload the XML file exported from MyAnimeList",
+    "selectFileXml": "Select XML file",
+    "preview": "Preview",
+    "importing": "Importing...",
+    "success": "Successfully imported {count} anime!",
+    "error": "Error importing file",
+    "invalidFormatXml": "Invalid XML format",
+    "cancel": "Cancel",
+    "previewAnime": "{count, plural, =0 {No anime} =1 {1 anime} other {# anime}}",
+    "moviesSkipped": "{count, plural, =1 {1 movie excluded} other {# movies excluded}}",
+    "seasonsSkipped": "{count, plural, =1 {1 duplicate season merged} other {# duplicate seasons merged}}",
+    "importButton": "{count, plural, =0 {Import} =1 {Import 1 anime} other {Import # anime}}"
+  },
   "explore": {
     "title": "Explore",
     "searchPlaceholder": "Search users or shows...",
@@ -312,6 +371,12 @@
     "searchUsersPlaceholder": "Search users...",
     "popularMoviesTitle": "Popular movies in the community",
     "popularMoviesEmpty": "No movies in public lists yet",
+    "popularAnimeFallback": "Add anime to your list to get personalized suggestions. In the meantime, here are the community favorites:",
+    "animeTitle": "Discover Anime",
+    "animeSubtitle": "Find new anime to add to your list",
+    "searchAnimePlaceholder": "Search TMDB for an anime...",
+    "popularAnimeTitle": "Popular anime in the community",
+    "popularAnimeEmpty": "No anime in public lists yet",
     "exploreAll": "Explore all",
     "discoverSection": "Discover"
   },
@@ -377,6 +442,32 @@
     "tabTrailer": "Trailer",
     "tabStats": "Statistics",
     "noTrailer": "No trailer available for this movie.",
+    "addToList": "Add to my list",
+    "inMyList": "In my list",
+    "myRating": "My rating",
+    "viewOnTmdb": "View on TMDB"
+  },
+  "animeDetail": {
+    "overview": "Overview",
+    "releaseYear": "Released",
+    "episodeCount": "{count, plural, =1 {1 episode} other {# episodes}}",
+    "inLists": "{count, plural, =1 {In 1 list} other {In # lists}}",
+    "avgRating": "Average user rating",
+    "noOverview": "No description available yet. Visit this page to load info from TMDB.",
+    "watchTrailer": "Watch Trailer",
+    "streamingTitle": "Where to Watch",
+    "streamingRegion": "Availability for {region}",
+    "publicListsTitle": "Public lists with this anime",
+    "analyticsTitle": "Community Analytics",
+    "ratedBy": "Rated by",
+    "ratingDistribution": "Rating distribution",
+    "noRatings": "No ratings yet",
+    "addedOverTime": "Added to lists over time",
+    "adds": "adds",
+    "users": "users",
+    "tabTrailer": "Trailer",
+    "tabStats": "Statistics",
+    "noTrailer": "No trailer available for this anime.",
     "addToList": "Add to my list",
     "inMyList": "In my list",
     "myRating": "My rating",
@@ -484,6 +575,13 @@
       "minVotesHint": "Only movies with at least 2 ratings are shown",
       "emptyTitle": "No movie rankings yet",
       "emptyDescription": "Rate movies in your public list to contribute to the community ranking"
+    },
+    "anime": {
+      "title": "Top Anime",
+      "subtitle": "Anime ranked by average user rating across all public lists",
+      "minVotesHint": "Only anime with at least 2 ratings are shown",
+      "emptyTitle": "No anime rankings yet",
+      "emptyDescription": "Rate anime in your public list to contribute to the community ranking"
     }
   },
   "onboarding": {
@@ -496,6 +594,9 @@
     "details": "Details",
     "moviesTitle": "Welcome to your movies!",
     "moviesSubtitle": "Start adding films you've watched or want to watch, or import from an external service.",
-    "moviesAddFirst": "Add a movie"
+    "moviesAddFirst": "Add a movie",
+    "animeTitle": "Welcome to your anime!",
+    "animeSubtitle": "Start adding anime you've watched or want to watch, or import from MyAnimeList.",
+    "animeAddFirst": "Add an anime"
   }
 }

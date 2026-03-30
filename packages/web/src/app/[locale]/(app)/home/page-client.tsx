@@ -20,14 +20,18 @@ import {
 
 import { ShowPodiumWidget } from "@/components/widgets/ShowPodiumWidget";
 import { MoviePodiumWidget } from "@/components/widgets/MoviePodiumWidget";
+import { AnimePodiumWidget } from "@/components/widgets/AnimePodiumWidget";
 import { ShowCountWidget } from "@/components/widgets/ShowCountWidget";
 import { MovieCountWidget } from "@/components/widgets/MovieCountWidget";
+import { AnimeCountWidget } from "@/components/widgets/AnimeCountWidget";
 import { LastShowWidget } from "@/components/widgets/LastShowWidget";
 import { LastMovieWidget } from "@/components/widgets/LastMovieWidget";
+import { LastAnimeWidget } from "@/components/widgets/LastAnimeWidget";
 import { NotificationsWidget } from "@/components/widgets/NotificationsWidget";
 import { RecentFollowsWidget } from "@/components/widgets/RecentFollowsWidget";
 import { ShowSuggestionsWidget } from "@/components/widgets/ShowSuggestionsWidget";
 import { MovieSuggestionsWidget } from "@/components/widgets/MovieSuggestionsWidget";
+import { AnimeSuggestionsWidget } from "@/components/widgets/AnimeSuggestionsWidget";
 import { WidgetPicker } from "@/components/widgets/WidgetPicker";
 import { HomeWelcome } from "@/components/HomeWelcome";
 
@@ -92,14 +96,22 @@ export function HomeClient({ data }: { data: HomeData }) {
             rowSpan={config.rowSpan}
           />
         );
+      case "anime_podium":
+        return (
+          <AnimePodiumWidget items={data.top10Anime} rowSpan={config.rowSpan} />
+        );
       case "show_count":
         return <ShowCountWidget count={data.showCount} />;
       case "movie_count":
         return <MovieCountWidget count={data.movieCount} />;
+      case "anime_count":
+        return <AnimeCountWidget count={data.animeCount} />;
       case "last_show_added":
         return <LastShowWidget item={data.lastShow} />;
       case "last_movie_added":
         return <LastMovieWidget item={data.lastMovie} />;
+      case "last_anime_added":
+        return <LastAnimeWidget item={data.lastAnime} />;
       case "notifications":
         return <NotificationsWidget items={data.notifications} />;
       case "recent_follows":
@@ -108,13 +120,17 @@ export function HomeClient({ data }: { data: HomeData }) {
         return <ShowSuggestionsWidget items={data.suggestedShows} />;
       case "movie_suggestions":
         return <MovieSuggestionsWidget items={data.suggestedMovies} />;
+      case "anime_suggestions":
+        return <AnimeSuggestionsWidget items={data.suggestedAnime} />;
     }
   }
 
   return (
     <div className="space-y-6">
       {/* Welcome screen for new users with no content */}
-      {data.showCount === 0 && data.movieCount === 0 ? (
+      {data.showCount === 0 &&
+      data.movieCount === 0 &&
+      data.animeCount === 0 ? (
         <HomeWelcome username={data.username} />
       ) : (
         <>
@@ -127,69 +143,69 @@ export function HomeClient({ data }: { data: HomeData }) {
             </div>
             <WidgetPicker currentWidgets={widgets} onAdd={addWidget} />
           </div>
-      {/* Widget grid — fixed row height so row-span-2 = exactly double */}
-      {widgets.length > 0 ? (
-        <div className="grid auto-rows-[200px] grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-          {widgets.map((config) => (
-            <div
-              key={config.id}
-              className={`group relative ${
-                config.colSpan === 2 ? "col-span-2" : "col-span-1"
-              } ${config.rowSpan === 2 ? "row-span-2" : "row-span-1"}`}
-            >
-              {/* Widget controls (always visible on mobile, hover on desktop) */}
-              <div className="absolute -top-2 right-1 z-10 flex gap-0.5 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
-                <button
-                  onClick={() => toggleColSpan(config.id)}
-                  className="flex h-5 w-5 items-center justify-center rounded bg-bg-elevated text-text-muted shadow-sm transition-colors hover:bg-bg-surface-hover hover:text-text-primary"
-                  title={
-                    config.colSpan === 1
-                      ? t("widgets.expand")
-                      : t("widgets.shrink")
-                  }
+          {/* Widget grid — fixed row height so row-span-2 = exactly double */}
+          {widgets.length > 0 ? (
+            <div className="grid auto-rows-[200px] grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+              {widgets.map((config) => (
+                <div
+                  key={config.id}
+                  className={`group relative ${
+                    config.colSpan === 2 ? "col-span-2" : "col-span-1"
+                  } ${config.rowSpan === 2 ? "row-span-2" : "row-span-1"}`}
                 >
-                  {config.colSpan === 1 ? (
-                    <ArrowsOutLineHorizontal size={10} />
-                  ) : (
-                    <ArrowsInLineHorizontal size={10} />
-                  )}
-                </button>
-                <button
-                  onClick={() => toggleRowSpan(config.id)}
-                  className="flex h-5 w-5 items-center justify-center rounded bg-bg-elevated text-text-muted shadow-sm transition-colors hover:bg-bg-surface-hover hover:text-text-primary"
-                  title={
-                    config.rowSpan === 1
-                      ? t("widgets.expandHeight")
-                      : t("widgets.shrinkHeight")
-                  }
-                >
-                  {config.rowSpan === 1 ? (
-                    <ArrowsOutLineVertical size={10} />
-                  ) : (
-                    <ArrowsInLineVertical size={10} />
-                  )}
-                </button>
-                <button
-                  onClick={() => removeWidget(config.id)}
-                  className="flex h-5 w-5 items-center justify-center rounded bg-bg-elevated text-text-muted shadow-sm transition-colors hover:bg-error/20 hover:text-error"
-                  title={t("widgets.remove")}
-                >
-                  <X size={10} weight="bold" />
-                </button>
-              </div>
+                  {/* Widget controls (always visible on mobile, hover on desktop) */}
+                  <div className="absolute -top-2 right-1 z-10 flex gap-0.5 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
+                    <button
+                      onClick={() => toggleColSpan(config.id)}
+                      className="flex h-5 w-5 items-center justify-center rounded bg-bg-elevated text-text-muted shadow-sm transition-colors hover:bg-bg-surface-hover hover:text-text-primary"
+                      title={
+                        config.colSpan === 1
+                          ? t("widgets.expand")
+                          : t("widgets.shrink")
+                      }
+                    >
+                      {config.colSpan === 1 ? (
+                        <ArrowsOutLineHorizontal size={10} />
+                      ) : (
+                        <ArrowsInLineHorizontal size={10} />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => toggleRowSpan(config.id)}
+                      className="flex h-5 w-5 items-center justify-center rounded bg-bg-elevated text-text-muted shadow-sm transition-colors hover:bg-bg-surface-hover hover:text-text-primary"
+                      title={
+                        config.rowSpan === 1
+                          ? t("widgets.expandHeight")
+                          : t("widgets.shrinkHeight")
+                      }
+                    >
+                      {config.rowSpan === 1 ? (
+                        <ArrowsOutLineVertical size={10} />
+                      ) : (
+                        <ArrowsInLineVertical size={10} />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => removeWidget(config.id)}
+                      className="flex h-5 w-5 items-center justify-center rounded bg-bg-elevated text-text-muted shadow-sm transition-colors hover:bg-error/20 hover:text-error"
+                      title={t("widgets.remove")}
+                    >
+                      <X size={10} weight="bold" />
+                    </button>
+                  </div>
 
-              {renderWidget(config)}
+                  {renderWidget(config)}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border py-16 text-center">
-          <p className="text-sm text-text-muted">
-            {t("widgets.emptyDashboard")}
-          </p>
-          <WidgetPicker currentWidgets={widgets} onAdd={addWidget} />
-        </div>
-      )}
+          ) : (
+            <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border py-16 text-center">
+              <p className="text-sm text-text-muted">
+                {t("widgets.emptyDashboard")}
+              </p>
+              <WidgetPicker currentWidgets={widgets} onAdd={addWidget} />
+            </div>
+          )}
         </>
       )}
     </div>

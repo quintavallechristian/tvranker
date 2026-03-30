@@ -74,6 +74,65 @@ export type ListEntry = {
  * - ratingSimilarity = average of (1 - |rA - rB| / 9) for shows rated in BOTH lists
  * - positionSimilarity = average of (1 - |normPosA - normPosB|) for all common shows
  */
+export type AnimeListEntry = {
+  animeId: string;
+  rating: number | null;
+  position: number;
+};
+
+/**
+ * Compute similarity between two anime lists (0–100).
+ * Same formula as computeListSimilarity but keyed by animeId.
+ */
+export function computeAnimeListSimilarity(
+  listA: AnimeListEntry[],
+  listB: AnimeListEntry[],
+): number {
+  if (listA.length === 0 || listB.length === 0) return 0;
+
+  const mapA = new Map(
+    listA.map((e) => [e.animeId, { rating: e.rating, position: e.position }]),
+  );
+  const mapB = new Map(
+    listB.map((e) => [e.animeId, { rating: e.rating, position: e.position }]),
+  );
+
+  const commonIds: string[] = [];
+  for (const animeId of mapA.keys()) {
+    if (mapB.has(animeId)) commonIds.push(animeId);
+  }
+
+  if (commonIds.length === 0) return 0;
+
+  const overlapRatio = commonIds.length / Math.min(listA.length, listB.length);
+
+  let ratingSum = 0;
+  let ratingCount = 0;
+  let positionSum = 0;
+  const maxPosA = Math.max(listA.length - 1, 1);
+  const maxPosB = Math.max(listB.length - 1, 1);
+
+  for (const animeId of commonIds) {
+    const a = mapA.get(animeId)!;
+    const b = mapB.get(animeId)!;
+
+    if (a.rating !== null && b.rating !== null) {
+      ratingSum += 1 - Math.abs(a.rating - b.rating) / 9;
+      ratingCount++;
+    }
+
+    const normPosA = a.position / maxPosA;
+    const normPosB = b.position / maxPosB;
+    positionSum += 1 - Math.abs(normPosA - normPosB);
+  }
+
+  const ratingSimilarity = ratingCount > 0 ? ratingSum / ratingCount : 1;
+  const positionSimilarity = positionSum / commonIds.length;
+  const agreementScore = 0.5 * ratingSimilarity + 0.5 * positionSimilarity;
+
+  return Math.round(overlapRatio * agreementScore * 100);
+}
+
 export function computeListSimilarity(
   listA: ListEntry[],
   listB: ListEntry[],

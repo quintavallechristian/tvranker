@@ -6,13 +6,16 @@ import { FollowButton } from "@/components/FollowButton";
 import {
   computeListSimilarity,
   computeMovieListSimilarity,
+  computeAnimeListSimilarity,
 } from "@/lib/similarity";
 import { Link } from "@/i18n/navigation";
 import { ShowPodiumWidget } from "@/components/widgets/ShowPodiumWidget";
 import { MoviePodiumWidget } from "@/components/widgets/MoviePodiumWidget";
+import { AnimePodiumWidget } from "@/components/widgets/AnimePodiumWidget";
 import type {
   ShowPodiumItem,
   MoviePodiumItem,
+  AnimePodiumItem,
 } from "@/app/[locale]/(app)/home/actions";
 
 export default async function UserProfilePage({
@@ -33,53 +36,80 @@ export default async function UserProfilePage({
   if (!profile) notFound();
 
   // Fetch both lists in parallel
-  const [{ data: list }, { data: movieList }] = await Promise.all([
-    supabase
-      .from("lists")
-      .select("id, is_public")
-      .eq("user_id", profile.id)
-      .single(),
-    supabase
-      .from("movie_lists")
-      .select("id, is_public")
-      .eq("user_id", profile.id)
-      .single(),
-  ]);
+  const [{ data: list }, { data: movieList }, { data: animeList }] =
+    await Promise.all([
+      supabase
+        .from("lists")
+        .select("id, is_public")
+        .eq("user_id", profile.id)
+        .single(),
+      supabase
+        .from("movie_lists")
+        .select("id, is_public")
+        .eq("user_id", profile.id)
+        .single(),
+      supabase
+        .from("anime_lists")
+        .select("id, is_public")
+        .eq("user_id", profile.id)
+        .single(),
+    ]);
 
   // Fetch top 3 shows + count and top 3 movies + count in parallel
-  const [showTopResult, showCountResult, movieTopResult, movieCountResult] =
-    await Promise.all([
-      list
-        ? supabase
-            .from("list_items")
-            .select("rating, shows(id, title, poster_path)")
-            .eq("list_id", list.id)
-            .order("rating", { ascending: false, nullsFirst: false })
-            .order("position", { ascending: true })
-            .range(0, 9)
-        : Promise.resolve({ data: null }),
-      list
-        ? supabase
-            .from("list_items")
-            .select("id", { count: "exact", head: true })
-            .eq("list_id", list.id)
-        : Promise.resolve({ count: 0 }),
-      movieList
-        ? supabase
-            .from("movie_list_items")
-            .select("rating, movies(id, title, poster_path)")
-            .eq("movie_list_id", movieList.id)
-            .order("rating", { ascending: false, nullsFirst: false })
-            .order("position", { ascending: true })
-            .range(0, 9)
-        : Promise.resolve({ data: null }),
-      movieList
-        ? supabase
-            .from("movie_list_items")
-            .select("id", { count: "exact", head: true })
-            .eq("movie_list_id", movieList.id)
-        : Promise.resolve({ count: 0 }),
-    ]);
+  const [
+    showTopResult,
+    showCountResult,
+    movieTopResult,
+    movieCountResult,
+    animeTopResult,
+    animeCountResult,
+  ] = await Promise.all([
+    list
+      ? supabase
+          .from("list_items")
+          .select("rating, shows(id, title, poster_path)")
+          .eq("list_id", list.id)
+          .order("rating", { ascending: false, nullsFirst: false })
+          .order("position", { ascending: true })
+          .range(0, 9)
+      : Promise.resolve({ data: null }),
+    list
+      ? supabase
+          .from("list_items")
+          .select("id", { count: "exact", head: true })
+          .eq("list_id", list.id)
+      : Promise.resolve({ count: 0 }),
+    movieList
+      ? supabase
+          .from("movie_list_items")
+          .select("rating, movies(id, title, poster_path)")
+          .eq("movie_list_id", movieList.id)
+          .order("rating", { ascending: false, nullsFirst: false })
+          .order("position", { ascending: true })
+          .range(0, 9)
+      : Promise.resolve({ data: null }),
+    movieList
+      ? supabase
+          .from("movie_list_items")
+          .select("id", { count: "exact", head: true })
+          .eq("movie_list_id", movieList.id)
+      : Promise.resolve({ count: 0 }),
+    animeList
+      ? supabase
+          .from("anime_list_items")
+          .select("rating, animes(id, title, poster_path)")
+          .eq("anime_list_id", animeList.id)
+          .order("rating", { ascending: false, nullsFirst: false })
+          .order("position", { ascending: true })
+          .range(0, 9)
+      : Promise.resolve({ data: null }),
+    animeList
+      ? supabase
+          .from("anime_list_items")
+          .select("id", { count: "exact", head: true })
+          .eq("anime_list_id", animeList.id)
+      : Promise.resolve({ count: 0 }),
+  ]);
 
   const showPodiumItems: ShowPodiumItem[] = (showTopResult.data ?? []).map(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -101,6 +131,16 @@ export default async function UserProfilePage({
     }),
   );
 
+  const animePodiumItems: AnimePodiumItem[] = (animeTopResult.data ?? []).map(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (item: any) => ({
+      id: item.animes.id,
+      title: item.animes.title,
+      poster_path: item.animes.poster_path,
+      rating: item.rating,
+    }),
+  );
+
   // Current user
   const {
     data: { user },
@@ -110,18 +150,18 @@ export default async function UserProfilePage({
   // Compute similarities for logged-in viewers
   let showSimilarityScore: number | null = null;
   let movieSimilarityScore: number | null = null;
+  let animeSimilarityScore: number | null = null;
 
   if (user && !isOwnProfile) {
-    const [{ data: viewerList }, { data: viewerMovieList }] = await Promise.all(
-      [
-        supabase.from("lists").select("id").eq("user_id", user.id).single(),
-        supabase
-          .from("movie_lists")
-          .select("id")
-          .eq("user_id", user.id)
-          .single(),
-      ],
-    );
+    const [
+      { data: viewerList },
+      { data: viewerMovieList },
+      { data: viewerAnimeList },
+    ] = await Promise.all([
+      supabase.from("lists").select("id").eq("user_id", user.id).single(),
+      supabase.from("movie_lists").select("id").eq("user_id", user.id).single(),
+      supabase.from("anime_lists").select("id").eq("user_id", user.id).single(),
+    ]);
 
     if (viewerList && list) {
       const [viewerItems, profileItems] = await Promise.all([
@@ -183,18 +223,50 @@ export default async function UserProfilePage({
         );
       }
     }
+
+    if (viewerAnimeList && animeList) {
+      const [viewerAnimeItems, profileAnimeItems] = await Promise.all([
+        supabase
+          .from("anime_list_items")
+          .select("anime_id, rating, position")
+          .eq("anime_list_id", viewerAnimeList.id)
+          .order("position", { ascending: true }),
+        supabase
+          .from("anime_list_items")
+          .select("anime_id, rating, position")
+          .eq("anime_list_id", animeList.id)
+          .order("position", { ascending: true }),
+      ]);
+      const animeListA = (viewerAnimeItems.data ?? []).map((i, idx) => ({
+        animeId: i.anime_id,
+        rating: i.rating,
+        position: i.position ?? idx,
+      }));
+      const animeListB = (profileAnimeItems.data ?? []).map((i, idx) => ({
+        animeId: i.anime_id,
+        rating: i.rating,
+        position: i.position ?? idx,
+      }));
+      if (animeListA.length > 0 && animeListB.length > 0) {
+        animeSimilarityScore = computeAnimeListSimilarity(
+          animeListA,
+          animeListB,
+        );
+      }
+    }
   }
 
   // Compatibility = average similarity of all lists both profiles have compiled
   let compatibilityScore: number | null = null;
-  if (showSimilarityScore !== null && movieSimilarityScore !== null) {
+  const scores = [
+    showSimilarityScore,
+    movieSimilarityScore,
+    animeSimilarityScore,
+  ].filter((s): s is number => s !== null);
+  if (scores.length > 0) {
     compatibilityScore = Math.round(
-      (showSimilarityScore + movieSimilarityScore) / 2,
+      scores.reduce((a, b) => a + b, 0) / scores.length,
     );
-  } else if (showSimilarityScore !== null) {
-    compatibilityScore = showSimilarityScore;
-  } else if (movieSimilarityScore !== null) {
-    compatibilityScore = movieSimilarityScore;
   }
 
   // Follow status
@@ -244,7 +316,7 @@ export default async function UserProfilePage({
       </div>
 
       {/* Podium cards — extended top10 with rowSpan=2 */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Link href={`/users/${profile.username}/shows`} className="block h-105">
           <ShowPodiumWidget
             items={showPodiumItems}
@@ -272,6 +344,21 @@ export default async function UserProfilePage({
               movieSimilarityScore !== null ? (
                 <span className="text-xs font-semibold text-accent">
                   {movieSimilarityScore}%
+                </span>
+              ) : undefined
+            }
+          />
+        </Link>
+
+        <Link href={`/users/${profile.username}/anime`} className="block h-105">
+          <AnimePodiumWidget
+            items={animePodiumItems}
+            rowSpan={2}
+            viewAllHref={`/users/${profile.username}/anime`}
+            badge={
+              animeSimilarityScore !== null ? (
+                <span className="text-xs font-semibold text-accent">
+                  {animeSimilarityScore}%
                 </span>
               ) : undefined
             }
