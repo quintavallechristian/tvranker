@@ -3,33 +3,61 @@
 import React from "react";
 import { getPosterUrl } from "@/lib/tmdb/client";
 import Image from "next/image";
-import { FilmSlate } from "@phosphor-icons/react";
-import type { MoviePodiumItem } from "@/app/[locale]/(app)/home/actions";
+import { Television, FilmSlate } from "@phosphor-icons/react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 
-export function MoviePodiumWidget({
+export type PodiumTopic = "show" | "movie" | "anime";
+
+export type PodiumItem = {
+  id: string;
+  title: string;
+  poster_path: string | null;
+  rating: number | null;
+};
+
+export function PodiumWidget({
   items,
+  topic,
   rowSpan = 1,
   viewAllHref,
   badge,
 }: {
-  items: MoviePodiumItem[];
+  items: PodiumItem[];
+  topic: PodiumTopic;
   rowSpan?: 1 | 2;
   viewAllHref?: string;
   badge?: React.ReactNode;
 }) {
   const t = useTranslations("home");
 
+  const label =
+    rowSpan === 2
+      ? topic === "show"
+        ? t("widgets.top10Show")
+        : topic === "movie"
+          ? t("widgets.top10Movie")
+          : t("widgets.top10Anime")
+      : topic === "show"
+        ? t("widgets.showPodium")
+        : topic === "movie"
+          ? t("widgets.moviePodium")
+          : t("widgets.animePodium");
+
+  const defaultHref =
+    topic === "show" ? "/lists" : topic === "movie" ? "/movies" : "/anime";
+
+  const Icon = topic === "show" ? Television : FilmSlate;
+
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-bg-surface p-4">
       <div className="mb-3 flex shrink-0 items-center justify-between">
         <p className="text-xs font-medium uppercase tracking-widest text-text-muted">
-          {rowSpan === 2 ? t("widgets.top10Movie") : t("widgets.moviePodium")}
+          {label}
         </p>
         {badge ?? (
           <Link
-            href={viewAllHref ?? "/movies"}
+            href={viewAllHref ?? defaultHref}
             className="text-xs text-text-muted transition-colors hover:text-accent"
           >
             {t("widgets.viewAll")}
@@ -39,7 +67,6 @@ export function MoviePodiumWidget({
 
       {items.length > 0 ? (
         <>
-          {/* Compact podium — always visible at both heights */}
           <div className="flex shrink-0 items-end justify-center gap-4">
             {items[1] ? (
               <PodiumSlot
@@ -47,6 +74,7 @@ export function MoviePodiumWidget({
                 rank={2}
                 posterHeight="h-14"
                 rankColor="text-slate-400"
+                Icon={Icon}
               />
             ) : (
               <div className="w-12" />
@@ -57,6 +85,7 @@ export function MoviePodiumWidget({
               posterHeight="h-20"
               rankColor="text-yellow-400"
               featured
+              Icon={Icon}
             />
             {items[2] ? (
               <PodiumSlot
@@ -64,18 +93,18 @@ export function MoviePodiumWidget({
                 rank={3}
                 posterHeight="h-10"
                 rankColor="text-amber-600"
+                Icon={Icon}
               />
             ) : (
               <div className="w-12" />
             )}
           </div>
 
-          {/* Extended list — only visible at rowSpan=2 */}
           {rowSpan === 2 && items.length > 3 && (
             <div className="mt-3 flex-1 overflow-hidden border-t border-border pt-3">
               <div className="space-y-1 overflow-hidden">
                 {items.slice(3, 10).map((item, i) => (
-                  <RankRow key={item.id} item={item} rank={i + 4} />
+                  <RankRow key={item.id} item={item} rank={i + 4} Icon={Icon} />
                 ))}
               </div>
             </div>
@@ -83,8 +112,14 @@ export function MoviePodiumWidget({
         </>
       ) : (
         <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border py-6">
-          <FilmSlate size={24} className="text-text-faint" />
-          <p className="text-xs text-text-muted">{t("emptyMovieList")}</p>
+          <Icon size={24} className="text-text-faint" />
+          <p className="text-xs text-text-muted">
+            {topic === "movie"
+              ? t("emptyMovieList")
+              : topic === "anime"
+                ? t("emptyAnimeList")
+                : t("emptyList")}
+          </p>
         </div>
       )}
     </div>
@@ -97,12 +132,14 @@ function PodiumSlot({
   posterHeight,
   rankColor,
   featured,
+  Icon,
 }: {
-  item: MoviePodiumItem;
+  item: PodiumItem;
   rank: number;
   posterHeight: string;
   rankColor: string;
   featured?: boolean;
+  Icon: React.ElementType;
 }) {
   const posterUrl = getPosterUrl(item.poster_path, "w92");
 
@@ -128,7 +165,7 @@ function PodiumSlot({
           />
         ) : (
           <div className="flex h-full items-center justify-center">
-            <FilmSlate size={14} className="text-text-faint" />
+            <Icon size={14} className="text-text-faint" />
           </div>
         )}
       </div>
@@ -139,7 +176,15 @@ function PodiumSlot({
   );
 }
 
-function RankRow({ item, rank }: { item: MoviePodiumItem; rank: number }) {
+function RankRow({
+  item,
+  rank,
+  Icon,
+}: {
+  item: PodiumItem;
+  rank: number;
+  Icon: React.ElementType;
+}) {
   const posterUrl = getPosterUrl(item.poster_path, "w92");
 
   return (
@@ -157,7 +202,7 @@ function RankRow({ item, rank }: { item: MoviePodiumItem; rank: number }) {
             sizes="20px"
           />
         ) : (
-          <FilmSlate size={10} className="m-auto text-text-faint" />
+          <Icon size={10} className="m-auto text-text-faint" />
         )}
       </div>
       <p className="min-w-0 flex-1 truncate text-[11px] text-text-primary">

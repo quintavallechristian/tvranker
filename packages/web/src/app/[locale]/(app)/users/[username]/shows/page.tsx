@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { UserAvatar } from "@/components/UserAvatar";
 import { computeListSimilarity } from "@/lib/similarity";
+import { fetchAllRows } from "@/lib/supabase/fetchAll";
 import { UserListClient } from "../user-list-client";
 import { ListItemWithShow } from "../../../lists/actions";
 import { Link } from "@/i18n/navigation";
@@ -64,24 +65,30 @@ export default async function UserShowsPage({
       .single();
 
     if (viewerList) {
-      const [viewerItems, profileItems] = await Promise.all([
-        supabase
-          .from("list_items")
-          .select("show_id, rating, position")
-          .eq("list_id", viewerList.id)
-          .order("position", { ascending: true }),
-        supabase
-          .from("list_items")
-          .select("show_id, rating, position")
-          .eq("list_id", list.id)
-          .order("position", { ascending: true }),
+      const [listAData, listBData] = await Promise.all([
+        fetchAllRows((from, to) =>
+          supabase
+            .from("list_items")
+            .select("show_id, rating, position")
+            .eq("list_id", viewerList.id)
+            .order("position", { ascending: true })
+            .range(from, to),
+        ),
+        fetchAllRows((from, to) =>
+          supabase
+            .from("list_items")
+            .select("show_id, rating, position")
+            .eq("list_id", list.id)
+            .order("position", { ascending: true })
+            .range(from, to),
+        ),
       ]);
-      const listA = (viewerItems.data ?? []).map((i, idx) => ({
+      const listA = listAData.map((i, idx) => ({
         showId: i.show_id,
         rating: i.rating,
         position: i.position ?? idx,
       }));
-      const listB = (profileItems.data ?? []).map((i, idx) => ({
+      const listB = listBData.map((i, idx) => ({
         showId: i.show_id,
         rating: i.rating,
         position: i.position ?? idx,

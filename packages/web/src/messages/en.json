@@ -110,7 +110,21 @@
       "showSuggestions": "Discover Shows",
       "movieSuggestions": "Discover Movies",
       "explore": "Explore all",
-      "noSuggestions": "No suggestions yet"
+      "noSuggestions": "No suggestions yet",
+      "chooseTopic": "Choose subject",
+      "categories": {
+        "podium": "Podium",
+        "count": "Count",
+        "last_added": "Last Added",
+        "suggestions": "Suggestions",
+        "notifications": "Notifications",
+        "recent_follows": "Recent Follows"
+      },
+      "topics": {
+        "show": "TV Shows",
+        "movie": "Movies",
+        "anime": "Anime"
+      }
     }
   },
   "movies": {
@@ -181,7 +195,8 @@
     "unfollow": "Unfollow",
     "emptyTitle": "Not following anyone yet",
     "emptyDescription": "Visit a user's profile and click Follow to add them here",
-    "showsInList": "{count, plural, =0 {No shows} =1 {1 show} other {# shows}}"
+    "showsInList": "{count, plural, =0 {No shows} =1 {1 show} other {# shows}}",
+    "listsCount": "{count, plural, =0 {No lists} =1 {1 list} other {# lists}}"
   },
   "notifications": {
     "title": "Notifications",
@@ -344,7 +359,7 @@
     "searchPlaceholder": "Search users or shows...",
     "usersSection": "Users",
     "showsSection": "Shows",
-    "showsInList": "{count, plural, =0 {No shows} =1 {1 show} other {# shows}}",
+    "listsCompiled": "{count, plural, =1 {1 list} other {# lists}}",
     "noResults": "No results found",
     "compatibility": "{score}% compatible",
     "suggestedTitle": "Suggested for you",

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { UserAvatar } from "@/components/UserAvatar";
 import { computeMovieListSimilarity } from "@/lib/similarity";
+import { fetchAllRows } from "@/lib/supabase/fetchAll";
 import { UserMovieListClient } from "../user-movie-list-client";
 import { type MovieItem } from "../../../movies/actions";
 import { Link } from "@/i18n/navigation";
@@ -66,24 +67,30 @@ export default async function UserMoviesPage({
       .single();
 
     if (viewerMovieList) {
-      const [viewerMovieItems, profileMovieItems] = await Promise.all([
-        supabase
-          .from("movie_list_items")
-          .select("movie_id, rating, position")
-          .eq("movie_list_id", viewerMovieList.id)
-          .order("position", { ascending: true }),
-        supabase
-          .from("movie_list_items")
-          .select("movie_id, rating, position")
-          .eq("movie_list_id", movieList.id)
-          .order("position", { ascending: true }),
+      const [viewerMovieItemsData, profileMovieItemsData] = await Promise.all([
+        fetchAllRows((from, to) =>
+          supabase
+            .from("movie_list_items")
+            .select("movie_id, rating, position")
+            .eq("movie_list_id", viewerMovieList.id)
+            .order("position", { ascending: true })
+            .range(from, to),
+        ),
+        fetchAllRows((from, to) =>
+          supabase
+            .from("movie_list_items")
+            .select("movie_id, rating, position")
+            .eq("movie_list_id", movieList.id)
+            .order("position", { ascending: true })
+            .range(from, to),
+        ),
       ]);
-      const movieListA = (viewerMovieItems.data ?? []).map((i, idx) => ({
+      const movieListA = viewerMovieItemsData.map((i, idx) => ({
         movieId: i.movie_id,
         rating: i.rating,
         position: i.position ?? idx,
       }));
-      const movieListB = (profileMovieItems.data ?? []).map((i, idx) => ({
+      const movieListB = profileMovieItemsData.map((i, idx) => ({
         movieId: i.movie_id,
         rating: i.rating,
         position: i.position ?? idx,
@@ -146,7 +153,6 @@ export default async function UserMoviesPage({
           </Link>
         </div>
       </div>
-
       {/* Movie count */}
       {movieList && (
         <div className="mb-4 flex items-center gap-2">
@@ -156,7 +162,6 @@ export default async function UserMoviesPage({
           </p>
         </div>
       )}
-
       {/* List */}
       {movieList ? (
         movieItems.length === 0 ? (

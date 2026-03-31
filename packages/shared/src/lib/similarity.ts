@@ -5,6 +5,29 @@ export type MovieListEntry = {
 };
 
 /**
+ * Sorts a list by display order (rating DESC NULLS LAST, position ASC)
+ * and returns items with position replaced by their 0-based display rank.
+ * This ensures positionSimilarity reflects the user's actual ranking, not
+ * insertion order.
+ */
+function toDisplayRanked<T extends { rating: number | null; position: number }>(
+  list: T[],
+): T[] {
+  return [...list]
+    .sort((a, b) => {
+      if (a.rating !== null && b.rating !== null) {
+        if (b.rating !== a.rating) return b.rating - a.rating;
+      } else if (a.rating !== null) {
+        return -1;
+      } else if (b.rating !== null) {
+        return 1;
+      }
+      return a.position - b.position;
+    })
+    .map((item, idx) => ({ ...item, position: idx }));
+}
+
+/**
  * Compute similarity between two movie lists (0–100).
  * Same formula as computeListSimilarity but keyed by movieId.
  */
@@ -14,11 +37,14 @@ export function computeMovieListSimilarity(
 ): number {
   if (listA.length === 0 || listB.length === 0) return 0;
 
+  const rankedA = toDisplayRanked(listA);
+  const rankedB = toDisplayRanked(listB);
+
   const mapA = new Map(
-    listA.map((e) => [e.movieId, { rating: e.rating, position: e.position }]),
+    rankedA.map((e) => [e.movieId, { rating: e.rating, position: e.position }]),
   );
   const mapB = new Map(
-    listB.map((e) => [e.movieId, { rating: e.rating, position: e.position }]),
+    rankedB.map((e) => [e.movieId, { rating: e.rating, position: e.position }]),
   );
 
   const commonIds: string[] = [];
@@ -48,11 +74,21 @@ export function computeMovieListSimilarity(
     const normPosA = a.position / maxPosA;
     const normPosB = b.position / maxPosB;
     positionSum += 1 - Math.abs(normPosA - normPosB);
+    console.log(
+      movieId,
+      a.position,
+      b.position,
+      maxPosA,
+      maxPosB,
+      normPosA,
+      normPosB,
+    );
   }
 
   const ratingSimilarity = ratingCount > 0 ? ratingSum / ratingCount : 1;
   const positionSimilarity = positionSum / commonIds.length;
 
+  console.log(ratingSimilarity, positionSum, commonIds, positionSimilarity);
   const agreementScore = 0.5 * ratingSimilarity + 0.5 * positionSimilarity;
 
   return Math.round(overlapRatio * agreementScore * 100);
@@ -90,11 +126,14 @@ export function computeAnimeListSimilarity(
 ): number {
   if (listA.length === 0 || listB.length === 0) return 0;
 
+  const rankedA = toDisplayRanked(listA);
+  const rankedB = toDisplayRanked(listB);
+
   const mapA = new Map(
-    listA.map((e) => [e.animeId, { rating: e.rating, position: e.position }]),
+    rankedA.map((e) => [e.animeId, { rating: e.rating, position: e.position }]),
   );
   const mapB = new Map(
-    listB.map((e) => [e.animeId, { rating: e.rating, position: e.position }]),
+    rankedB.map((e) => [e.animeId, { rating: e.rating, position: e.position }]),
   );
 
   const commonIds: string[] = [];
@@ -139,11 +178,14 @@ export function computeListSimilarity(
 ): number {
   if (listA.length === 0 || listB.length === 0) return 0;
 
+  const rankedA = toDisplayRanked(listA);
+  const rankedB = toDisplayRanked(listB);
+
   const mapA = new Map(
-    listA.map((e) => [e.showId, { rating: e.rating, position: e.position }]),
+    rankedA.map((e) => [e.showId, { rating: e.rating, position: e.position }]),
   );
   const mapB = new Map(
-    listB.map((e) => [e.showId, { rating: e.rating, position: e.position }]),
+    rankedB.map((e) => [e.showId, { rating: e.rating, position: e.position }]),
   );
 
   const commonShowIds: string[] = [];

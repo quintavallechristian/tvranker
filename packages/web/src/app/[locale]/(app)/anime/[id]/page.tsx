@@ -4,6 +4,7 @@ import { fetchAnimeTmdbData } from "../actions";
 import { AnimeDetailClient } from "./page-client";
 import type { ShowAnalyticsData } from "@/components/ShowAnalytics";
 import { computeListSimilarity, type ListEntry } from "@/lib/similarity";
+import { fetchAllRows } from "@/lib/supabase/fetchAll";
 
 export default async function AnimeDetailPage({
   params,
@@ -125,13 +126,16 @@ export default async function AnimeDetailPage({
       }
 
       // Fetch full list for similarity computation
-      const { data: allMyItems } = await supabase
-        .from("anime_list_items")
-        .select("anime_id, rating, position")
-        .eq("anime_list_id", myAnimeList.id)
-        .order("position", { ascending: true });
+      const allMyItems = await fetchAllRows((from, to) =>
+        supabase
+          .from("anime_list_items")
+          .select("anime_id, rating, position")
+          .eq("anime_list_id", myAnimeList.id)
+          .order("position", { ascending: true })
+          .range(from, to),
+      );
 
-      viewerListEntries = (allMyItems ?? []).map((i) => ({
+      viewerListEntries = allMyItems.map((i) => ({
         showId: i.anime_id,
         rating: i.rating,
         position: i.position ?? 0,
@@ -148,12 +152,15 @@ export default async function AnimeDetailPage({
 
   if (viewerListEntries.length > 0 && publicLists.length > 0) {
     const publicListIds = publicLists.map((l) => l.id);
-    const { data: allPublicItems } = await supabase
-      .from("anime_list_items")
-      .select("anime_list_id, anime_id, rating, position")
-      .in("anime_list_id", publicListIds);
+    const allPublicItems = await fetchAllRows((from, to) =>
+      supabase
+        .from("anime_list_items")
+        .select("anime_list_id, anime_id, rating, position")
+        .in("anime_list_id", publicListIds)
+        .range(from, to),
+    );
 
-    if (allPublicItems) {
+    if (allPublicItems.length > 0) {
       const itemsByList = new Map<string, ListEntry[]>();
       for (const item of allPublicItems) {
         if (!itemsByList.has(item.anime_list_id))

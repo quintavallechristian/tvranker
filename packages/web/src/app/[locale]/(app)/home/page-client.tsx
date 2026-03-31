@@ -18,20 +18,12 @@ import {
   DEFAULT_ROW_SPAN,
 } from "@/lib/widgets";
 
-import { ShowPodiumWidget } from "@/components/widgets/ShowPodiumWidget";
-import { MoviePodiumWidget } from "@/components/widgets/MoviePodiumWidget";
-import { AnimePodiumWidget } from "@/components/widgets/AnimePodiumWidget";
-import { ShowCountWidget } from "@/components/widgets/ShowCountWidget";
-import { MovieCountWidget } from "@/components/widgets/MovieCountWidget";
-import { AnimeCountWidget } from "@/components/widgets/AnimeCountWidget";
-import { LastShowWidget } from "@/components/widgets/LastShowWidget";
-import { LastMovieWidget } from "@/components/widgets/LastMovieWidget";
-import { LastAnimeWidget } from "@/components/widgets/LastAnimeWidget";
+import { PodiumWidget } from "@/components/widgets/PodiumWidget";
+import { CountWidget } from "@/components/widgets/CountWidget";
+import { LastSeenWidget } from "@/components/widgets/LastSeenWidget";
+import { SuggestionsWidget } from "@/components/widgets/SuggestionsWidget";
 import { NotificationsWidget } from "@/components/widgets/NotificationsWidget";
 import { RecentFollowsWidget } from "@/components/widgets/RecentFollowsWidget";
-import { ShowSuggestionsWidget } from "@/components/widgets/ShowSuggestionsWidget";
-import { MovieSuggestionsWidget } from "@/components/widgets/MovieSuggestionsWidget";
-import { AnimeSuggestionsWidget } from "@/components/widgets/AnimeSuggestionsWidget";
 import { WidgetPicker } from "@/components/widgets/WidgetPicker";
 import { HomeWelcome } from "@/components/HomeWelcome";
 
@@ -87,41 +79,50 @@ export function HomeClient({ data }: { data: HomeData }) {
     switch (config.type) {
       case "show_podium":
         return (
-          <ShowPodiumWidget items={data.top10Shows} rowSpan={config.rowSpan} />
+          <PodiumWidget
+            items={data.top10Shows}
+            topic="show"
+            rowSpan={config.rowSpan}
+          />
         );
       case "movie_podium":
         return (
-          <MoviePodiumWidget
+          <PodiumWidget
             items={data.top10Movies}
+            topic="movie"
             rowSpan={config.rowSpan}
           />
         );
       case "anime_podium":
         return (
-          <AnimePodiumWidget items={data.top10Anime} rowSpan={config.rowSpan} />
+          <PodiumWidget
+            items={data.top10Anime}
+            topic="anime"
+            rowSpan={config.rowSpan}
+          />
         );
       case "show_count":
-        return <ShowCountWidget count={data.showCount} />;
+        return <CountWidget count={data.showCount} topic="show" />;
       case "movie_count":
-        return <MovieCountWidget count={data.movieCount} />;
+        return <CountWidget count={data.movieCount} topic="movie" />;
       case "anime_count":
-        return <AnimeCountWidget count={data.animeCount} />;
+        return <CountWidget count={data.animeCount} topic="anime" />;
       case "last_show_added":
-        return <LastShowWidget item={data.lastShow} />;
+        return <LastSeenWidget item={data.lastShow} topic="show" />;
       case "last_movie_added":
-        return <LastMovieWidget item={data.lastMovie} />;
+        return <LastSeenWidget item={data.lastMovie} topic="movie" />;
       case "last_anime_added":
-        return <LastAnimeWidget item={data.lastAnime} />;
+        return <LastSeenWidget item={data.lastAnime} topic="anime" />;
       case "notifications":
         return <NotificationsWidget items={data.notifications} />;
       case "recent_follows":
         return <RecentFollowsWidget items={data.recentFollows} />;
       case "show_suggestions":
-        return <ShowSuggestionsWidget items={data.suggestedShows} />;
+        return <SuggestionsWidget items={data.suggestedShows} topic="show" />;
       case "movie_suggestions":
-        return <MovieSuggestionsWidget items={data.suggestedMovies} />;
+        return <SuggestionsWidget items={data.suggestedMovies} topic="movie" />;
       case "anime_suggestions":
-        return <AnimeSuggestionsWidget items={data.suggestedAnime} />;
+        return <SuggestionsWidget items={data.suggestedAnime} topic="anime" />;
     }
   }
 

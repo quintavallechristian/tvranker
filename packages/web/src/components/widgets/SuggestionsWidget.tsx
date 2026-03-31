@@ -2,31 +2,51 @@
 
 import { getPosterUrl } from "@/lib/tmdb/client";
 import Image from "next/image";
-import { Television, ArrowRight } from "@phosphor-icons/react";
+import { Television, FilmSlate, ArrowRight } from "@phosphor-icons/react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 
-export type ShowSuggestionItem = {
+export type SuggestionsTopic = "show" | "movie" | "anime";
+
+type SuggestionItem = {
   id: string;
   title: string;
   poster_path: string | null;
 };
 
-export function ShowSuggestionsWidget({
+export function SuggestionsWidget({
   items,
+  topic,
 }: {
-  items: ShowSuggestionItem[];
+  items: SuggestionItem[];
+  topic: SuggestionsTopic;
 }) {
   const t = useTranslations("home");
 
+  const label =
+    topic === "show"
+      ? t("widgets.showSuggestions")
+      : topic === "movie"
+        ? t("widgets.movieSuggestions")
+        : t("widgets.animeSuggestions");
+
+  const href =
+    topic === "show"
+      ? "/explore/shows"
+      : topic === "movie"
+        ? "/explore/movies"
+        : "/explore/anime";
+
+  const Icon = topic === "show" ? Television : FilmSlate;
+
   return (
     <Link
-      href="/explore/shows"
+      href={href}
       className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-bg-surface p-4 transition-colors hover:border-border-hover"
     >
       <div className="mb-3 flex shrink-0 items-center justify-between">
         <p className="text-xs font-medium uppercase tracking-widest text-text-muted">
-          {t("widgets.showSuggestions")}
+          {label}
         </p>
         <span className="flex items-center gap-1 text-xs text-text-muted transition-colors group-hover:text-accent">
           {t("widgets.explore")}
@@ -58,7 +78,7 @@ export function ShowSuggestionsWidget({
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center">
-                      <Television size={16} className="text-text-faint" />
+                      <Icon size={16} className="text-text-faint" />
                     </div>
                   )}
                 </div>
@@ -71,7 +91,7 @@ export function ShowSuggestionsWidget({
         </div>
       ) : (
         <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border py-6">
-          <Television size={22} className="text-text-faint" />
+          <Icon size={22} className="text-text-faint" />
           <p className="text-xs text-text-muted">
             {t("widgets.noSuggestions")}
           </p>

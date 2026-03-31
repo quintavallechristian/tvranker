@@ -1,14 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { ShowPodiumWidget } from "@/components/widgets/ShowPodiumWidget";
-import { MoviePodiumWidget } from "@/components/widgets/MoviePodiumWidget";
-import { AnimePodiumWidget } from "@/components/widgets/AnimePodiumWidget";
-import type {
-  ShowPodiumItem,
-  MoviePodiumItem,
-  AnimePodiumItem,
-} from "@/app/[locale]/(app)/home/actions";
+import { PodiumWidget } from "@/components/widgets/PodiumWidget";
+import type { PodiumItem } from "@/components/widgets/PodiumWidget";
 
 export default async function MyListsPage() {
   const supabase = await createClient();
@@ -59,7 +53,7 @@ export default async function MyListsPage() {
       : Promise.resolve({ data: null }),
   ]);
 
-  const showPodiumItems: ShowPodiumItem[] = (showTopResult.data ?? []).map(
+  const showPodiumItems: PodiumItem[] = (showTopResult.data ?? []).map(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (item: any) => ({
       id: item.shows.id,
@@ -69,7 +63,7 @@ export default async function MyListsPage() {
     }),
   );
 
-  const moviePodiumItems: MoviePodiumItem[] = (movieTopResult.data ?? []).map(
+  const moviePodiumItems: PodiumItem[] = (movieTopResult.data ?? []).map(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (item: any) => ({
       id: item.movies.id,
@@ -79,7 +73,7 @@ export default async function MyListsPage() {
     }),
   );
 
-  const animePodiumItems: AnimePodiumItem[] = (animeTopResult.data ?? []).map(
+  const animePodiumItems: PodiumItem[] = (animeTopResult.data ?? []).map(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (item: any) => ({
       id: item.animes.id,
@@ -97,22 +91,25 @@ export default async function MyListsPage() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="h-105">
-          <ShowPodiumWidget
+          <PodiumWidget
             items={showPodiumItems}
+            topic="show"
             rowSpan={2}
             viewAllHref="/lists"
           />
         </div>
         <div className="h-105">
-          <MoviePodiumWidget
+          <PodiumWidget
             items={moviePodiumItems}
+            topic="movie"
             rowSpan={2}
             viewAllHref="/movies"
           />
         </div>
         <div className="h-105">
-          <AnimePodiumWidget
+          <PodiumWidget
             items={animePodiumItems}
+            topic="anime"
             rowSpan={2}
             viewAllHref="/anime"
           />

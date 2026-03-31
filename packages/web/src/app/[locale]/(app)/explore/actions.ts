@@ -3,12 +3,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { scoreRecommendations, type UserList } from "@/lib/recommendations";
 import { computeListSimilarity, type ListEntry } from "@/lib/similarity";
+import { fetchAllRows } from "@/lib/supabase/fetchAll";
 
 export type SimilarUser = {
   id: string;
   username: string;
   avatar_url: string | null;
-  show_count: number;
+  lists_compiled: number;
   similarity: number;
   is_following: boolean;
 };
@@ -29,13 +30,16 @@ export async function getSimilarUsers(): Promise<SimilarUser[]> {
 
   if (!myList) return [];
 
-  const { data: myItems } = await supabase
-    .from("list_items")
-    .select("show_id, rating, position")
-    .eq("list_id", myList.id)
-    .order("position", { ascending: true });
+  const myItems = await fetchAllRows((from, to) =>
+    supabase
+      .from("list_items")
+      .select("show_id, rating, position")
+      .eq("list_id", myList.id)
+      .order("position", { ascending: true })
+      .range(from, to),
+  );
 
-  if (!myItems || myItems.length === 0) return [];
+  if (myItems.length === 0) return [];
 
   const viewerList: ListEntry[] = myItems.map((i, idx) => ({
     showId: i.show_id,
@@ -55,12 +59,15 @@ export async function getSimilarUsers(): Promise<SimilarUser[]> {
   const listIds = publicLists.map((l) => l.id);
 
   // Fetch all items for those lists in one batch
-  const { data: allItems } = await supabase
-    .from("list_items")
-    .select("list_id, show_id, rating, position")
-    .in("list_id", listIds);
+  const allItems = await fetchAllRows((from, to) =>
+    supabase
+      .from("list_items")
+      .select("list_id, show_id, rating, position")
+      .in("list_id", listIds)
+      .range(from, to),
+  );
 
-  if (!allItems) return [];
+  if (allItems.length === 0) return [];
 
   // Group items by list_id
   const itemsByList = new Map<string, ListEntry[]>();
@@ -82,7 +89,11 @@ export async function getSimilarUsers(): Promise<SimilarUser[]> {
   const followingIds = new Set((followsData ?? []).map((f) => f.following_id));
 
   // Compute similarity for each user
-  const results: SimilarUser[] = [];
+  type PreliminaryResult = Omit<SimilarUser, "lists_compiled"> & {
+    profileId: string;
+    showsCompiled: number;
+  };
+  const preliminary: PreliminaryResult[] = [];
 
   for (const list of publicLists) {
     const profile = Array.isArray(list.profiles)
@@ -96,18 +107,84 @@ export async function getSimilarUsers(): Promise<SimilarUser[]> {
     const similarity = computeListSimilarity(viewerList, otherItems);
     if (similarity === 0) continue;
 
-    results.push({
+    preliminary.push({
       id: profile.id,
+      profileId: profile.id,
       username: profile.username,
       avatar_url: profile.avatar_url,
-      show_count: otherItems.length,
+      showsCompiled: 1,
       similarity,
       is_following: followingIds.has(profile.id),
     });
   }
 
-  // Sort by similarity descending, return top 3
-  return results.sort((a, b) => b.similarity - a.similarity).slice(0, 3);
+  // Sort by similarity descending, get top 3
+  const top3 = preliminary
+    .sort((a, b) => b.similarity - a.similarity)
+    .slice(0, 3);
+
+  if (top3.length === 0) return [];
+
+  // Fetch movie/anime lists for top 3 only to compute lists_compiled
+  const topUserIds = top3.map((r) => r.profileId);
+  const [{ data: movieListsData }, { data: animeListsData }] =
+    await Promise.all([
+      supabase
+        .from("movie_lists")
+        .select("id, user_id")
+        .in("user_id", topUserIds),
+      supabase
+        .from("anime_lists")
+        .select("id, user_id")
+        .in("user_id", topUserIds),
+    ]);
+
+  const movieListIdByUser = new Map(
+    (movieListsData ?? []).map((ml) => [ml.user_id, ml.id]),
+  );
+  const animeListIdByUser = new Map(
+    (animeListsData ?? []).map((al) => [al.user_id, al.id]),
+  );
+
+  const allMovieListIds = [...movieListIdByUser.values()];
+  const allAnimeListIds = [...animeListIdByUser.values()];
+
+  const [{ data: movieItemsExist }, { data: animeItemsExist }] =
+    await Promise.all([
+      allMovieListIds.length > 0
+        ? supabase
+            .from("movie_list_items")
+            .select("movie_list_id")
+            .in("movie_list_id", allMovieListIds)
+        : Promise.resolve({ data: [] as Array<{ movie_list_id: string }> }),
+      allAnimeListIds.length > 0
+        ? supabase
+            .from("anime_list_items")
+            .select("anime_list_id")
+            .in("anime_list_id", allAnimeListIds)
+        : Promise.resolve({ data: [] as Array<{ anime_list_id: string }> }),
+    ]);
+
+  const movieListIdsWithItems = new Set(
+    (movieItemsExist ?? []).map((i) => i.movie_list_id),
+  );
+  const animeListIdsWithItems = new Set(
+    (animeItemsExist ?? []).map((i) => i.anime_list_id),
+  );
+
+  return top3.map((r) => {
+    const movieListId = movieListIdByUser.get(r.profileId);
+    const moviesCompiled =
+      movieListId && movieListIdsWithItems.has(movieListId) ? 1 : 0;
+    const animeListId = animeListIdByUser.get(r.profileId);
+    const animeCompiled =
+      animeListId && animeListIdsWithItems.has(animeListId) ? 1 : 0;
+    const { profileId, showsCompiled, ...rest } = r;
+    return {
+      ...rest,
+      lists_compiled: showsCompiled + moviesCompiled + animeCompiled,
+    };
+  });
 }
 
 export type RecommendedShow = {
@@ -137,13 +214,16 @@ export async function getRecommendations(): Promise<RecommendedShow[]> {
 
   if (!myList) return [];
 
-  const { data: myItems } = await supabase
-    .from("list_items")
-    .select("show_id, rating, position")
-    .eq("list_id", myList.id)
-    .order("position", { ascending: true });
+  const myItems = await fetchAllRows((from, to) =>
+    supabase
+      .from("list_items")
+      .select("show_id, rating, position")
+      .eq("list_id", myList.id)
+      .order("position", { ascending: true })
+      .range(from, to),
+  );
 
-  if (!myItems || myItems.length === 0) return [];
+  if (myItems.length === 0) return [];
 
   const viewerList: ListEntry[] = myItems.map((i, idx) => ({
     showId: i.show_id,
@@ -163,13 +243,16 @@ export async function getRecommendations(): Promise<RecommendedShow[]> {
   const listIds = publicLists.map((l) => l.id);
 
   // Fetch all list items for those lists in one batch
-  const { data: allItems } = await supabase
-    .from("list_items")
-    .select("list_id, show_id, rating, position")
-    .in("list_id", listIds)
-    .order("position", { ascending: true });
+  const allItems = await fetchAllRows((from, to) =>
+    supabase
+      .from("list_items")
+      .select("list_id, show_id, rating, position")
+      .in("list_id", listIds)
+      .order("position", { ascending: true })
+      .range(from, to),
+  );
 
-  if (!allItems || allItems.length === 0) return [];
+  if (allItems.length === 0) return [];
 
   // 3. Group items by user
   const listToUser = new Map<string, string>();

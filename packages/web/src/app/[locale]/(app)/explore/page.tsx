@@ -34,7 +34,7 @@ type UserResult = {
   id: string;
   username: string;
   avatar_url: string | null;
-  show_count: number;
+  lists_compiled: number;
   similarity: number | null;
 };
 
@@ -104,20 +104,23 @@ export default function ExplorePage() {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const profilesResult = await supabase
+    const { data: rawProfiles } = await supabase
       .from("profiles")
       .select("id, username, avatar_url")
       .ilike("username", `%${query}%`)
       .limit(10);
 
-    const profiles = profilesResult.data ?? [];
+    const profiles = (rawProfiles ?? []).filter(
+      (p) => !user || p.id !== user.id,
+    );
     if (!profiles.length) {
       setUserResults([]);
       return;
     }
 
-    let viewerItems: {
-      show_id: string;
+    // Get viewer's show items for similarity computation
+    let viewerListData: {
+      showId: string;
       rating: number | null;
       position: number;
     }[] = [];
@@ -133,48 +136,132 @@ export default function ExplorePage() {
           .select("show_id, rating, position")
           .eq("list_id", viewerList.id)
           .order("position", { ascending: true });
-        viewerItems = data ?? [];
-      }
-    }
-
-    const viewerListData = viewerItems.map((i, idx) => ({
-      showId: i.show_id,
-      rating: i.rating,
-      position: i.position ?? idx,
-    }));
-
-    const userResultsList: UserResult[] = [];
-    for (const p of profiles) {
-      if (user && p.id === user.id) continue;
-      const { data: userList } = await supabase
-        .from("lists")
-        .select("id, is_public")
-        .eq("user_id", p.id)
-        .single();
-      if (!userList?.is_public) {
-        userResultsList.push({ ...p, show_count: 0, similarity: null });
-        continue;
-      }
-      const { data: listItems, count } = await supabase
-        .from("list_items")
-        .select("show_id, rating, position", { count: "exact" })
-        .eq("list_id", userList.id)
-        .order("position", { ascending: true });
-      let similarity: number | null = null;
-      if (
-        user &&
-        viewerListData.length > 0 &&
-        listItems &&
-        listItems.length > 0
-      ) {
-        const otherListData = listItems.map((i, idx) => ({
+        viewerListData = (data ?? []).map((i, idx) => ({
           showId: i.show_id,
           rating: i.rating,
           position: i.position ?? idx,
         }));
-        similarity = computeListSimilarity(viewerListData, otherListData);
       }
-      userResultsList.push({ ...p, show_count: count ?? 0, similarity });
+    }
+
+    const profileIds = profiles.map((p) => p.id);
+
+    // Batch fetch all three list types in parallel
+    const [showListsResult, movieListsResult, animeListsResult] =
+      await Promise.all([
+        supabase
+          .from("lists")
+          .select("id, user_id, is_public")
+          .in("user_id", profileIds),
+        supabase
+          .from("movie_lists")
+          .select("id, user_id")
+          .in("user_id", profileIds),
+        supabase
+          .from("anime_lists")
+          .select("id, user_id")
+          .in("user_id", profileIds),
+      ]);
+
+    const showListByUser = new Map(
+      (showListsResult.data ?? []).map((l) => [l.user_id, l]),
+    );
+    const movieListIdByUser = new Map(
+      (movieListsResult.data ?? []).map((l) => [l.user_id, l.id]),
+    );
+    const animeListIdByUser = new Map(
+      (animeListsResult.data ?? []).map((l) => [l.user_id, l.id]),
+    );
+
+    const publicShowListIds = (showListsResult.data ?? [])
+      .filter((l) => l.is_public)
+      .map((l) => l.id);
+    const movieListIds = (movieListsResult.data ?? []).map((l) => l.id);
+    const animeListIds = (animeListsResult.data ?? []).map((l) => l.id);
+
+    // Batch fetch items for public show lists + existence check for movie/anime
+    const [showItemsResult, movieItemsResult, animeItemsResult] =
+      await Promise.all([
+        publicShowListIds.length > 0
+          ? supabase
+              .from("list_items")
+              .select("list_id, show_id, rating, position")
+              .in("list_id", publicShowListIds)
+          : Promise.resolve({
+              data: [] as Array<{
+                list_id: string;
+                show_id: string;
+                rating: number | null;
+                position: number;
+              }>,
+            }),
+        movieListIds.length > 0
+          ? supabase
+              .from("movie_list_items")
+              .select("movie_list_id")
+              .in("movie_list_id", movieListIds)
+          : Promise.resolve({
+              data: [] as Array<{ movie_list_id: string }>,
+            }),
+        animeListIds.length > 0
+          ? supabase
+              .from("anime_list_items")
+              .select("anime_list_id")
+              .in("anime_list_id", animeListIds)
+          : Promise.resolve({
+              data: [] as Array<{ anime_list_id: string }>,
+            }),
+      ]);
+
+    // Group show items by list_id
+    const showItemsByList = new Map<
+      string,
+      { showId: string; rating: number | null; position: number }[]
+    >();
+    for (const item of showItemsResult.data ?? []) {
+      if (!showItemsByList.has(item.list_id))
+        showItemsByList.set(item.list_id, []);
+      showItemsByList.get(item.list_id)!.push({
+        showId: item.show_id,
+        rating: item.rating,
+        position: item.position ?? 0,
+      });
+    }
+
+    const movieListsWithItems = new Set(
+      (movieItemsResult.data ?? []).map((i) => i.movie_list_id),
+    );
+    const animeListsWithItems = new Set(
+      (animeItemsResult.data ?? []).map((i) => i.anime_list_id),
+    );
+
+    const userResultsList: UserResult[] = [];
+    for (const p of profiles) {
+      const showList = showListByUser.get(p.id);
+      if (!showList?.is_public) {
+        userResultsList.push({ ...p, lists_compiled: 0, similarity: null });
+        continue;
+      }
+
+      const showItems = showItemsByList.get(showList.id) ?? [];
+      let similarity: number | null = null;
+      if (user && viewerListData.length > 0 && showItems.length > 0) {
+        similarity = computeListSimilarity(viewerListData, showItems);
+      }
+
+      const showsCompiled = showItems.length > 0 ? 1 : 0;
+      const movieListId = movieListIdByUser.get(p.id);
+      const moviesCompiled =
+        movieListId && movieListsWithItems.has(movieListId) ? 1 : 0;
+      const animeListId = animeListIdByUser.get(p.id);
+      const animeCompiled =
+        animeListId && animeListsWithItems.has(animeListId) ? 1 : 0;
+
+      userResultsList.push({
+        ...p,
+        lists_compiled: showsCompiled + moviesCompiled + animeCompiled,
+        similarity,
+      });
     }
     setUserResults(userResultsList);
   }, []);
@@ -217,7 +304,7 @@ export default function ExplorePage() {
                     @{user.username}
                   </p>
                   <p className="text-xs text-text-muted">
-                    {t("showsInList", { count: user.show_count })}
+                    {t("listsCompiled", { count: user.lists_compiled })}
                   </p>
                 </div>
                 {user.similarity !== null && user.similarity > 0 && (
@@ -277,7 +364,7 @@ export default function ExplorePage() {
                           @{u.username}
                         </p>
                         <p className="text-xs text-text-muted">
-                          {t("showsInList", { count: u.show_count })}
+                          {t("listsCompiled", { count: u.lists_compiled })}
                         </p>
                       </div>
                     </Link>

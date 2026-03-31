@@ -47,7 +47,7 @@ export type FollowedUser = {
   id: string;
   username: string;
   avatar_url: string | null;
-  show_count: number;
+  lists_count: number;
   similarity: number | null;
 };
 
@@ -101,37 +101,101 @@ export async function getFollowing(): Promise<FollowedUser[]> {
 
   const { computeListSimilarity } = await import("@/lib/similarity");
 
+  const profileIds = profiles.map((p) => p.id);
+
+  // Batch fetch show lists, movie lists, anime lists for all followed users
+  const [{ data: showLists }, { data: movieLists }, { data: animeLists }] =
+    await Promise.all([
+      supabase
+        .from("lists")
+        .select("id, user_id, is_public")
+        .in("user_id", profileIds),
+      supabase
+        .from("movie_lists")
+        .select("id, user_id")
+        .in("user_id", profileIds),
+      supabase
+        .from("anime_lists")
+        .select("id, user_id")
+        .in("user_id", profileIds),
+    ]);
+
+  const showListByUser = new Map(
+    (showLists ?? []).map((l) => [l.user_id, l]),
+  );
+  const movieListIdByUser = new Map(
+    (movieLists ?? []).map((l) => [l.user_id, l.id]),
+  );
+  const animeListIdByUser = new Map(
+    (animeLists ?? []).map((l) => [l.user_id, l.id]),
+  );
+
+  const allMovieListIds = [...movieListIdByUser.values()];
+  const allAnimeListIds = [...animeListIdByUser.values()];
+
+  // Check which movie/anime lists have at least one item
+  const [{ data: movieItemsExist }, { data: animeItemsExist }] =
+    await Promise.all([
+      allMovieListIds.length > 0
+        ? supabase
+            .from("movie_list_items")
+            .select("movie_list_id")
+            .in("movie_list_id", allMovieListIds)
+        : Promise.resolve({ data: [] as Array<{ movie_list_id: string }> }),
+      allAnimeListIds.length > 0
+        ? supabase
+            .from("anime_list_items")
+            .select("anime_list_id")
+            .in("anime_list_id", allAnimeListIds)
+        : Promise.resolve({ data: [] as Array<{ anime_list_id: string }> }),
+    ]);
+
+  const movieListIdsWithItems = new Set(
+    (movieItemsExist ?? []).map((i) => i.movie_list_id),
+  );
+  const animeListIdsWithItems = new Set(
+    (animeItemsExist ?? []).map((i) => i.anime_list_id),
+  );
+
   const results: FollowedUser[] = [];
   for (const profile of profiles) {
-    const { data: pList } = await supabase
-      .from("lists")
-      .select("id, is_public")
-      .eq("user_id", profile.id)
-      .single();
+    const pList = showListByUser.get(profile.id);
 
-    let show_count = 0;
     let similarity: number | null = null;
+    let showsCompiled = 0;
 
     if (pList?.is_public) {
-      const { data: listItems, count } = await supabase
+      const { data: listItems } = await supabase
         .from("list_items")
-        .select("show_id, rating, position", { count: "exact" })
+        .select("show_id, rating, position")
         .eq("list_id", pList.id)
         .order("position", { ascending: true });
 
-      show_count = count ?? 0;
-
-      if (viewerItems.length > 0 && listItems && listItems.length > 0) {
-        const otherItems = listItems.map((i, idx) => ({
-          showId: i.show_id,
-          rating: i.rating,
-          position: i.position ?? idx,
-        }));
-        similarity = computeListSimilarity(viewerItems, otherItems);
+      if (listItems && listItems.length > 0) {
+        showsCompiled = 1;
+        if (viewerItems.length > 0) {
+          const otherItems = listItems.map((i, idx) => ({
+            showId: i.show_id,
+            rating: i.rating,
+            position: i.position ?? idx,
+          }));
+          similarity = computeListSimilarity(viewerItems, otherItems);
+        }
       }
     }
 
-    results.push({ ...profile, show_count, similarity });
+    const movieListId = movieListIdByUser.get(profile.id);
+    const moviesCompiled =
+      movieListId && movieListIdsWithItems.has(movieListId) ? 1 : 0;
+    const animeListId = animeListIdByUser.get(profile.id);
+    const animeCompiled =
+      animeListId && animeListIdsWithItems.has(animeListId) ? 1 : 0;
+
+    results.push({
+      ...profile,
+      lists_count: showsCompiled + moviesCompiled + animeCompiled,
+      similarity,
+    });
   }
 
   return results;

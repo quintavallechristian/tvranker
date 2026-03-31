@@ -8,15 +8,11 @@ import {
   computeMovieListSimilarity,
   computeAnimeListSimilarity,
 } from "@/lib/similarity";
+import { fetchAllRows } from "@/lib/supabase/fetchAll";
 import { Link } from "@/i18n/navigation";
-import { ShowPodiumWidget } from "@/components/widgets/ShowPodiumWidget";
-import { MoviePodiumWidget } from "@/components/widgets/MoviePodiumWidget";
-import { AnimePodiumWidget } from "@/components/widgets/AnimePodiumWidget";
-import type {
-  ShowPodiumItem,
-  MoviePodiumItem,
-  AnimePodiumItem,
-} from "@/app/[locale]/(app)/home/actions";
+import { PodiumWidget } from "@/components/widgets/PodiumWidget";
+import type { PodiumItem } from "@/components/widgets/PodiumWidget";
+import { CountWidget } from "@/components/widgets/CountWidget";
 
 export default async function UserProfilePage({
   params,
@@ -111,7 +107,7 @@ export default async function UserProfilePage({
       : Promise.resolve({ count: 0 }),
   ]);
 
-  const showPodiumItems: ShowPodiumItem[] = (showTopResult.data ?? []).map(
+  const showPodiumItems: PodiumItem[] = (showTopResult.data ?? []).map(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (item: any) => ({
       id: item.shows.id,
@@ -121,7 +117,7 @@ export default async function UserProfilePage({
     }),
   );
 
-  const moviePodiumItems: MoviePodiumItem[] = (movieTopResult.data ?? []).map(
+  const moviePodiumItems: PodiumItem[] = (movieTopResult.data ?? []).map(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (item: any) => ({
       id: item.movies.id,
@@ -131,7 +127,7 @@ export default async function UserProfilePage({
     }),
   );
 
-  const animePodiumItems: AnimePodiumItem[] = (animeTopResult.data ?? []).map(
+  const animePodiumItems: PodiumItem[] = (animeTopResult.data ?? []).map(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (item: any) => ({
       id: item.animes.id,
@@ -164,24 +160,30 @@ export default async function UserProfilePage({
     ]);
 
     if (viewerList && list) {
-      const [viewerItems, profileItems] = await Promise.all([
-        supabase
-          .from("list_items")
-          .select("show_id, rating, position")
-          .eq("list_id", viewerList.id)
-          .order("position", { ascending: true }),
-        supabase
-          .from("list_items")
-          .select("show_id, rating, position")
-          .eq("list_id", list.id)
-          .order("position", { ascending: true }),
+      const [viewerItemsData, profileItemsData] = await Promise.all([
+        fetchAllRows((from, to) =>
+          supabase
+            .from("list_items")
+            .select("show_id, rating, position")
+            .eq("list_id", viewerList.id)
+            .order("position", { ascending: true })
+            .range(from, to),
+        ),
+        fetchAllRows((from, to) =>
+          supabase
+            .from("list_items")
+            .select("show_id, rating, position")
+            .eq("list_id", list.id)
+            .order("position", { ascending: true })
+            .range(from, to),
+        ),
       ]);
-      const listA = (viewerItems.data ?? []).map((i, idx) => ({
+      const listA = viewerItemsData.map((i, idx) => ({
         showId: i.show_id,
         rating: i.rating,
         position: i.position ?? idx,
       }));
-      const listB = (profileItems.data ?? []).map((i, idx) => ({
+      const listB = profileItemsData.map((i, idx) => ({
         showId: i.show_id,
         rating: i.rating,
         position: i.position ?? idx,
@@ -193,24 +195,30 @@ export default async function UserProfilePage({
     }
 
     if (viewerMovieList && movieList) {
-      const [viewerMovieItems, profileMovieItems] = await Promise.all([
-        supabase
-          .from("movie_list_items")
-          .select("movie_id, rating, position")
-          .eq("movie_list_id", viewerMovieList.id)
-          .order("position", { ascending: true }),
-        supabase
-          .from("movie_list_items")
-          .select("movie_id, rating, position")
-          .eq("movie_list_id", movieList.id)
-          .order("position", { ascending: true }),
+      const [viewerMovieItemsData, profileMovieItemsData] = await Promise.all([
+        fetchAllRows((from, to) =>
+          supabase
+            .from("movie_list_items")
+            .select("movie_id, rating, position")
+            .eq("movie_list_id", viewerMovieList.id)
+            .order("position", { ascending: true })
+            .range(from, to),
+        ),
+        fetchAllRows((from, to) =>
+          supabase
+            .from("movie_list_items")
+            .select("movie_id, rating, position")
+            .eq("movie_list_id", movieList.id)
+            .order("position", { ascending: true })
+            .range(from, to),
+        ),
       ]);
-      const movieListA = (viewerMovieItems.data ?? []).map((i, idx) => ({
+      const movieListA = viewerMovieItemsData.map((i, idx) => ({
         movieId: i.movie_id,
         rating: i.rating,
         position: i.position ?? idx,
       }));
-      const movieListB = (profileMovieItems.data ?? []).map((i, idx) => ({
+      const movieListB = profileMovieItemsData.map((i, idx) => ({
         movieId: i.movie_id,
         rating: i.rating,
         position: i.position ?? idx,
@@ -225,24 +233,30 @@ export default async function UserProfilePage({
     }
 
     if (viewerAnimeList && animeList) {
-      const [viewerAnimeItems, profileAnimeItems] = await Promise.all([
-        supabase
-          .from("anime_list_items")
-          .select("anime_id, rating, position")
-          .eq("anime_list_id", viewerAnimeList.id)
-          .order("position", { ascending: true }),
-        supabase
-          .from("anime_list_items")
-          .select("anime_id, rating, position")
-          .eq("anime_list_id", animeList.id)
-          .order("position", { ascending: true }),
+      const [viewerAnimeItemsData, profileAnimeItemsData] = await Promise.all([
+        fetchAllRows((from, to) =>
+          supabase
+            .from("anime_list_items")
+            .select("anime_id, rating, position")
+            .eq("anime_list_id", viewerAnimeList.id)
+            .order("position", { ascending: true })
+            .range(from, to),
+        ),
+        fetchAllRows((from, to) =>
+          supabase
+            .from("anime_list_items")
+            .select("anime_id, rating, position")
+            .eq("anime_list_id", animeList.id)
+            .order("position", { ascending: true })
+            .range(from, to),
+        ),
       ]);
-      const animeListA = (viewerAnimeItems.data ?? []).map((i, idx) => ({
+      const animeListA = viewerAnimeItemsData.map((i, idx) => ({
         animeId: i.anime_id,
         rating: i.rating,
         position: i.position ?? idx,
       }));
-      const animeListB = (profileAnimeItems.data ?? []).map((i, idx) => ({
+      const animeListB = profileAnimeItemsData.map((i, idx) => ({
         animeId: i.anime_id,
         rating: i.rating,
         position: i.position ?? idx,
@@ -284,7 +298,7 @@ export default async function UserProfilePage({
   return (
     <div>
       {/* User header */}
-      <div className="mb-8 flex flex-wrap items-center gap-4">
+      <div className="mb-6 flex flex-wrap items-center gap-4">
         <UserAvatar
           url={profile.avatar_url}
           username={profile.username}
@@ -315,55 +329,99 @@ export default async function UserProfilePage({
         </div>
       </div>
 
+      {/* Count widgets */}
+      {((showCountResult.count ?? 0) > 0 ||
+        (movieCountResult.count ?? 0) > 0 ||
+        (animeCountResult.count ?? 0) > 0) && (
+        <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {(showCountResult.count ?? 0) > 0 && (
+            <CountWidget
+              count={showCountResult.count ?? 0}
+              topic="show"
+              href={`/users/${profile.username}/shows`}
+            />
+          )}
+          {(movieCountResult.count ?? 0) > 0 && (
+            <CountWidget
+              count={movieCountResult.count ?? 0}
+              topic="movie"
+              href={`/users/${profile.username}/movies`}
+            />
+          )}
+          {(animeCountResult.count ?? 0) > 0 && (
+            <CountWidget
+              count={animeCountResult.count ?? 0}
+              topic="anime"
+              href={`/users/${profile.username}/anime`}
+            />
+          )}
+        </div>
+      )}
+
       {/* Podium cards — extended top10 with rowSpan=2 */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Link href={`/users/${profile.username}/shows`} className="block h-105">
-          <ShowPodiumWidget
-            items={showPodiumItems}
-            rowSpan={2}
-            viewAllHref={`/users/${profile.username}/shows`}
-            badge={
-              showSimilarityScore !== null ? (
-                <span className="text-xs font-semibold text-accent">
-                  {showSimilarityScore}%
-                </span>
-              ) : undefined
-            }
-          />
-        </Link>
+        {(showCountResult.count ?? 0) > 0 && (
+          <div className="h-105">
+            <PodiumWidget
+              items={showPodiumItems}
+              topic="show"
+              rowSpan={2}
+              viewAllHref={`/users/${profile.username}/shows`}
+              badge={
+                showSimilarityScore !== null ? (
+                  <Link
+                    href={`/users/${profile.username}/shows`}
+                    className="text-xs font-semibold text-accent"
+                  >
+                    {showSimilarityScore}%
+                  </Link>
+                ) : undefined
+              }
+            />
+          </div>
+        )}
 
-        <Link
-          href={`/users/${profile.username}/movies`}
-          className="block h-105"
-        >
-          <MoviePodiumWidget
-            items={moviePodiumItems}
-            rowSpan={2}
-            viewAllHref={`/users/${profile.username}/movies`}
-            badge={
-              movieSimilarityScore !== null ? (
-                <span className="text-xs font-semibold text-accent">
-                  {movieSimilarityScore}%
-                </span>
-              ) : undefined
-            }
-          />
-        </Link>
+        {(movieCountResult.count ?? 0) > 0 && (
+          <div className="h-105">
+            <PodiumWidget
+              items={moviePodiumItems}
+              topic="movie"
+              rowSpan={2}
+              viewAllHref={`/users/${profile.username}/movies`}
+              badge={
+                movieSimilarityScore !== null ? (
+                  <Link
+                    href={`/users/${profile.username}/movies`}
+                    className="text-xs font-semibold text-accent"
+                  >
+                    {movieSimilarityScore}%
+                  </Link>
+                ) : undefined
+              }
+            />
+          </div>
+        )}
 
-        <Link href={`/users/${profile.username}/anime`} className="block h-105">
-          <AnimePodiumWidget
-            items={animePodiumItems}
-            rowSpan={2}
-            viewAllHref={`/users/${profile.username}/anime`}
-            badge={
-              animeSimilarityScore !== null ? (
-                <span className="text-xs font-semibold text-accent">
-                  {animeSimilarityScore}%
-                </span>
-              ) : undefined
-            }
-          />
-        </Link>
+        {(animeCountResult.count ?? 0) > 0 && (
+          <div className="h-105">
+            <PodiumWidget
+              items={animePodiumItems}
+              topic="anime"
+              rowSpan={2}
+              viewAllHref={`/users/${profile.username}/anime`}
+              badge={
+                animeSimilarityScore !== null ? (
+                  <Link
+                    href={`/users/${profile.username}/anime`}
+                    className="text-xs font-semibold text-accent"
+                  >
+                    {animeSimilarityScore}%
+                  </Link>
+                ) : undefined
+              }
+            />
+          </div>
+        )}
       </div>
     </div>
   );

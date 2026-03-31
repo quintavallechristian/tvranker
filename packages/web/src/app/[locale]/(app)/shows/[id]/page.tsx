@@ -5,6 +5,7 @@ import { fetchTmdbData } from "../actions";
 import { ShowDetailClient } from "./page-client";
 import type { ShowAnalyticsData } from "@/components/ShowAnalytics";
 import { computeListSimilarity, type ListEntry } from "@/lib/similarity";
+import { fetchAllRows } from "@/lib/supabase/fetchAll";
 
 export default async function ShowDetailPage({
   params,
@@ -134,13 +135,16 @@ export default async function ShowDetailPage({
       }
 
       // Fetch user's full list for similarity computation
-      const { data: allMyItems } = await supabase
-        .from("list_items")
-        .select("show_id, rating, position")
-        .eq("list_id", myList.id)
-        .order("position", { ascending: true });
+      const allMyItems = await fetchAllRows((from, to) =>
+        supabase
+          .from("list_items")
+          .select("show_id, rating, position")
+          .eq("list_id", myList.id)
+          .order("position", { ascending: true })
+          .range(from, to),
+      );
 
-      viewerListEntries = (allMyItems ?? []).map((i) => ({
+      viewerListEntries = allMyItems.map((i) => ({
         showId: i.show_id,
         rating: i.rating,
         position: i.position ?? 0,
@@ -157,12 +161,15 @@ export default async function ShowDetailPage({
 
   if (viewerListEntries.length > 0 && publicLists.length > 0) {
     const publicListIds = publicLists.map((l) => l.id);
-    const { data: allPublicItems } = await supabase
-      .from("list_items")
-      .select("list_id, show_id, rating, position")
-      .in("list_id", publicListIds);
+    const allPublicItems = await fetchAllRows((from, to) =>
+      supabase
+        .from("list_items")
+        .select("list_id, show_id, rating, position")
+        .in("list_id", publicListIds)
+        .range(from, to),
+    );
 
-    if (allPublicItems) {
+    if (allPublicItems.length > 0) {
       const itemsByList = new Map<string, ListEntry[]>();
       for (const item of allPublicItems) {
         if (!itemsByList.has(item.list_id)) itemsByList.set(item.list_id, []);

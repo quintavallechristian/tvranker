@@ -17,6 +17,59 @@ export const WIDGET_TYPES = [
 
 export type WidgetType = (typeof WIDGET_TYPES)[number];
 
+export const WIDGET_CATEGORIES = [
+  "podium",
+  "count",
+  "last_added",
+  "suggestions",
+  "notifications",
+  "recent_follows",
+] as const;
+
+export type WidgetCategory = (typeof WIDGET_CATEGORIES)[number];
+
+export const WIDGET_TOPICS = ["show", "movie", "anime"] as const;
+
+export type WidgetTopic = (typeof WIDGET_TOPICS)[number];
+
+/** Whether a category requires topic selection */
+export const CATEGORY_NEEDS_TOPIC: Record<WidgetCategory, boolean> = {
+  podium: true,
+  count: true,
+  last_added: true,
+  suggestions: true,
+  notifications: false,
+  recent_follows: false,
+};
+
+/** Maps category + topic → WidgetType */
+export const CATEGORY_TOPIC_TO_TYPE: Record<
+  WidgetCategory,
+  Partial<Record<WidgetTopic, WidgetType>>
+> = {
+  podium: { show: "show_podium", movie: "movie_podium", anime: "anime_podium" },
+  count: { show: "show_count", movie: "movie_count", anime: "anime_count" },
+  last_added: {
+    show: "last_show_added",
+    movie: "last_movie_added",
+    anime: "last_anime_added",
+  },
+  suggestions: {
+    show: "show_suggestions",
+    movie: "movie_suggestions",
+    anime: "anime_suggestions",
+  },
+  notifications: {},
+  recent_follows: {},
+};
+
+/** For categories that need no topic, the direct WidgetType */
+export const CATEGORY_DIRECT_TYPE: Partial<Record<WidgetCategory, WidgetType>> =
+  {
+    notifications: "notifications",
+    recent_follows: "recent_follows",
+  };
+
 export type WidgetConfig = {
   id: string;
   type: WidgetType;

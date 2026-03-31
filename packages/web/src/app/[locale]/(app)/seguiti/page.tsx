@@ -46,7 +46,7 @@ export default async function SegutiPage() {
                   @{profile.username}
                 </p>
                 <p className="text-xs text-text-muted">
-                  {t("showsInList", { count: profile.show_count })}
+                  {t("listsCount", { count: profile.lists_count })}
                 </p>
               </div>
               {profile.similarity !== null && profile.similarity > 0 && (
