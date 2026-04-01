@@ -22,7 +22,7 @@ import {
   type RecommendedShow,
   type PopularShow,
 } from "../actions";
-import { addShowToMyList, addTmdbShowToMyList } from "../../lists/actions";
+import { addShowToMyList, addTmdbShowToMyList } from "../../shows/lists/actions";
 import { useRouter } from "next/navigation";
 
 type ShowResult = {

@@ -54,7 +54,7 @@ export default function RegisterPage() {
       setError(error.message);
       setLoading(false);
     } else {
-      window.location.href = "/lists";
+      window.location.href = "/home";
     }
   }
 

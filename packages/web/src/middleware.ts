@@ -6,7 +6,7 @@ import { routing } from "@/i18n/routing";
 const intlMiddleware = createMiddleware(routing);
 
 // Auth-protected routes
-const protectedPatterns = ["/lists", "/profile", "/import", "/home"];
+const protectedPatterns = ["/shows", "/profile", "/import", "/home"];
 // Auth routes (redirect to /home if already logged in)
 const authPatterns = ["/login", "/register"];
 

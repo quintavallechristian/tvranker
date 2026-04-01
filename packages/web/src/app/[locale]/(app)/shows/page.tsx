@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { ListDetailClient } from "./[id]/page-client";
-import type { ListItemWithShow } from "./actions";
+import { ListDetailClient } from "./lists/[id]/page-client";
+import type { ListItemWithShow } from "./lists/actions";
 
 const PAGE_SIZE = 50;
 

@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import type { AnalyticsData } from "../../lists/actions";
+import type { AnalyticsData } from "../../shows/lists/actions";
 
 const EMPTY_ANALYTICS: AnalyticsData = {
   totalCount: 0,

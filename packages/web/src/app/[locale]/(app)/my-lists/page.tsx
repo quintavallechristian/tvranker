@@ -121,7 +121,7 @@ export default async function MyListsPage() {
             items={showPodiumItems}
             topic="show"
             rowSpan={2}
-            viewAllHref="/lists"
+            viewAllHref="/shows"
           />
         </div>
         <div className="h-105">

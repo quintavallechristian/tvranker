@@ -31,7 +31,7 @@ import type {
 import {
   addShowToMyList,
   removeShowFromMyList,
-} from "@/app/[locale]/(app)/lists/actions";
+} from "@/app/[locale]/(app)/shows/lists/actions";
 
 function formatDuration(
   totalMinutes: number,
@@ -528,7 +528,7 @@ export function ShowDetailClient({
                     {publicLists.map((list) => (
                       <Link
                         key={list.id}
-                        href={`/lists/${list.id}`}
+                        href={`/shows/lists/${list.id}`}
                         className="flex items-center justify-between rounded-md border border-border bg-bg-surface px-3 py-2.5 transition-colors hover:border-border-hover hover:bg-bg-elevated"
                       >
                         <div className="flex min-w-0 items-center gap-2.5">

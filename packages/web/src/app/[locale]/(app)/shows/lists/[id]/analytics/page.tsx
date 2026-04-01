@@ -1,41 +1,53 @@
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { ListAnalyticsPage } from "@/components/ListAnalytics";
-import { getListAnalytics } from "../actions";
+import { getListAnalytics } from "../../actions";
 
-export default async function AnalyticsPage() {
+export default async function ListIdAnalyticsPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   const supabase = await createClient();
+
+  // Verify the list exists and is accessible
+  const { data: list } = await supabase
+    .from("lists")
+    .select("id, user_id, is_public, rating_labels")
+    .eq("id", id)
+    .single();
+
+  if (!list) notFound();
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
+  const isOwner = user?.id === list.user_id;
+  if (!list.is_public && !isOwner) notFound();
 
-  const [data, { data: profile }, { data: userList }, t] = await Promise.all([
-    getListAnalytics(),
+  // Fetch rating labels from the list owner's profile
+  const [data, { data: ownerProfile }, t] = await Promise.all([
+    getListAnalytics(id),
     supabase
       .from("profiles")
       .select("rating_labels")
-      .eq("id", user.id)
-      .single(),
-    supabase
-      .from("lists")
-      .select("rating_labels")
-      .eq("user_id", user.id)
+      .eq("id", list.user_id)
       .single(),
     getTranslations("lists"),
   ]);
 
-  const listRatingLabels = userList?.rating_labels as string[] | null;
-  const profileRatingLabels = profile?.rating_labels as string[] | null;
+  const listRatingLabels = list.rating_labels as string[] | null;
+  const profileRatingLabels = ownerProfile?.rating_labels as string[] | null;
   const effectiveRatingLabels = listRatingLabels ?? profileRatingLabels;
 
   return (
     <ListAnalyticsPage
       data={data}
       ratingLabels={effectiveRatingLabels}
-      backHref="/lists"
+      backHref={`/shows/lists/${id}`}
       labels={{
         title: t("analytics"),
         backToList: t("title"),

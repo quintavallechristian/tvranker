@@ -17,7 +17,7 @@ import {
   getListItemsPage,
   addShowToMyList,
   type ListItemWithShow,
-} from "@/app/[locale]/(app)/lists/actions";
+} from "@/app/[locale]/(app)/shows/lists/actions";
 import { getRatingLabel } from "@/lib/rating-labels";
 
 type Props = {

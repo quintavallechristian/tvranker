@@ -62,14 +62,14 @@ import {
   moveAnimesFromShowsToAnimeList,
   type ListItemWithShow,
 } from "../actions";
-import { getRecommendations } from "../../explore/actions";
+import { getRecommendations } from "../../../explore/actions";
 import {
   addTagToShow,
   removeTagFromShow,
   createTag,
   type TagRow,
-} from "../../tags/actions";
-import { fetchTmdbData } from "../../shows/actions";
+} from "../../../tags/actions";
+import { fetchTmdbData } from "../../../shows/actions";
 
 type ListItem = ListItemWithShow;
 
@@ -570,7 +570,7 @@ export function ListDetailClient({
     setIsCopying(true);
     try {
       await copyListToMine(list.id);
-      i18nRouter.push("/lists");
+      i18nRouter.push("/shows");
     } catch {
       setIsCopying(false);
     }
@@ -613,7 +613,7 @@ export function ListDetailClient({
             {/* Analytics: always in the title row (mobile + desktop) */}
             {isOwner && items.length > 0 && (
               <Link
-                href="/lists/analytics"
+                href="/shows/lists/analytics"
                 className="flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary"
               >
                 <ChartPie size={14} />

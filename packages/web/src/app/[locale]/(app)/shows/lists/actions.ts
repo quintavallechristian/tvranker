@@ -42,7 +42,7 @@ export async function updateList(
 
   if (error) throw new Error(error.message);
 
-  revalidatePath("/lists");
+  revalidatePath("/shows");
 }
 
 export async function updateProfileVisibilityDefaults(updates: {
@@ -95,7 +95,7 @@ export async function updateProfileVisibilityDefaults(updates: {
   }
 
   revalidatePath("/profile");
-  revalidatePath("/lists");
+  revalidatePath("/shows");
   revalidatePath("/movies");
   revalidatePath("/anime");
   revalidatePath("/games");
@@ -169,7 +169,7 @@ export async function addShowToList(
 
   if (error) throw new Error(error.message);
 
-  revalidatePath(`/lists/${listId}`);
+  revalidatePath(`/shows/lists/${listId}`);
 }
 
 export async function removeShowFromList(listId: string, itemId: string) {
@@ -183,7 +183,7 @@ export async function removeShowFromList(listId: string, itemId: string) {
 
   if (error) throw new Error(error.message);
 
-  revalidatePath(`/lists/${listId}`);
+  revalidatePath(`/shows/lists/${listId}`);
 }
 
 export async function updateShowRating(
@@ -206,7 +206,7 @@ export async function updateShowRating(
 
   if (error) throw new Error(error.message);
 
-  revalidatePath(`/lists/${listId}`);
+  revalidatePath(`/shows/lists/${listId}`);
 }
 
 export async function updateShowNotes(
@@ -227,7 +227,7 @@ export async function updateShowNotes(
 
   if (error) throw new Error(error.message);
 
-  revalidatePath(`/lists/${listId}`);
+  revalidatePath(`/shows/lists/${listId}`);
 }
 
 export async function reorderListItems(listId: string, itemIds: string[]) {
@@ -244,7 +244,7 @@ export async function reorderListItems(listId: string, itemIds: string[]) {
 
   await Promise.all(updates);
 
-  revalidatePath(`/lists/${listId}`);
+  revalidatePath(`/shows/lists/${listId}`);
 }
 
 export async function importToMyList(jsonData: unknown) {
@@ -363,7 +363,7 @@ export async function importToMyList(jsonData: unknown) {
     }
   }
 
-  revalidatePath("/lists");
+  revalidatePath("/shows");
   return { importedCount };
 }
 
@@ -983,7 +983,7 @@ export async function addShowToMyList(show: {
 
   if (error) throw new Error(error.message);
 
-  revalidatePath("/lists");
+  revalidatePath("/shows");
   return { alreadyExists: false };
 }
 
@@ -1053,7 +1053,7 @@ export async function addTmdbShowToMyList(show: {
 
   if (error) throw new Error(error.message);
 
-  revalidatePath("/lists");
+  revalidatePath("/shows");
   return { alreadyExists: false };
 }
 
@@ -1075,7 +1075,7 @@ export async function removeShowFromMyList(showId: string) {
 
   if (error) throw new Error(error.message);
 
-  revalidatePath("/lists");
+  revalidatePath("/shows");
 }
 
 export async function copyListToMine(sourceListId: string) {
@@ -1130,7 +1130,7 @@ export async function copyListToMine(sourceListId: string) {
     if (insertError) throw new Error(insertError.message);
   }
 
-  revalidatePath("/lists");
+  revalidatePath("/shows");
 }
 
 export async function moveAnimesFromShowsToAnimeList(

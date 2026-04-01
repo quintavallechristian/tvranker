@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { ListAnalyticsPage } from "@/components/ListAnalytics";
-import { getListAnalytics } from "../../../lists/actions";
+import { getListAnalytics } from "../../../shows/lists/actions";
 
 export default async function UserAnalyticsPage({
   params,

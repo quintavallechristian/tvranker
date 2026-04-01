@@ -51,7 +51,7 @@ export function PodiumWidget({
 
   const defaultHref =
     topic === "show"
-      ? "/lists"
+      ? "/shows"
       : topic === "movie"
         ? "/movies"
         : topic === "game"

@@ -12,7 +12,7 @@ import {
 import {
   getPopularShows,
 } from "@/app/[locale]/(app)/explore/actions";
-import { addShowToMyList } from "@/app/[locale]/(app)/lists/actions";
+import { addShowToMyList } from "@/app/[locale]/(app)/shows/lists/actions";
 import {
   Plus,
   Check,

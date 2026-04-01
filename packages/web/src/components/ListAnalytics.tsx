@@ -32,7 +32,7 @@ import { ShowRow } from "@/components/ShowRow";
 import type {
   AnalyticsData,
   ShowSummary,
-} from "@/app/[locale]/(app)/lists/actions";
+} from "@/app/[locale]/(app)/shows/lists/actions";
 
 type Props = {
   data: AnalyticsData;

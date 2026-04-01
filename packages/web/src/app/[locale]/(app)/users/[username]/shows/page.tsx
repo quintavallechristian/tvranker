@@ -5,7 +5,7 @@ import { UserAvatar } from "@/components/UserAvatar";
 import { computeListSimilarity } from "@/lib/similarity";
 import { fetchAllRows } from "@/lib/supabase/fetchAll";
 import { UserListClient } from "../user-list-client";
-import { ListItemWithShow } from "../../../lists/actions";
+import { ListItemWithShow } from "../../../shows/lists/actions";
 import { Link } from "@/i18n/navigation";
 import { Television } from "@phosphor-icons/react/dist/ssr";
 

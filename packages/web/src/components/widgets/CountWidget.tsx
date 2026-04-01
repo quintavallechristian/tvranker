@@ -30,7 +30,7 @@ export function CountWidget({
 
   const defaultHref =
     topic === "show"
-      ? "/lists"
+      ? "/shows"
       : topic === "movie"
         ? "/movies"
         : topic === "anime"

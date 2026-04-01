@@ -24,7 +24,7 @@ import {
   updateTagColor,
   type TagRow,
 } from "@/app/[locale]/(app)/tags/actions";
-import { updateList, updateProfileVisibilityDefaults } from "@/app/[locale]/(app)/lists/actions";
+import { updateList, updateProfileVisibilityDefaults } from "@/app/[locale]/(app)/shows/lists/actions";
 import {
   TAG_COLORS,
   TAG_COLOR_HEX,
