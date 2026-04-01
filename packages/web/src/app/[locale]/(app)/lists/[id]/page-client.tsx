@@ -43,7 +43,11 @@ import { AddShowDialog } from "@/components/AddShowDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { ImportDialog } from "@/components/ImportDialog";
 import { OnboardingEmptyState } from "@/components/OnboardingEmptyState";
-import { ListSettingsModal, type ListSettingsData, type ProfileVisibilityData } from "@/components/ListSettingsModal";
+import {
+  ListSettingsModal,
+  type ListSettingsData,
+  type ProfileVisibilityData,
+} from "@/components/ListSettingsModal";
 import { getRatingLabel } from "@/lib/rating-labels";
 import {
   updateList,
@@ -224,7 +228,7 @@ export function ListDetailClient({
   const showAnimeBanner =
     isOwner &&
     !animeBannerDismissed &&
-    animePopulateStatus === "idle" &&
+    (animePopulateStatus === "idle" || animePopulateStatus === "loading") &&
     animeItems.length > 0;
 
   const handlePopulateAnimeList = useCallback(
@@ -674,7 +678,9 @@ export function ListDetailClient({
         <div className="mb-4 flex items-start justify-between gap-3 rounded-md border border-border bg-surface-subtle px-4 py-3">
           <div className="flex-1 space-y-2">
             {animePopulateStatus === "done" ? (
-              <p className="text-sm text-text-primary">{animePopulateMessage}</p>
+              <p className="text-sm text-text-primary">
+                {animePopulateMessage}
+              </p>
             ) : (
               <>
                 <p className="text-sm font-medium text-text-primary">
