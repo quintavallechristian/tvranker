@@ -63,14 +63,14 @@ export function UserListClient({
   }, [initialViewerItems]);
 
   const inMyList = useCallback(
-    (showId: string) =>
-      viewerRatingMap.has(showId) || addedShowIds.has(showId),
+    (showId: string) => viewerRatingMap.has(showId) || addedShowIds.has(showId),
     [viewerRatingMap, addedShowIds],
   );
 
   const getViewerRating = useCallback(
     (showId: string): number | null | undefined => {
-      if (addedShowIds.has(showId) && !viewerRatingMap.has(showId)) return undefined;
+      if (addedShowIds.has(showId) && !viewerRatingMap.has(showId))
+        return undefined;
       return viewerRatingMap.get(showId);
     },
     [viewerRatingMap, addedShowIds],
@@ -258,8 +258,8 @@ export function UserListClient({
                     )}
 
                     {/* Viewer's rating or quick-add */}
-                    {isLoggedIn && (
-                      alreadyAdded ? (
+                    {isLoggedIn &&
+                      (alreadyAdded ? (
                         viewerRating != null ? (
                           <span
                             className="shrink-0 ml-1 font-mono text-xs tabular-nums text-text-muted"
@@ -268,7 +268,10 @@ export function UserListClient({
                             {viewerRating}/10
                           </span>
                         ) : (
-                          <Check size={18} className="shrink-0 ml-1 text-accent" />
+                          <Check
+                            size={18}
+                            className="shrink-0 ml-1 text-accent"
+                          />
                         )
                       ) : (
                         <button
@@ -279,8 +282,7 @@ export function UserListClient({
                         >
                           <PlusCircle size={18} />
                         </button>
-                      )
-                    )}
+                      ))}
                   </div>
                 );
               })}
@@ -297,7 +299,9 @@ export function UserListClient({
       {/* Infinite scroll sentinel */}
       <div ref={sentinelRef} className="flex justify-center py-2">
         {loadingMore && (
-          <span className="text-xs text-text-faint">{tLists("loadingMore")}</span>
+          <span className="text-xs text-text-faint">
+            {tLists("loadingMore")}
+          </span>
         )}
       </div>
     </div>

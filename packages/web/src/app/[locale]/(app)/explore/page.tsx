@@ -41,6 +41,7 @@ type UserResult = {
   avatar_url: string | null;
   lists_compiled: number;
   similarity: number | null;
+  is_following: boolean;
 };
 
 export default function ExplorePage() {
@@ -154,22 +155,40 @@ export default function ExplorePage() {
 
     const profileIds = profiles.map((p) => p.id);
 
-    // Batch fetch all three list types in parallel
-    const [showListsResult, movieListsResult, animeListsResult] =
-      await Promise.all([
-        supabase
-          .from("lists")
-          .select("id, user_id, is_public")
-          .in("user_id", profileIds),
-        supabase
-          .from("movie_lists")
-          .select("id, user_id")
-          .in("user_id", profileIds),
-        supabase
-          .from("anime_lists")
-          .select("id, user_id")
-          .in("user_id", profileIds),
-      ]);
+    // Batch fetch all list types + follow relationships in parallel
+    const [
+      showListsResult,
+      movieListsResult,
+      animeListsResult,
+      gameListsResult,
+      followsResult,
+    ] = await Promise.all([
+      supabase
+        .from("lists")
+        .select("id, user_id, is_public")
+        .in("user_id", profileIds),
+      supabase
+        .from("movie_lists")
+        .select("id, user_id")
+        .in("user_id", profileIds),
+      supabase
+        .from("anime_lists")
+        .select("id, user_id")
+        .in("user_id", profileIds),
+      supabase
+        .from("game_lists")
+        .select("id, user_id")
+        .in("user_id", profileIds),
+      user
+        ? supabase
+            .from("follows")
+            .select("following_id")
+            .eq("follower_id", user.id)
+            .in("following_id", profileIds)
+        : Promise.resolve({
+            data: [] as Array<{ following_id: string }>,
+          }),
+    ]);
 
     const showListByUser = new Map(
       (showListsResult.data ?? []).map((l) => [l.user_id, l]),
@@ -180,15 +199,22 @@ export default function ExplorePage() {
     const animeListIdByUser = new Map(
       (animeListsResult.data ?? []).map((l) => [l.user_id, l.id]),
     );
+    const gameListIdByUser = new Map(
+      (gameListsResult.data ?? []).map((l) => [l.user_id, l.id]),
+    );
+    const followingSet = new Set(
+      (followsResult.data ?? []).map((f) => f.following_id),
+    );
 
     const publicShowListIds = (showListsResult.data ?? [])
       .filter((l) => l.is_public)
       .map((l) => l.id);
     const movieListIds = (movieListsResult.data ?? []).map((l) => l.id);
     const animeListIds = (animeListsResult.data ?? []).map((l) => l.id);
+    const gameListIds = (gameListsResult.data ?? []).map((l) => l.id);
 
-    // Batch fetch items for public show lists + existence check for movie/anime
-    const [showItemsResult, movieItemsResult, animeItemsResult] =
+    // Batch fetch items for public show lists + existence check for movie/anime/games
+    const [showItemsResult, movieItemsResult, animeItemsResult, gameItemsResult] =
       await Promise.all([
         publicShowListIds.length > 0
           ? supabase
@@ -219,6 +245,14 @@ export default function ExplorePage() {
           : Promise.resolve({
               data: [] as Array<{ anime_list_id: string }>,
             }),
+        gameListIds.length > 0
+          ? supabase
+              .from("game_list_items")
+              .select("game_list_id")
+              .in("game_list_id", gameListIds)
+          : Promise.resolve({
+              data: [] as Array<{ game_list_id: string }>,
+            }),
       ]);
 
     // Group show items by list_id
@@ -242,12 +276,20 @@ export default function ExplorePage() {
     const animeListsWithItems = new Set(
       (animeItemsResult.data ?? []).map((i) => i.anime_list_id),
     );
+    const gameListsWithItems = new Set(
+      (gameItemsResult.data ?? []).map((i) => i.game_list_id),
+    );
 
     const userResultsList: UserResult[] = [];
     for (const p of profiles) {
       const showList = showListByUser.get(p.id);
       if (!showList?.is_public) {
-        userResultsList.push({ ...p, lists_compiled: 0, similarity: null });
+        userResultsList.push({
+          ...p,
+          lists_compiled: 0,
+          similarity: null,
+          is_following: followingSet.has(p.id),
+        });
         continue;
       }
 
@@ -264,11 +306,16 @@ export default function ExplorePage() {
       const animeListId = animeListIdByUser.get(p.id);
       const animeCompiled =
         animeListId && animeListsWithItems.has(animeListId) ? 1 : 0;
+      const gameListId = gameListIdByUser.get(p.id);
+      const gamesCompiled =
+        gameListId && gameListsWithItems.has(gameListId) ? 1 : 0;
 
       userResultsList.push({
         ...p,
-        lists_compiled: showsCompiled + moviesCompiled + animeCompiled,
+        lists_compiled:
+          showsCompiled + moviesCompiled + animeCompiled + gamesCompiled,
         similarity,
+        is_following: followingSet.has(p.id),
       });
     }
     setUserResults(userResultsList);
@@ -296,31 +343,41 @@ export default function ExplorePage() {
             {t("usersSection")}
           </h2>
           <div className="grid gap-2">
-            {userResults.map((user) => (
-              <Link
-                key={user.id}
-                href={`/users/${user.username}`}
+            {userResults.map((u) => (
+              <div
+                key={u.id}
                 className="flex items-center gap-3 rounded-lg border border-border bg-bg-surface p-4 transition-colors hover:border-border-hover"
               >
-                <UserAvatar
-                  url={user.avatar_url}
-                  username={user.username}
-                  size={40}
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-text-primary">
-                    @{user.username}
-                  </p>
-                  <p className="text-xs text-text-muted">
-                    {t("listsCompiled", { count: user.lists_compiled })}
-                  </p>
+                <Link
+                  href={`/users/${u.username}`}
+                  className="flex min-w-0 flex-1 items-center gap-3"
+                >
+                  <UserAvatar
+                    url={u.avatar_url}
+                    username={u.username}
+                    size={40}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-text-primary">
+                      @{u.username}
+                    </p>
+                    <p className="text-xs text-text-muted">
+                      {t("listsCompiled", { count: u.lists_compiled })}
+                    </p>
+                  </div>
+                </Link>
+                <div className="flex shrink-0 items-center gap-2">
+                  {u.similarity !== null && u.similarity > 0 && (
+                    <span className="rounded-full border border-accent/30 bg-accent-muted px-2.5 py-1 text-xs font-semibold text-accent">
+                      {u.similarity}%
+                    </span>
+                  )}
+                  <FollowButton
+                    profileId={u.id}
+                    initialFollowing={u.is_following}
+                  />
                 </div>
-                {user.similarity !== null && user.similarity > 0 && (
-                  <span className="rounded-full border border-accent/30 bg-accent-muted px-2.5 py-1 text-xs font-semibold text-accent">
-                    {user.similarity}%
-                  </span>
-                )}
-              </Link>
+              </div>
             ))}
           </div>
         </div>

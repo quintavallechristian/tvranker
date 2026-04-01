@@ -6,12 +6,8 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { getPosterUrl } from "@/lib/tmdb/client";
-import {
-  getTopRatedShows,
-} from "@/app/[locale]/(app)/rankings/actions";
-import {
-  getPopularShows,
-} from "@/app/[locale]/(app)/explore/actions";
+import { getTopRatedShows } from "@/app/[locale]/(app)/rankings/actions";
+import { getPopularShows } from "@/app/[locale]/(app)/explore/actions";
 import { addShowToMyList } from "@/app/[locale]/(app)/shows/lists/actions";
 import {
   Plus,
@@ -69,7 +65,7 @@ export function OnboardingEmptyState({ onAddShow, onImport }: Props) {
               first_air_date: s.first_air_date,
               overview: s.overview,
               avg_rating: s.avg_rating,
-            }))
+            })),
           );
         } else {
           // Fall back to most-added shows when ratings data is sparse
@@ -217,7 +213,11 @@ export function OnboardingEmptyState({ onAddShow, onImport }: Props) {
                       }}
                     >
                       {isAdded ? (
-                        <Check size={24} weight="bold" className="text-accent" />
+                        <Check
+                          size={24}
+                          weight="bold"
+                          className="text-accent"
+                        />
                       ) : (
                         <>
                           <button

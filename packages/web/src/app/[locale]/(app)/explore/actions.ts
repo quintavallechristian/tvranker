@@ -125,19 +125,26 @@ export async function getSimilarUsers(): Promise<SimilarUser[]> {
 
   if (top3.length === 0) return [];
 
-  // Fetch movie/anime lists for top 3 only to compute lists_compiled
+  // Fetch movie/anime/game lists for top 3 only to compute lists_compiled
   const topUserIds = top3.map((r) => r.profileId);
-  const [{ data: movieListsData }, { data: animeListsData }] =
-    await Promise.all([
-      supabase
-        .from("movie_lists")
-        .select("id, user_id")
-        .in("user_id", topUserIds),
-      supabase
-        .from("anime_lists")
-        .select("id, user_id")
-        .in("user_id", topUserIds),
-    ]);
+  const [
+    { data: movieListsData },
+    { data: animeListsData },
+    { data: gameListsData },
+  ] = await Promise.all([
+    supabase
+      .from("movie_lists")
+      .select("id, user_id")
+      .in("user_id", topUserIds),
+    supabase
+      .from("anime_lists")
+      .select("id, user_id")
+      .in("user_id", topUserIds),
+    supabase
+      .from("game_lists")
+      .select("id, user_id")
+      .in("user_id", topUserIds),
+  ]);
 
   const movieListIdByUser = new Map(
     (movieListsData ?? []).map((ml) => [ml.user_id, ml.id]),
@@ -145,31 +152,47 @@ export async function getSimilarUsers(): Promise<SimilarUser[]> {
   const animeListIdByUser = new Map(
     (animeListsData ?? []).map((al) => [al.user_id, al.id]),
   );
+  const gameListIdByUser = new Map(
+    (gameListsData ?? []).map((gl) => [gl.user_id, gl.id]),
+  );
 
   const allMovieListIds = [...movieListIdByUser.values()];
   const allAnimeListIds = [...animeListIdByUser.values()];
+  const allGameListIds = [...gameListIdByUser.values()];
 
-  const [{ data: movieItemsExist }, { data: animeItemsExist }] =
-    await Promise.all([
-      allMovieListIds.length > 0
-        ? supabase
-            .from("movie_list_items")
-            .select("movie_list_id")
-            .in("movie_list_id", allMovieListIds)
-        : Promise.resolve({ data: [] as Array<{ movie_list_id: string }> }),
-      allAnimeListIds.length > 0
-        ? supabase
-            .from("anime_list_items")
-            .select("anime_list_id")
-            .in("anime_list_id", allAnimeListIds)
-        : Promise.resolve({ data: [] as Array<{ anime_list_id: string }> }),
-    ]);
+  const [
+    { data: movieItemsExist },
+    { data: animeItemsExist },
+    { data: gameItemsExist },
+  ] = await Promise.all([
+    allMovieListIds.length > 0
+      ? supabase
+          .from("movie_list_items")
+          .select("movie_list_id")
+          .in("movie_list_id", allMovieListIds)
+      : Promise.resolve({ data: [] as Array<{ movie_list_id: string }> }),
+    allAnimeListIds.length > 0
+      ? supabase
+          .from("anime_list_items")
+          .select("anime_list_id")
+          .in("anime_list_id", allAnimeListIds)
+      : Promise.resolve({ data: [] as Array<{ anime_list_id: string }> }),
+    allGameListIds.length > 0
+      ? supabase
+          .from("game_list_items")
+          .select("game_list_id")
+          .in("game_list_id", allGameListIds)
+      : Promise.resolve({ data: [] as Array<{ game_list_id: string }> }),
+  ]);
 
   const movieListIdsWithItems = new Set(
     (movieItemsExist ?? []).map((i) => i.movie_list_id),
   );
   const animeListIdsWithItems = new Set(
     (animeItemsExist ?? []).map((i) => i.anime_list_id),
+  );
+  const gameListIdsWithItems = new Set(
+    (gameItemsExist ?? []).map((i) => i.game_list_id),
   );
 
   return top3.map((r) => {
@@ -179,10 +202,13 @@ export async function getSimilarUsers(): Promise<SimilarUser[]> {
     const animeListId = animeListIdByUser.get(r.profileId);
     const animeCompiled =
       animeListId && animeListIdsWithItems.has(animeListId) ? 1 : 0;
+    const gameListId = gameListIdByUser.get(r.profileId);
+    const gamesCompiled =
+      gameListId && gameListIdsWithItems.has(gameListId) ? 1 : 0;
     const { profileId, showsCompiled, ...rest } = r;
     return {
       ...rest,
-      lists_compiled: showsCompiled + moviesCompiled + animeCompiled,
+      lists_compiled: showsCompiled + moviesCompiled + animeCompiled + gamesCompiled,
     };
   });
 }

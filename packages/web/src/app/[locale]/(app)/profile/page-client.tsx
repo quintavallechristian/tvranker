@@ -24,7 +24,10 @@ import {
   updateTagColor,
   type TagRow,
 } from "@/app/[locale]/(app)/tags/actions";
-import { updateList, updateProfileVisibilityDefaults } from "@/app/[locale]/(app)/shows/lists/actions";
+import {
+  updateList,
+  updateProfileVisibilityDefaults,
+} from "@/app/[locale]/(app)/shows/lists/actions";
 import {
   TAG_COLORS,
   TAG_COLOR_HEX,
@@ -145,8 +148,10 @@ export function ProfilePageClient({
     if (field === "visible_to_following") setVisibleToFollowing(value);
     const next: Record<string, boolean> = {};
     if (field === "is_public") next.default_is_public = value;
-    if (field === "visible_to_followers") next.default_visible_to_followers = value;
-    if (field === "visible_to_following") next.default_visible_to_following = value;
+    if (field === "visible_to_followers")
+      next.default_visible_to_followers = value;
+    if (field === "visible_to_following")
+      next.default_visible_to_following = value;
     startVisibilityTransition(async () => {
       await updateProfileVisibilityDefaults(next);
       router.refresh();
@@ -463,152 +468,152 @@ export function ProfilePageClient({
 
       {/* Visibility card */}
       <div className="rounded-[var(--radius-lg)] border border-border bg-bg-surface p-4 md:p-6">
-          <div className="mb-4 flex items-center gap-2">
-            <LockSimple size={16} className="text-text-muted" />
-            <div>
-              <h3 className="text-sm font-semibold text-text-primary">
-                {t("visibilityTitle")}
-              </h3>
-              <p className="mt-0.5 text-xs text-text-muted">
-                {t("visibilityDesc")}
-              </p>
-            </div>
+        <div className="mb-4 flex items-center gap-2">
+          <LockSimple size={16} className="text-text-muted" />
+          <div>
+            <h3 className="text-sm font-semibold text-text-primary">
+              {t("visibilityTitle")}
+            </h3>
+            <p className="mt-0.5 text-xs text-text-muted">
+              {t("visibilityDesc")}
+            </p>
           </div>
+        </div>
 
-          <div className="space-y-3">
-            {/* General visibility */}
-            <div className="flex items-center justify-between rounded-md border border-border bg-bg-elevated px-4 py-3">
-              <div className="flex items-center gap-3">
-                <Globe
-                  size={16}
-                  className={isPublic ? "text-accent" : "text-text-faint"}
-                />
-                <div>
-                  <p className="text-sm font-medium text-text-primary">
-                    {t("visibilityGeneral")}
-                  </p>
-                  <p className="text-xs text-text-muted">
-                    {t("visibilityGeneralDesc")}
-                  </p>
-                </div>
+        <div className="space-y-3">
+          {/* General visibility */}
+          <div className="flex items-center justify-between rounded-md border border-border bg-bg-elevated px-4 py-3">
+            <div className="flex items-center gap-3">
+              <Globe
+                size={16}
+                className={isPublic ? "text-accent" : "text-text-faint"}
+              />
+              <div>
+                <p className="text-sm font-medium text-text-primary">
+                  {t("visibilityGeneral")}
+                </p>
+                <p className="text-xs text-text-muted">
+                  {t("visibilityGeneralDesc")}
+                </p>
               </div>
-              <button
-                role="switch"
-                aria-checked={isPublic}
-                disabled={visibilityPending}
-                onClick={() => handleVisibilityChange("is_public", !isPublic)}
-                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none disabled:opacity-50 ${
-                  isPublic ? "bg-accent" : "bg-bg-surface-hover"
-                }`}
-              >
-                <span
-                  className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-lg ring-0 transition-transform ${
-                    isPublic ? "translate-x-4" : "translate-x-0"
-                  }`}
-                />
-              </button>
             </div>
-
-            {/* Visible to followers */}
-            <div
-              className={`flex items-center justify-between rounded-md border px-4 py-3 transition-opacity ${
-                isPublic
-                  ? "border-border/50 bg-bg-elevated/50 opacity-50"
-                  : "border-border bg-bg-elevated"
+            <button
+              role="switch"
+              aria-checked={isPublic}
+              disabled={visibilityPending}
+              onClick={() => handleVisibilityChange("is_public", !isPublic)}
+              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none disabled:opacity-50 ${
+                isPublic ? "bg-accent" : "bg-bg-surface-hover"
               }`}
             >
-              <div className="flex items-center gap-3">
-                <Users
-                  size={16}
-                  className={
-                    visibleToFollowers && !isPublic
-                      ? "text-accent"
-                      : "text-text-faint"
-                  }
-                />
-                <div>
-                  <p className="text-sm font-medium text-text-primary">
-                    {t("visibilityFollowers")}
-                  </p>
-                  <p className="text-xs text-text-muted">
-                    {t("visibilityFollowersDesc")}
-                  </p>
-                </div>
-              </div>
-              <button
-                role="switch"
-                aria-checked={visibleToFollowers}
-                disabled={visibilityPending || isPublic}
-                onClick={() =>
-                  handleVisibilityChange(
-                    "visible_to_followers",
-                    !visibleToFollowers,
-                  )
-                }
-                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${
+              <span
+                className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-lg ring-0 transition-transform ${
+                  isPublic ? "translate-x-4" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Visible to followers */}
+          <div
+            className={`flex items-center justify-between rounded-md border px-4 py-3 transition-opacity ${
+              isPublic
+                ? "border-border/50 bg-bg-elevated/50 opacity-50"
+                : "border-border bg-bg-elevated"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <Users
+                size={16}
+                className={
                   visibleToFollowers && !isPublic
-                    ? "bg-accent"
-                    : "bg-bg-surface-hover"
-                }`}
-              >
-                <span
-                  className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-lg ring-0 transition-transform ${
-                    visibleToFollowers ? "translate-x-4" : "translate-x-0"
-                  }`}
-                />
-              </button>
+                    ? "text-accent"
+                    : "text-text-faint"
+                }
+              />
+              <div>
+                <p className="text-sm font-medium text-text-primary">
+                  {t("visibilityFollowers")}
+                </p>
+                <p className="text-xs text-text-muted">
+                  {t("visibilityFollowersDesc")}
+                </p>
+              </div>
             </div>
-
-            {/* Visible to following */}
-            <div
-              className={`flex items-center justify-between rounded-md border px-4 py-3 transition-opacity ${
-                isPublic
-                  ? "border-border/50 bg-bg-elevated/50 opacity-50"
-                  : "border-border bg-bg-elevated"
+            <button
+              role="switch"
+              aria-checked={visibleToFollowers}
+              disabled={visibilityPending || isPublic}
+              onClick={() =>
+                handleVisibilityChange(
+                  "visible_to_followers",
+                  !visibleToFollowers,
+                )
+              }
+              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${
+                visibleToFollowers && !isPublic
+                  ? "bg-accent"
+                  : "bg-bg-surface-hover"
               }`}
             >
-              <div className="flex items-center gap-3">
-                <UserList
-                  size={16}
-                  className={
-                    visibleToFollowing && !isPublic
-                      ? "text-accent"
-                      : "text-text-faint"
-                  }
-                />
-                <div>
-                  <p className="text-sm font-medium text-text-primary">
-                    {t("visibilityFollowing")}
-                  </p>
-                  <p className="text-xs text-text-muted">
-                    {t("visibilityFollowingDesc")}
-                  </p>
-                </div>
-              </div>
-              <button
-                role="switch"
-                aria-checked={visibleToFollowing}
-                disabled={visibilityPending || isPublic}
-                onClick={() =>
-                  handleVisibilityChange(
-                    "visible_to_following",
-                    !visibleToFollowing,
-                  )
-                }
-                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${
-                  visibleToFollowing && !isPublic
-                    ? "bg-accent"
-                    : "bg-bg-surface-hover"
+              <span
+                className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-lg ring-0 transition-transform ${
+                  visibleToFollowers ? "translate-x-4" : "translate-x-0"
                 }`}
-              >
-                <span
-                  className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-lg ring-0 transition-transform ${
-                    visibleToFollowing ? "translate-x-4" : "translate-x-0"
-                  }`}
-                />
-              </button>
-            </div>
+              />
+            </button>
           </div>
+
+          {/* Visible to following */}
+          <div
+            className={`flex items-center justify-between rounded-md border px-4 py-3 transition-opacity ${
+              isPublic
+                ? "border-border/50 bg-bg-elevated/50 opacity-50"
+                : "border-border bg-bg-elevated"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <UserList
+                size={16}
+                className={
+                  visibleToFollowing && !isPublic
+                    ? "text-accent"
+                    : "text-text-faint"
+                }
+              />
+              <div>
+                <p className="text-sm font-medium text-text-primary">
+                  {t("visibilityFollowing")}
+                </p>
+                <p className="text-xs text-text-muted">
+                  {t("visibilityFollowingDesc")}
+                </p>
+              </div>
+            </div>
+            <button
+              role="switch"
+              aria-checked={visibleToFollowing}
+              disabled={visibilityPending || isPublic}
+              onClick={() =>
+                handleVisibilityChange(
+                  "visible_to_following",
+                  !visibleToFollowing,
+                )
+              }
+              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${
+                visibleToFollowing && !isPublic
+                  ? "bg-accent"
+                  : "bg-bg-surface-hover"
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-lg ring-0 transition-transform ${
+                  visibleToFollowing ? "translate-x-4" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Settings card */}

@@ -2,7 +2,13 @@
 
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { Television, FilmSlate, Users, Trophy, MagnifyingGlass } from "@phosphor-icons/react";
+import {
+  Television,
+  FilmSlate,
+  Users,
+  Trophy,
+  MagnifyingGlass,
+} from "@phosphor-icons/react";
 
 type HomeWelcomeProps = {
   username: string;
@@ -52,7 +58,9 @@ export function HomeWelcome({ username }: HomeWelcomeProps) {
             <Television size={20} weight="duotone" />
           </div>
           <div>
-            <p className="font-medium text-text-primary">{t("welcomeAddShow")}</p>
+            <p className="font-medium text-text-primary">
+              {t("welcomeAddShow")}
+            </p>
             <p className="mt-0.5 text-xs text-text-muted">
               {t("welcomeAddShowSubtitle")}
             </p>
@@ -67,7 +75,9 @@ export function HomeWelcome({ username }: HomeWelcomeProps) {
             <FilmSlate size={20} weight="duotone" />
           </div>
           <div>
-            <p className="font-medium text-text-primary">{t("welcomeAddMovie")}</p>
+            <p className="font-medium text-text-primary">
+              {t("welcomeAddMovie")}
+            </p>
             <p className="mt-0.5 text-xs text-text-muted">
               {t("welcomeAddMovieSubtitle")}
             </p>

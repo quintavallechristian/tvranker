@@ -442,7 +442,7 @@ export default async function UserProfilePage({
       )}
 
       {/* Podium cards — extended top10 with rowSpan=2 */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {(showCountResult.count ?? 0) > 0 && (
           <div className="h-105">
             <PodiumWidget

@@ -103,22 +103,30 @@ export async function getFollowing(): Promise<FollowedUser[]> {
 
   const profileIds = profiles.map((p) => p.id);
 
-  // Batch fetch show lists, movie lists, anime lists for all followed users
-  const [{ data: showLists }, { data: movieLists }, { data: animeLists }] =
-    await Promise.all([
-      supabase
-        .from("lists")
-        .select("id, user_id, is_public")
-        .in("user_id", profileIds),
-      supabase
-        .from("movie_lists")
-        .select("id, user_id")
-        .in("user_id", profileIds),
-      supabase
-        .from("anime_lists")
-        .select("id, user_id")
-        .in("user_id", profileIds),
-    ]);
+  // Batch fetch show lists, movie lists, anime lists, game lists for all followed users
+  const [
+    { data: showLists },
+    { data: movieLists },
+    { data: animeLists },
+    { data: gameLists },
+  ] = await Promise.all([
+    supabase
+      .from("lists")
+      .select("id, user_id, is_public")
+      .in("user_id", profileIds),
+    supabase
+      .from("movie_lists")
+      .select("id, user_id")
+      .in("user_id", profileIds),
+    supabase
+      .from("anime_lists")
+      .select("id, user_id")
+      .in("user_id", profileIds),
+    supabase
+      .from("game_lists")
+      .select("id, user_id")
+      .in("user_id", profileIds),
+  ]);
 
   const showListByUser = new Map(
     (showLists ?? []).map((l) => [l.user_id, l]),
@@ -129,32 +137,48 @@ export async function getFollowing(): Promise<FollowedUser[]> {
   const animeListIdByUser = new Map(
     (animeLists ?? []).map((l) => [l.user_id, l.id]),
   );
+  const gameListIdByUser = new Map(
+    (gameLists ?? []).map((l) => [l.user_id, l.id]),
+  );
 
   const allMovieListIds = [...movieListIdByUser.values()];
   const allAnimeListIds = [...animeListIdByUser.values()];
+  const allGameListIds = [...gameListIdByUser.values()];
 
-  // Check which movie/anime lists have at least one item
-  const [{ data: movieItemsExist }, { data: animeItemsExist }] =
-    await Promise.all([
-      allMovieListIds.length > 0
-        ? supabase
-            .from("movie_list_items")
-            .select("movie_list_id")
-            .in("movie_list_id", allMovieListIds)
-        : Promise.resolve({ data: [] as Array<{ movie_list_id: string }> }),
-      allAnimeListIds.length > 0
-        ? supabase
-            .from("anime_list_items")
-            .select("anime_list_id")
-            .in("anime_list_id", allAnimeListIds)
-        : Promise.resolve({ data: [] as Array<{ anime_list_id: string }> }),
-    ]);
+  // Check which movie/anime/game lists have at least one item
+  const [
+    { data: movieItemsExist },
+    { data: animeItemsExist },
+    { data: gameItemsExist },
+  ] = await Promise.all([
+    allMovieListIds.length > 0
+      ? supabase
+          .from("movie_list_items")
+          .select("movie_list_id")
+          .in("movie_list_id", allMovieListIds)
+      : Promise.resolve({ data: [] as Array<{ movie_list_id: string }> }),
+    allAnimeListIds.length > 0
+      ? supabase
+          .from("anime_list_items")
+          .select("anime_list_id")
+          .in("anime_list_id", allAnimeListIds)
+      : Promise.resolve({ data: [] as Array<{ anime_list_id: string }> }),
+    allGameListIds.length > 0
+      ? supabase
+          .from("game_list_items")
+          .select("game_list_id")
+          .in("game_list_id", allGameListIds)
+      : Promise.resolve({ data: [] as Array<{ game_list_id: string }> }),
+  ]);
 
   const movieListIdsWithItems = new Set(
     (movieItemsExist ?? []).map((i) => i.movie_list_id),
   );
   const animeListIdsWithItems = new Set(
     (animeItemsExist ?? []).map((i) => i.anime_list_id),
+  );
+  const gameListIdsWithItems = new Set(
+    (gameItemsExist ?? []).map((i) => i.game_list_id),
   );
 
   const results: FollowedUser[] = [];
@@ -190,10 +214,13 @@ export async function getFollowing(): Promise<FollowedUser[]> {
     const animeListId = animeListIdByUser.get(profile.id);
     const animeCompiled =
       animeListId && animeListIdsWithItems.has(animeListId) ? 1 : 0;
+    const gameListId = gameListIdByUser.get(profile.id);
+    const gamesCompiled =
+      gameListId && gameListIdsWithItems.has(gameListId) ? 1 : 0;
 
     results.push({
       ...profile,
-      lists_count: showsCompiled + moviesCompiled + animeCompiled,
+      lists_count: showsCompiled + moviesCompiled + animeCompiled + gamesCompiled,
       similarity,
     });
   }
