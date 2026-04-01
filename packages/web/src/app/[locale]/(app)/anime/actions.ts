@@ -2,7 +2,13 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { getShowDetails, extractTrailerUrl } from "@/lib/tmdb/client";
+import {
+  getShowDetails,
+  extractTrailerUrl,
+  findByImdbId,
+  searchShows,
+} from "@/lib/tmdb/client";
+import type { TMDBShowExtended } from "@/lib/tmdb/client";
 import type { WatchProviderRegion } from "@/lib/supabase/types";
 
 export type AnimeItem = {
@@ -42,62 +48,103 @@ export async function fetchAnimeTmdbData(animeId: string) {
 
   if (!needsFetch) return anime;
 
-  if (!anime.tmdb_id || anime.tmdb_id <= 0) {
-    await supabase
-      .from("animes")
-      .update({ tmdb_fetched: true })
-      .eq("id", animeId);
-    return anime;
-  }
+  let found: TMDBShowExtended | null = null;
 
-  try {
-    const found = await getShowDetails(anime.tmdb_id);
-    if (!found) {
-      await supabase
-        .from("animes")
-        .update({ tmdb_fetched: true })
-        .eq("id", animeId);
-      return anime;
+  // Strategy 1: lookup by existing positive tmdb_id
+  if (anime.tmdb_id !== null && anime.tmdb_id > 0) {
+    try {
+      found = await getShowDetails(anime.tmdb_id);
+    } catch {
+      /* fall through */
     }
+  }
 
-    const trailerUrl = extractTrailerUrl(found.videos);
-    const watchProviders =
-      (
-        found as unknown as {
-          "watch/providers"?: {
-            results?: WatchProviderRegion | null;
-          };
-        }
-      )["watch/providers"]?.results ?? null;
+  // Strategy 2: lookup by IMDb ID
+  if (!found && anime.imdb_id) {
+    try {
+      const { show } = await findByImdbId(anime.imdb_id);
+      if (show) {
+        found = await getShowDetails(show.id);
+      }
+    } catch {
+      /* fall through */
+    }
+  }
 
-    const { data: updated } = await supabase
-      .from("animes")
-      .update({
-        tmdb_id: found.id,
-        title: found.name,
-        poster_path: found.poster_path,
-        first_air_date: found.first_air_date || null,
-        overview: found.overview || null,
-        episode_count:
-          (found as unknown as { number_of_episodes?: number })
-            .number_of_episodes ?? null,
-        status: (found as unknown as { status?: string }).status ?? null,
-        trailer_url: trailerUrl,
-        watch_providers: watchProviders,
-        tmdb_fetched: true,
-      })
-      .eq("id", animeId)
-      .select("*")
-      .single();
+  // Strategy 3: search by title
+  if (!found) {
+    try {
+      const data = await searchShows(anime.title);
+      const first = data.results?.[0];
+      if (first) {
+        found = await getShowDetails(first.id);
+      }
+    } catch {
+      /* fall through */
+    }
+  }
 
-    return updated ?? anime;
-  } catch {
+  if (!found) {
     await supabase
       .from("animes")
       .update({ tmdb_fetched: true })
       .eq("id", animeId);
     return anime;
   }
+
+  // Dedup: if another anime row already has this tmdb_id, merge and delete current
+  const { data: existing } = await supabase
+    .from("animes")
+    .select("id")
+    .eq("tmdb_id", found.id)
+    .neq("id", animeId)
+    .maybeSingle();
+
+  if (existing) {
+    await supabase
+      .from("anime_list_items")
+      .update({ anime_id: existing.id } as unknown as Record<string, unknown>)
+      .eq("anime_id", animeId);
+    await supabase.from("animes").delete().eq("id", animeId);
+    return await supabase
+      .from("animes")
+      .select("*")
+      .eq("id", existing.id)
+      .single()
+      .then((r) => r.data);
+  }
+
+  const trailerUrl = extractTrailerUrl(found.videos);
+  const watchProviders =
+    (
+      found as unknown as {
+        "watch/providers"?: {
+          results?: WatchProviderRegion | null;
+        };
+      }
+    )["watch/providers"]?.results ?? null;
+
+  const { data: updated } = await supabase
+    .from("animes")
+    .update({
+      tmdb_id: found.id,
+      title: found.name,
+      poster_path: found.poster_path,
+      first_air_date: found.first_air_date || null,
+      overview: found.overview || null,
+      episode_count:
+        (found as unknown as { number_of_episodes?: number })
+          .number_of_episodes ?? null,
+      status: (found as unknown as { status?: string }).status ?? null,
+      trailer_url: trailerUrl,
+      watch_providers: watchProviders,
+      tmdb_fetched: true,
+    })
+    .eq("id", animeId)
+    .select("*")
+    .single();
+
+  return updated ?? anime;
 }
 
 export async function addAnimeToList(
