@@ -29,6 +29,7 @@ import {
   FunnelSimple,
   ChartPie,
   FileArrowUp,
+  GearSix,
 } from "@phosphor-icons/react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
@@ -38,6 +39,7 @@ import { AddAnimeDialog } from "@/components/AddAnimeDialog";
 import { ImportAnimeDialog } from "@/components/ImportAnimeDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { OnboardingAnimeEmptyState } from "@/components/OnboardingAnimeEmptyState";
+import { ListSettingsModal, type ListSettingsData, type ProfileVisibilityData } from "@/components/ListSettingsModal";
 import { getRatingLabel } from "@/lib/rating-labels";
 import {
   addAnimeToList,
@@ -46,6 +48,7 @@ import {
   reorderAnimeListItems,
   updateAnimeListDescription,
   getAnimeListItemsPage,
+  updateAnimeListSettings,
   type AnimeItem,
 } from "./actions";
 
@@ -57,6 +60,9 @@ type AnimeListClientProps = {
   existingTmdbIds: number[];
   ratingLabels?: string[] | null;
   hasMore: boolean;
+  listSettings?: ListSettingsData;
+  profileRatingLabels?: string[] | null;
+  profileVisibility?: ProfileVisibilityData;
 };
 
 export function AnimeListClient({
@@ -67,6 +73,9 @@ export function AnimeListClient({
   existingTmdbIds: initialExistingTmdbIds,
   ratingLabels,
   hasMore: initialHasMore,
+  listSettings,
+  profileRatingLabels,
+  profileVisibility,
 }: AnimeListClientProps) {
   const router = useRouter();
   const t = useTranslations("anime");
@@ -75,6 +84,7 @@ export function AnimeListClient({
 
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [items, setItems] = useState<AnimeItem[]>(initialItems);
   const [existingTmdbIds, setExistingTmdbIds] = useState<number[]>(
     initialExistingTmdbIds,
@@ -277,6 +287,14 @@ export function AnimeListClient({
             saveStatus={saveStatus}
           />
           <div className="flex shrink-0 items-center gap-2 mt-0.5">
+            {listSettings && (
+              <button
+                onClick={() => setShowSettingsModal(true)}
+                className="flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary"
+              >
+                <GearSix size={14} />
+              </button>
+            )}
             {items.length > 0 && (
               <Link
                 href="/anime/analytics"
@@ -512,6 +530,20 @@ export function AnimeListClient({
           router.refresh();
         }}
       />
+
+      {listSettings && profileVisibility && (
+        <ListSettingsModal
+          open={showSettingsModal}
+          onClose={() => setShowSettingsModal(false)}
+          listId={animeListId}
+          settings={listSettings}
+          profileRatingLabels={profileRatingLabels ?? null}
+          profileVisibility={profileVisibility}
+          onSave={async (id, updates) => {
+            await updateAnimeListSettings(id, updates);
+          }}
+        />
+      )}
     </div>
   );
 }

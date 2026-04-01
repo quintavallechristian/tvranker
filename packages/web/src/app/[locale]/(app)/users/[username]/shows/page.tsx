@@ -28,7 +28,7 @@ export default async function UserShowsPage({
 
   const { data: list } = await supabase
     .from("lists")
-    .select("id, name, description, is_public")
+    .select("id, name, description, is_public, rating_labels")
     .eq("user_id", profile.id)
     .single();
 
@@ -176,7 +176,7 @@ export default async function UserShowsPage({
             initialHasMore={hasMore}
             isLoggedIn={!!user && !isOwnProfile}
             viewerItems={viewerItems}
-            ratingLabels={profile.rating_labels}
+            ratingLabels={list.rating_labels ?? profile.rating_labels}
           />
         )
       ) : (

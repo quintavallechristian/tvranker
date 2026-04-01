@@ -283,6 +283,32 @@ export async function updateMovieListDescription(
   revalidatePath("/movies");
 }
 
+export async function updateMovieListSettings(
+  movieListId: string,
+  updates: {
+    is_public?: boolean;
+    visible_to_followers?: boolean;
+    visible_to_following?: boolean;
+    rating_labels?: string[] | null;
+    custom_visibility?: boolean;
+  },
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { error } = await supabase
+    .from("movie_lists")
+    .update(updates)
+    .eq("id", movieListId)
+    .eq("user_id", user.id);
+
+  if (error) throw new Error(error.message);
+  revalidatePath("/movies");
+}
+
 export async function importToMyMovieList(
   jsonData: unknown,
 ): Promise<{ importedCount: number }> {

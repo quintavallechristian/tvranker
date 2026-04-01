@@ -23,7 +23,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Plus, X, FunnelSimple, ChartPie } from "@phosphor-icons/react";
+import { Plus, X, FunnelSimple, ChartPie, GearSix } from "@phosphor-icons/react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { ListHeader } from "@/components/ListHeader";
@@ -31,6 +31,7 @@ import { ShowRow } from "@/components/ShowRow";
 import { AddGameDialog } from "@/components/AddGameDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { OnboardingGamesEmptyState } from "@/components/OnboardingGamesEmptyState";
+import { ListSettingsModal, type ListSettingsData, type ProfileVisibilityData } from "@/components/ListSettingsModal";
 import { getRatingLabel } from "@/lib/rating-labels";
 import {
   addGameToList,
@@ -39,6 +40,7 @@ import {
   reorderGameListItems,
   updateGameListDescription,
   getGameListItemsPage,
+  updateGameListSettings,
   type GameItem,
 } from "./actions";
 
@@ -50,6 +52,9 @@ type GamesListClientProps = {
   existingIgdbIds: number[];
   ratingLabels?: string[] | null;
   hasMore: boolean;
+  listSettings?: ListSettingsData;
+  profileRatingLabels?: string[] | null;
+  profileVisibility?: ProfileVisibilityData;
 };
 
 export function GamesListClient({
@@ -60,6 +65,9 @@ export function GamesListClient({
   existingIgdbIds: initialExistingIgdbIds,
   ratingLabels,
   hasMore: initialHasMore,
+  listSettings,
+  profileRatingLabels,
+  profileVisibility,
 }: GamesListClientProps) {
   const router = useRouter();
   const t = useTranslations("games");
@@ -67,6 +75,7 @@ export function GamesListClient({
   const [isPending, startTransition] = useTransition();
 
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [items, setItems] = useState<GameItem[]>(initialItems);
   const [existingIgdbIds, setExistingIgdbIds] = useState<number[]>(
     initialExistingIgdbIds,
@@ -270,6 +279,14 @@ export function GamesListClient({
             saveStatus={saveStatus}
           />
           <div className="flex shrink-0 items-center gap-2 mt-0.5">
+            {listSettings && (
+              <button
+                onClick={() => setShowSettingsModal(true)}
+                className="flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary"
+              >
+                <GearSix size={14} />
+              </button>
+            )}
             {items.length > 0 && (
               <Link
                 href="/games/analytics"
@@ -477,6 +494,20 @@ export function GamesListClient({
         onAdd={handleAdd}
         existingIgdbIds={existingIgdbIds}
       />
+
+      {listSettings && profileVisibility && (
+        <ListSettingsModal
+          open={showSettingsModal}
+          onClose={() => setShowSettingsModal(false)}
+          listId={gameListId}
+          settings={listSettings}
+          profileRatingLabels={profileRatingLabels ?? null}
+          profileVisibility={profileVisibility}
+          onSave={async (id, updates) => {
+            await updateGameListSettings(id, updates);
+          }}
+        />
+      )}
     </div>
   );
 }

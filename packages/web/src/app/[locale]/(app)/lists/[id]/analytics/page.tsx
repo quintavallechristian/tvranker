@@ -15,7 +15,7 @@ export default async function ListIdAnalyticsPage({
   // Verify the list exists and is accessible
   const { data: list } = await supabase
     .from("lists")
-    .select("id, user_id, is_public")
+    .select("id, user_id, is_public, rating_labels")
     .eq("id", id)
     .single();
 
@@ -39,10 +39,14 @@ export default async function ListIdAnalyticsPage({
     getTranslations("lists"),
   ]);
 
+  const listRatingLabels = list.rating_labels as string[] | null;
+  const profileRatingLabels = ownerProfile?.rating_labels as string[] | null;
+  const effectiveRatingLabels = listRatingLabels ?? profileRatingLabels;
+
   return (
     <ListAnalyticsPage
       data={data}
-      ratingLabels={ownerProfile?.rating_labels as string[] | null}
+      ratingLabels={effectiveRatingLabels}
       backHref={`/lists/${id}`}
       labels={{
         title: t("analytics"),

@@ -24,7 +24,7 @@ import {
   updateTagColor,
   type TagRow,
 } from "@/app/[locale]/(app)/tags/actions";
-import { updateList } from "@/app/[locale]/(app)/lists/actions";
+import { updateList, updateProfileVisibilityDefaults } from "@/app/[locale]/(app)/lists/actions";
 import {
   TAG_COLORS,
   TAG_COLOR_HEX,
@@ -41,22 +41,18 @@ type ProfilePageClientProps = {
     username: string;
     avatar_url: string | null;
     rating_labels: string[] | null;
+    default_is_public: boolean;
+    default_visible_to_followers: boolean;
+    default_visible_to_following: boolean;
   };
   publicListCount: number;
   initialTags?: TagRow[];
-  list?: {
-    id: string;
-    is_public: boolean;
-    visible_to_followers: boolean;
-    visible_to_following: boolean;
-  } | null;
 };
 
 export function ProfilePageClient({
   profile,
   publicListCount,
   initialTags = [],
-  list,
 }: ProfilePageClientProps) {
   const t = useTranslations("profile");
   const tSettings = useTranslations("settings");
@@ -81,13 +77,13 @@ export function ProfilePageClient({
   const [tagsPending, startTagTransition] = useTransition();
   const [colorPickerTagId, setColorPickerTagId] = useState<string | null>(null);
 
-  // Visibility state
-  const [isPublic, setIsPublic] = useState(list?.is_public ?? true);
+  // Visibility state (profile defaults)
+  const [isPublic, setIsPublic] = useState(profile.default_is_public);
   const [visibleToFollowers, setVisibleToFollowers] = useState(
-    list?.visible_to_followers ?? false,
+    profile.default_visible_to_followers,
   );
   const [visibleToFollowing, setVisibleToFollowing] = useState(
-    list?.visible_to_following ?? false,
+    profile.default_visible_to_following,
   );
   const [visibilityPending, startVisibilityTransition] = useTransition();
 
@@ -144,19 +140,15 @@ export function ProfilePageClient({
     field: "is_public" | "visible_to_followers" | "visible_to_following",
     value: boolean,
   ) {
-    if (!list) return;
-    const next = {
-      is_public: field === "is_public" ? value : isPublic,
-      visible_to_followers:
-        field === "visible_to_followers" ? value : visibleToFollowers,
-      visible_to_following:
-        field === "visible_to_following" ? value : visibleToFollowing,
-    };
     if (field === "is_public") setIsPublic(value);
     if (field === "visible_to_followers") setVisibleToFollowers(value);
     if (field === "visible_to_following") setVisibleToFollowing(value);
+    const next: Record<string, boolean> = {};
+    if (field === "is_public") next.default_is_public = value;
+    if (field === "visible_to_followers") next.default_visible_to_followers = value;
+    if (field === "visible_to_following") next.default_visible_to_following = value;
     startVisibilityTransition(async () => {
-      await updateList(list.id, next);
+      await updateProfileVisibilityDefaults(next);
       router.refresh();
     });
   }
@@ -470,8 +462,7 @@ export function ProfilePageClient({
       </div>
 
       {/* Visibility card */}
-      {list && (
-        <div className="rounded-[var(--radius-lg)] border border-border bg-bg-surface p-4 md:p-6">
+      <div className="rounded-[var(--radius-lg)] border border-border bg-bg-surface p-4 md:p-6">
           <div className="mb-4 flex items-center gap-2">
             <LockSimple size={16} className="text-text-muted" />
             <div>
@@ -618,8 +609,7 @@ export function ProfilePageClient({
               </button>
             </div>
           </div>
-        </div>
-      )}
+      </div>
 
       {/* Settings card */}
       <div className="rounded-[var(--radius-lg)] border border-border bg-bg-surface p-4 md:p-6">

@@ -29,7 +29,7 @@ export default async function UserGamesPage({
 
   const { data: gameList } = await supabase
     .from("game_lists")
-    .select("id, is_public")
+    .select("id, is_public, rating_labels")
     .eq("user_id", profile.id)
     .single();
 
@@ -162,7 +162,7 @@ export default async function UserGamesPage({
             initialHasMore={hasMore}
             isLoggedIn={!!user && !isOwnProfile}
             viewerGameIds={viewerGameIds}
-            ratingLabels={profile.rating_labels}
+            ratingLabels={gameList.rating_labels ?? profile.rating_labels}
           />
         )
       ) : (

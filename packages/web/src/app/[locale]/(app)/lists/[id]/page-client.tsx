@@ -31,6 +31,7 @@ import {
   CopySimple,
   FileArrowUp,
   ChartPie,
+  GearSix,
 } from "@phosphor-icons/react";
 import { Link, useRouter as useI18nRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
@@ -42,6 +43,7 @@ import { AddShowDialog } from "@/components/AddShowDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { ImportDialog } from "@/components/ImportDialog";
 import { OnboardingEmptyState } from "@/components/OnboardingEmptyState";
+import { ListSettingsModal, type ListSettingsData, type ProfileVisibilityData } from "@/components/ListSettingsModal";
 import { getRatingLabel } from "@/lib/rating-labels";
 import {
   updateList,
@@ -53,6 +55,7 @@ import {
   getListItemsPage,
   addShowToMyList,
   copyListToMine,
+  moveAnimesFromShowsToAnimeList,
   type ListItemWithShow,
 } from "../actions";
 import { getRecommendations } from "../../explore/actions";
@@ -84,6 +87,9 @@ type ListDetailClientProps = {
   listId: string;
   userLists?: { id: string; name: string }[];
   viewerListEmpty?: boolean;
+  listSettings?: ListSettingsData;
+  profileRatingLabels?: string[] | null;
+  profileVisibility?: ProfileVisibilityData;
 };
 
 // Thin wrapper that fires a callback once when the element enters the viewport.
@@ -138,6 +144,9 @@ export function ListDetailClient({
   listId,
   userLists = [],
   viewerListEmpty = false,
+  listSettings,
+  profileRatingLabels,
+  profileVisibility,
 }: ListDetailClientProps) {
   const router = useRouter();
   const i18nRouter = useI18nRouter();
@@ -146,6 +155,7 @@ export function ListDetailClient({
   const tShows = useTranslations("shows");
   const [isPending, startTransition] = useTransition();
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [recScoreMap, setRecScoreMap] = useState<Map<number, number>>(
     new Map(),
   );
@@ -185,6 +195,70 @@ export function ListDetailClient({
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [loadingMore, setLoadingMore] = useState(false);
   const nextPageRef = useRef(1); // page 0 was server-rendered
+
+  // Anime suggestion banner
+  const ANIME_TAG_NAMES = ["anime", "cartoni animati"];
+  const animeTagIds = useMemo(
+    () =>
+      allTags
+        .filter((t) => ANIME_TAG_NAMES.includes(t.name.toLowerCase()))
+        .map((t) => t.id),
+    [allTags],
+  );
+  const animeItems = useMemo(
+    () =>
+      items.filter((item) => {
+        const tagIds = showTagsMap[item.shows.id] ?? [];
+        return tagIds.some((id) => animeTagIds.includes(id));
+      }),
+    [items, showTagsMap, animeTagIds],
+  );
+  const [animeBannerDismissed, setAnimeBannerDismissed] = useState(false);
+  const [animePopulateStatus, setAnimePopulateStatus] = useState<
+    "idle" | "loading" | "done"
+  >("idle");
+  const [animePopulateMessage, setAnimePopulateMessage] = useState<
+    string | null
+  >(null);
+
+  const showAnimeBanner =
+    isOwner &&
+    !animeBannerDismissed &&
+    animePopulateStatus === "idle" &&
+    animeItems.length > 0;
+
+  const handlePopulateAnimeList = useCallback(
+    async (removeAfter = false) => {
+      setAnimePopulateStatus("loading");
+      try {
+        const result = await moveAnimesFromShowsToAnimeList(list.id);
+        if (removeAfter && result.animeItemIds.length > 0) {
+          startTransition(async () => {
+            await Promise.all(
+              result.animeItemIds.map((itemId) =>
+                removeShowFromList(list.id, itemId),
+              ),
+            );
+          });
+          setItems((prev) =>
+            prev.filter((item) => !result.animeItemIds.includes(item.id)),
+          );
+        }
+        setAnimePopulateStatus("done");
+        if (result.added === 0) {
+          setAnimePopulateMessage(t("animeSuggestAlreadyIn"));
+        } else {
+          setAnimePopulateMessage(
+            t("animeSuggestSuccess", { count: result.added }),
+          );
+        }
+      } catch {
+        setAnimePopulateStatus("idle");
+        setAnimeBannerDismissed(true);
+      }
+    },
+    [list.id, t, startTransition],
+  );
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   // Track in-flight TMDB fetches to avoid duplicates
@@ -523,6 +597,15 @@ export function ListDetailClient({
             saveStatus={isOwner ? saveStatus : undefined}
           />
           <div className="flex shrink-0 items-center gap-2 mt-0.5">
+            {/* Settings button */}
+            {isOwner && listSettings && (
+              <button
+                onClick={() => setShowSettingsModal(true)}
+                className="flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary"
+              >
+                <GearSix size={14} />
+              </button>
+            )}
             {/* Analytics: always in the title row (mobile + desktop) */}
             {isOwner && items.length > 0 && (
               <Link
@@ -585,6 +668,60 @@ export function ListDetailClient({
           </div>
         )}
       </div>
+
+      {/* Anime suggestion banner */}
+      {(showAnimeBanner || animePopulateStatus === "done") && (
+        <div className="mb-4 flex items-start justify-between gap-3 rounded-md border border-border bg-surface-subtle px-4 py-3">
+          <div className="flex-1 space-y-2">
+            {animePopulateStatus === "done" ? (
+              <p className="text-sm text-text-primary">{animePopulateMessage}</p>
+            ) : (
+              <>
+                <p className="text-sm font-medium text-text-primary">
+                  {t("animeSuggestTitle")}
+                </p>
+                <p className="text-xs text-text-secondary">
+                  {t("animeSuggestDescription")}
+                </p>
+                <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                  <button
+                    onClick={() => handlePopulateAnimeList(false)}
+                    disabled={animePopulateStatus === "loading"}
+                    className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-black transition-colors hover:bg-accent-hover disabled:opacity-50"
+                  >
+                    {animePopulateStatus === "loading"
+                      ? "..."
+                      : t("animeSuggestConfirm")}
+                  </button>
+                  <button
+                    onClick={() => handlePopulateAnimeList(true)}
+                    disabled={animePopulateStatus === "loading"}
+                    className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary disabled:opacity-50"
+                  >
+                    {t("animeSuggestConfirmAndRemove")}
+                  </button>
+                  <button
+                    onClick={() => setAnimeBannerDismissed(true)}
+                    className="text-xs text-text-muted transition-colors hover:text-text-secondary"
+                  >
+                    {t("animeSuggestDismiss")}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+          <button
+            onClick={() => {
+              setAnimeBannerDismissed(true);
+              setAnimePopulateStatus("idle");
+            }}
+            className="mt-0.5 shrink-0 text-text-faint transition-colors hover:text-text-secondary"
+            aria-label="Dismiss"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
 
       {/* Search bar + filters toggle */}
       {items.length > 0 && (
@@ -874,6 +1011,21 @@ export function ListDetailClient({
           router.refresh();
         }}
       />
+
+      {/* List settings modal */}
+      {isOwner && listSettings && profileVisibility && (
+        <ListSettingsModal
+          open={showSettingsModal}
+          onClose={() => setShowSettingsModal(false)}
+          listId={list.id}
+          settings={listSettings}
+          profileRatingLabels={profileRatingLabels ?? null}
+          profileVisibility={profileVisibility}
+          onSave={async (id, updates) => {
+            await updateList(id, updates);
+          }}
+        />
+      )}
     </div>
   );
 }

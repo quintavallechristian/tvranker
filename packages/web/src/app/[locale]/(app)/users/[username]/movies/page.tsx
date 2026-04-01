@@ -30,7 +30,7 @@ export default async function UserMoviesPage({
 
   const { data: movieList } = await supabase
     .from("movie_lists")
-    .select("id, is_public")
+    .select("id, is_public, rating_labels")
     .eq("user_id", profile.id)
     .single();
 
@@ -173,7 +173,7 @@ export default async function UserMoviesPage({
             initialHasMore={hasMore}
             isLoggedIn={!!user && !isOwnProfile}
             viewerMovieIds={viewerMovieIds}
-            ratingLabels={profile.rating_labels}
+            ratingLabels={movieList.rating_labels ?? profile.rating_labels}
           />
         )
       ) : (

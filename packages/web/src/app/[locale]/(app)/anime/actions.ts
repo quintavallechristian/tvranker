@@ -243,6 +243,32 @@ export async function updateAnimeListDescription(
   revalidatePath("/anime");
 }
 
+export async function updateAnimeListSettings(
+  animeListId: string,
+  updates: {
+    is_public?: boolean;
+    visible_to_followers?: boolean;
+    visible_to_following?: boolean;
+    rating_labels?: string[] | null;
+    custom_visibility?: boolean;
+  },
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { error } = await supabase
+    .from("anime_lists")
+    .update(updates)
+    .eq("id", animeListId)
+    .eq("user_id", user.id);
+
+  if (error) throw new Error(error.message);
+  revalidatePath("/anime");
+}
+
 export async function importToMyAnimeList(
   jsonData: unknown,
 ): Promise<{ importedCount: number }> {

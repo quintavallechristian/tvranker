@@ -16,7 +16,7 @@ export default async function MoviesPage() {
   // Fetch (or auto-create) the user's movie_list via upsert
   let { data: movieList } = await supabase
     .from("movie_lists")
-    .select("id, user_id, name, description, is_public")
+    .select("id, user_id, name, description, is_public, visible_to_followers, visible_to_following, rating_labels, custom_visibility")
     .eq("user_id", user.id)
     .single();
 
@@ -24,7 +24,7 @@ export default async function MoviesPage() {
     const { data: created } = await supabase
       .from("movie_lists")
       .insert({ user_id: user.id, name: "My Movies" })
-      .select("id, user_id, name, description, is_public")
+      .select("id, user_id, name, description, is_public, visible_to_followers, visible_to_following, rating_labels, custom_visibility")
       .single();
     movieList = created;
   }
@@ -53,12 +53,16 @@ export default async function MoviesPage() {
     .map((row) => (row.movies as { tmdb_id: number | null } | null)?.tmdb_id)
     .filter((v): v is number => v != null && v > 0);
 
-  // Fetch owner's rating labels
+  // Fetch owner's rating labels and visibility defaults
   const { data: ownerProfile } = await supabase
     .from("profiles")
-    .select("rating_labels")
+    .select("rating_labels, default_is_public, default_visible_to_followers, default_visible_to_following")
     .eq("id", user.id)
     .single();
+
+  const profileRatingLabels = ownerProfile?.rating_labels as string[] | null;
+  const listRatingLabels = movieList.rating_labels as string[] | null;
+  const effectiveRatingLabels = listRatingLabels ?? profileRatingLabels;
 
   return (
     <MovieListClient
@@ -67,8 +71,21 @@ export default async function MoviesPage() {
       isPublic={movieList.is_public ?? false}
       initialItems={firstPageItems}
       existingTmdbIds={existingTmdbIds}
-      ratingLabels={ownerProfile?.rating_labels as string[] | null}
+      ratingLabels={effectiveRatingLabels}
       hasMore={hasMore}
+      listSettings={{
+        is_public: movieList.is_public ?? true,
+        visible_to_followers: movieList.visible_to_followers ?? false,
+        visible_to_following: movieList.visible_to_following ?? false,
+        rating_labels: listRatingLabels,
+        custom_visibility: movieList.custom_visibility ?? false,
+      }}
+      profileRatingLabels={profileRatingLabels}
+      profileVisibility={{
+        is_public: ownerProfile?.default_is_public ?? false,
+        visible_to_followers: ownerProfile?.default_visible_to_followers ?? false,
+        visible_to_following: ownerProfile?.default_visible_to_following ?? false,
+      }}
     />
   );
 }

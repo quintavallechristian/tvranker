@@ -24,6 +24,8 @@ export async function updateList(
     is_public?: boolean;
     visible_to_followers?: boolean;
     visible_to_following?: boolean;
+    rating_labels?: string[] | null;
+    custom_visibility?: boolean;
   },
 ) {
   const supabase = await createClient();
@@ -41,6 +43,62 @@ export async function updateList(
   if (error) throw new Error(error.message);
 
   revalidatePath("/lists");
+}
+
+export async function updateProfileVisibilityDefaults(updates: {
+  default_is_public?: boolean;
+  default_visible_to_followers?: boolean;
+  default_visible_to_following?: boolean;
+}) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  await supabase.from("profiles").update(updates).eq("id", user.id);
+
+  // Sync visibility to all lists that are using profile defaults (custom_visibility = false)
+  const visibilityUpdates: Record<string, boolean> = {};
+  if (updates.default_is_public !== undefined)
+    visibilityUpdates.is_public = updates.default_is_public;
+  if (updates.default_visible_to_followers !== undefined)
+    visibilityUpdates.visible_to_followers =
+      updates.default_visible_to_followers;
+  if (updates.default_visible_to_following !== undefined)
+    visibilityUpdates.visible_to_following =
+      updates.default_visible_to_following;
+
+  if (Object.keys(visibilityUpdates).length > 0) {
+    await Promise.all([
+      supabase
+        .from("lists")
+        .update(visibilityUpdates)
+        .eq("user_id", user.id)
+        .eq("custom_visibility", false),
+      supabase
+        .from("movie_lists")
+        .update(visibilityUpdates)
+        .eq("user_id", user.id)
+        .eq("custom_visibility", false),
+      supabase
+        .from("anime_lists")
+        .update(visibilityUpdates)
+        .eq("user_id", user.id)
+        .eq("custom_visibility", false),
+      supabase
+        .from("game_lists")
+        .update(visibilityUpdates)
+        .eq("user_id", user.id)
+        .eq("custom_visibility", false),
+    ]);
+  }
+
+  revalidatePath("/profile");
+  revalidatePath("/lists");
+  revalidatePath("/movies");
+  revalidatePath("/anime");
+  revalidatePath("/games");
 }
 
 export async function addShowToList(
@@ -1073,4 +1131,163 @@ export async function copyListToMine(sourceListId: string) {
   }
 
   revalidatePath("/lists");
+}
+
+export async function moveAnimesFromShowsToAnimeList(
+  listId: string,
+): Promise<{ added: number; animeItemIds: string[] }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  // Verify ownership
+  const { data: list } = await supabase
+    .from("lists")
+    .select("id")
+    .eq("id", listId)
+    .eq("user_id", user.id)
+    .single();
+  if (!list) throw new Error("Unauthorized");
+
+  // Resolve default anime/cartoon tag IDs
+  const { data: animeTags } = await supabase
+    .from("tags")
+    .select("id")
+    .in("name", ["anime", "cartoni animati"])
+    .eq("is_default", true);
+
+  const animeTagIds = (animeTags ?? []).map((t) => t.id);
+  if (animeTagIds.length === 0) return { added: 0, animeItemIds: [] };
+
+  // Fetch ALL show_ids in this list that have at least one anime tag
+  const { data: taggedShows } = await supabase
+    .from("show_tags")
+    .select("show_id")
+    .eq("user_id", user.id)
+    .in("tag_id", animeTagIds);
+
+  const animeShowIds = [...new Set((taggedShows ?? []).map((r) => r.show_id))];
+  if (animeShowIds.length === 0) return { added: 0, animeItemIds: [] };
+
+  // Fetch the corresponding list_items (all pages) for those shows
+  const { data: animeListItems } = await supabase
+    .from("list_items")
+    .select("id, show_id, rating, shows(id, tmdb_id, title, poster_path, first_air_date, overview)")
+    .eq("list_id", listId)
+    .in("show_id", animeShowIds);
+
+  const shows = (animeListItems ?? []) as unknown as {
+    id: string;
+    show_id: string;
+    rating: number | null;
+    shows: {
+      id: string;
+      tmdb_id: number | null;
+      title: string;
+      poster_path: string | null;
+      first_air_date: string | null;
+      overview: string | null;
+    };
+  }[];
+
+  if (shows.length === 0) return { added: 0, animeItemIds: [] };
+
+  // Get or create the user's anime list
+  let { data: animeList } = await supabase
+    .from("anime_lists")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!animeList) {
+    const { data: created } = await supabase
+      .from("anime_lists")
+      .insert({ user_id: user.id, name: "My Anime" })
+      .select("id")
+      .single();
+    animeList = created;
+  }
+
+  if (!animeList) throw new Error("Could not create anime list");
+
+  // Fetch existing tmdb_ids already in the anime list to skip duplicates
+  const { data: existingAnimes } = await supabase
+    .from("anime_list_items")
+    .select("animes(tmdb_id)")
+    .eq("anime_list_id", animeList.id);
+
+  const existingTmdbIds = new Set(
+    (existingAnimes ?? [])
+      .map((row) => (row.animes as { tmdb_id: number | null } | null)?.tmdb_id)
+      .filter((v): v is number => v != null),
+  );
+
+  // Get current max position
+  const { data: posRows } = await supabase
+    .from("anime_list_items")
+    .select("position")
+    .eq("anime_list_id", animeList.id)
+    .order("position", { ascending: false })
+    .limit(1);
+
+  let nextPosition = (posRows?.[0]?.position ?? -1) + 1;
+  let added = 0;
+  const processedItemIds: string[] = [];
+
+  for (const item of shows) {
+    const show = item.shows;
+    if (!show.tmdb_id || existingTmdbIds.has(show.tmdb_id)) {
+      // Already in anime list — still track the item id for optional removal
+      processedItemIds.push(item.id);
+      continue;
+    }
+
+    // Upsert the anime record
+    let { data: existingAnime } = await supabase
+      .from("animes")
+      .select("id")
+      .eq("tmdb_id", show.tmdb_id)
+      .single();
+
+    if (!existingAnime) {
+      const { data: newAnime, error: animeError } = await supabase
+        .from("animes")
+        .insert({
+          tmdb_id: show.tmdb_id,
+          title: show.title,
+          poster_path: show.poster_path,
+          first_air_date: show.first_air_date || null,
+          overview: show.overview || null,
+        })
+        .select("id")
+        .single();
+
+      if (animeError) continue;
+      existingAnime = newAnime;
+    }
+
+    if (!existingAnime) continue;
+
+    const { error: insertError } = await supabase
+      .from("anime_list_items")
+      .insert({
+        anime_list_id: animeList.id,
+        anime_id: existingAnime.id,
+        position: nextPosition,
+        rating: item.rating ?? null,
+      });
+
+    if (!insertError) {
+      nextPosition++;
+      added++;
+      existingTmdbIds.add(show.tmdb_id);
+      processedItemIds.push(item.id);
+    }
+  }
+
+  revalidatePath("/anime");
+
+  return { added, animeItemIds: processedItemIds };
 }

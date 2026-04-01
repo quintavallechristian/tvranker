@@ -34,6 +34,9 @@ export type Database = {
           rating_labels: string[] | null;
           homepage_widgets: Record<string, unknown>[] | null;
           created_at: string;
+          default_is_public: boolean;
+          default_visible_to_followers: boolean;
+          default_visible_to_following: boolean;
         };
         Insert: {
           id: string;
@@ -42,6 +45,9 @@ export type Database = {
           rating_labels?: string[] | null;
           homepage_widgets?: Record<string, unknown>[] | null;
           created_at?: string;
+          default_is_public?: boolean;
+          default_visible_to_followers?: boolean;
+          default_visible_to_following?: boolean;
         };
         Update: {
           id?: string;
@@ -49,6 +55,9 @@ export type Database = {
           avatar_url?: string | null;
           rating_labels?: string[] | null;
           homepage_widgets?: Record<string, unknown>[] | null;
+          default_is_public?: boolean;
+          default_visible_to_followers?: boolean;
+          default_visible_to_following?: boolean;
         };
         Relationships: [];
       };
@@ -61,6 +70,8 @@ export type Database = {
           is_public: boolean;
           visible_to_followers: boolean;
           visible_to_following: boolean;
+          rating_labels: string[] | null;
+          custom_visibility: boolean;
           position: number;
           created_at: string;
           updated_at: string;
@@ -73,6 +84,8 @@ export type Database = {
           is_public?: boolean;
           visible_to_followers?: boolean;
           visible_to_following?: boolean;
+          rating_labels?: string[] | null;
+          custom_visibility?: boolean;
           position?: number;
           created_at?: string;
           updated_at?: string;
@@ -83,6 +96,8 @@ export type Database = {
           is_public?: boolean;
           visible_to_followers?: boolean;
           visible_to_following?: boolean;
+          rating_labels?: string[] | null;
+          custom_visibility?: boolean;
           position?: number;
           updated_at?: string;
         };
@@ -368,6 +383,10 @@ export type Database = {
           name: string;
           description: string | null;
           is_public: boolean;
+          visible_to_followers: boolean;
+          visible_to_following: boolean;
+          rating_labels: string[] | null;
+          custom_visibility: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -377,6 +396,10 @@ export type Database = {
           name?: string;
           description?: string | null;
           is_public?: boolean;
+          visible_to_followers?: boolean;
+          visible_to_following?: boolean;
+          rating_labels?: string[] | null;
+          custom_visibility?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -384,6 +407,10 @@ export type Database = {
           name?: string;
           description?: string | null;
           is_public?: boolean;
+          visible_to_followers?: boolean;
+          visible_to_following?: boolean;
+          rating_labels?: string[] | null;
+          custom_visibility?: boolean;
           updated_at?: string;
         };
         Relationships: [
@@ -491,6 +518,10 @@ export type Database = {
           name: string;
           description: string | null;
           is_public: boolean;
+          visible_to_followers: boolean;
+          visible_to_following: boolean;
+          rating_labels: string[] | null;
+          custom_visibility: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -500,6 +531,10 @@ export type Database = {
           name?: string;
           description?: string | null;
           is_public?: boolean;
+          visible_to_followers?: boolean;
+          visible_to_following?: boolean;
+          rating_labels?: string[] | null;
+          custom_visibility?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -507,6 +542,10 @@ export type Database = {
           name?: string;
           description?: string | null;
           is_public?: boolean;
+          visible_to_followers?: boolean;
+          visible_to_following?: boolean;
+          rating_labels?: string[] | null;
+          custom_visibility?: boolean;
           updated_at?: string;
         };
         Relationships: [
@@ -605,6 +644,10 @@ export type Database = {
           name: string;
           description: string | null;
           is_public: boolean;
+          visible_to_followers: boolean;
+          visible_to_following: boolean;
+          rating_labels: string[] | null;
+          custom_visibility: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -614,6 +657,10 @@ export type Database = {
           name?: string;
           description?: string | null;
           is_public?: boolean;
+          visible_to_followers?: boolean;
+          visible_to_following?: boolean;
+          rating_labels?: string[] | null;
+          custom_visibility?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -621,6 +668,10 @@ export type Database = {
           name?: string;
           description?: string | null;
           is_public?: boolean;
+          visible_to_followers?: boolean;
+          visible_to_following?: boolean;
+          rating_labels?: string[] | null;
+          custom_visibility?: boolean;
           updated_at?: string;
         };
         Relationships: [

@@ -29,7 +29,7 @@ export default async function UserAnimePage({
 
   const { data: animeList } = await supabase
     .from("anime_lists")
-    .select("id, is_public")
+    .select("id, is_public, rating_labels")
     .eq("user_id", profile.id)
     .single();
 
@@ -168,7 +168,7 @@ export default async function UserAnimePage({
             initialHasMore={hasMore}
             isLoggedIn={!!user && !isOwnProfile}
             viewerAnimeIds={viewerAnimeIds}
-            ratingLabels={profile.rating_labels}
+            ratingLabels={animeList.rating_labels ?? profile.rating_labels}
           />
         )
       ) : (

@@ -16,7 +16,7 @@ export default async function MyListPage() {
   // Fetch the user's single list
   const { data: list } = await supabase
     .from("lists")
-    .select("id, user_id, name, description, is_public")
+    .select("id, user_id, name, description, is_public, visible_to_followers, visible_to_following, rating_labels, custom_visibility")
     .eq("user_id", user.id)
     .single();
 
@@ -45,10 +45,10 @@ export default async function MyListPage() {
     .map((row) => (row.shows as { tmdb_id: number | null } | null)?.tmdb_id)
     .filter((v): v is number => v != null && v > 0);
 
-  // Fetch owner's rating labels
+  // Fetch owner's rating labels and visibility defaults
   const { data: ownerProfile } = await supabase
     .from("profiles")
-    .select("rating_labels")
+    .select("rating_labels, default_is_public, default_visible_to_followers, default_visible_to_following")
     .eq("id", user.id)
     .single();
 
@@ -88,6 +88,10 @@ export default async function MyListPage() {
     allTags = (tagsResult ?? []) as TagResult[];
   }
 
+  const profileRatingLabels = ownerProfile?.rating_labels as string[] | null;
+  const listRatingLabels = list.rating_labels as string[] | null;
+  const effectiveRatingLabels = listRatingLabels ?? profileRatingLabels;
+
   return (
     <ListDetailClient
       list={{
@@ -100,11 +104,24 @@ export default async function MyListPage() {
       isOwner={true}
       isLoggedIn={true}
       existingTmdbIds={existingTmdbIds}
-      ratingLabels={ownerProfile?.rating_labels as string[] | null}
+      ratingLabels={effectiveRatingLabels}
       allTags={allTags}
       showTagsMap={showTagsMap}
       hasMore={hasMore}
       listId={list.id}
+      listSettings={{
+        is_public: list.is_public,
+        visible_to_followers: list.visible_to_followers,
+        visible_to_following: list.visible_to_following,
+        rating_labels: listRatingLabels,
+        custom_visibility: list.custom_visibility,
+      }}
+      profileRatingLabels={profileRatingLabels}
+      profileVisibility={{
+        is_public: ownerProfile?.default_is_public ?? false,
+        visible_to_followers: ownerProfile?.default_visible_to_followers ?? false,
+        visible_to_following: ownerProfile?.default_visible_to_following ?? false,
+      }}
     />
   );
 }

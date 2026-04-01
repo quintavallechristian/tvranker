@@ -174,6 +174,32 @@ export async function updateGameListDescription(
   revalidatePath("/games");
 }
 
+export async function updateGameListSettings(
+  gameListId: string,
+  updates: {
+    is_public?: boolean;
+    visible_to_followers?: boolean;
+    visible_to_following?: boolean;
+    rating_labels?: string[] | null;
+    custom_visibility?: boolean;
+  },
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { error } = await supabase
+    .from("game_lists")
+    .update(updates)
+    .eq("id", gameListId)
+    .eq("user_id", user.id);
+
+  if (error) throw new Error(error.message);
+  revalidatePath("/games");
+}
+
 export async function addGameToMyList(gameId: string) {
   const supabase = await createClient();
   const {

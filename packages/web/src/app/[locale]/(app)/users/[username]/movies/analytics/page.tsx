@@ -22,7 +22,7 @@ export default async function UserMovieAnalyticsPage({
 
   const { data: movieList } = await supabase
     .from("movie_lists")
-    .select("id, is_public")
+    .select("id, is_public, rating_labels")
     .eq("user_id", profile.id)
     .single();
 
@@ -41,11 +41,15 @@ export default async function UserMovieAnalyticsPage({
     getTranslations("lists"),
   ]);
 
+  const listRatingLabels = movieList.rating_labels as string[] | null;
+  const profileRatingLabels = profile.rating_labels as string[] | null;
+  const effectiveRatingLabels = listRatingLabels ?? profileRatingLabels;
+
   return (
     <ListAnalyticsPage
       data={data}
       itemType="movie"
-      ratingLabels={profile.rating_labels as string[] | null}
+      ratingLabels={effectiveRatingLabels}
       backHref={`/users/${username}/movies`}
       labels={{
         title: t("analytics"),

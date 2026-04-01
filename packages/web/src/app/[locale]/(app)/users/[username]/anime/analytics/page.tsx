@@ -22,7 +22,7 @@ export default async function UserAnimeAnalyticsPage({
 
   const { data: animeList } = await supabase
     .from("anime_lists")
-    .select("id, is_public")
+    .select("id, is_public, rating_labels")
     .eq("user_id", profile.id)
     .single();
 
@@ -41,11 +41,15 @@ export default async function UserAnimeAnalyticsPage({
     getTranslations("lists"),
   ]);
 
+  const listRatingLabels = animeList.rating_labels as string[] | null;
+  const profileRatingLabels = profile.rating_labels as string[] | null;
+  const effectiveRatingLabels = listRatingLabels ?? profileRatingLabels;
+
   return (
     <ListAnalyticsPage
       data={data}
       itemType="anime"
-      ratingLabels={profile.rating_labels as string[] | null}
+      ratingLabels={effectiveRatingLabels}
       backHref={`/users/${username}/anime`}
       labels={{
         title: t("analytics"),

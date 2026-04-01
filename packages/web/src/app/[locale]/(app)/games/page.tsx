@@ -16,7 +16,7 @@ export default async function GamesPage() {
   // Fetch (or auto-create) the user's game_list
   let { data: gameList } = await supabase
     .from("game_lists")
-    .select("id, user_id, name, description, is_public")
+    .select("id, user_id, name, description, is_public, visible_to_followers, visible_to_following, rating_labels, custom_visibility")
     .eq("user_id", user.id)
     .single();
 
@@ -24,7 +24,7 @@ export default async function GamesPage() {
     const { data: created } = await supabase
       .from("game_lists")
       .insert({ user_id: user.id, name: "My Games" })
-      .select("id, user_id, name, description, is_public")
+      .select("id, user_id, name, description, is_public, visible_to_followers, visible_to_following, rating_labels, custom_visibility")
       .single();
     gameList = created;
   }
@@ -53,12 +53,16 @@ export default async function GamesPage() {
     .map((row) => (row.games as { igdb_id: number | null } | null)?.igdb_id)
     .filter((v): v is number => v != null && v > 0);
 
-  // Fetch owner's rating labels
+  // Fetch owner's rating labels and visibility defaults
   const { data: ownerProfile } = await supabase
     .from("profiles")
-    .select("rating_labels")
+    .select("rating_labels, default_is_public, default_visible_to_followers, default_visible_to_following")
     .eq("id", user.id)
     .single();
+
+  const profileRatingLabels = ownerProfile?.rating_labels as string[] | null;
+  const listRatingLabels = gameList.rating_labels as string[] | null;
+  const effectiveRatingLabels = listRatingLabels ?? profileRatingLabels;
 
   return (
     <GamesListClient
@@ -67,8 +71,21 @@ export default async function GamesPage() {
       isPublic={gameList.is_public ?? false}
       initialItems={firstPageItems}
       existingIgdbIds={existingIgdbIds}
-      ratingLabels={ownerProfile?.rating_labels as string[] | null}
+      ratingLabels={effectiveRatingLabels}
       hasMore={hasMore}
+      listSettings={{
+        is_public: gameList.is_public ?? true,
+        visible_to_followers: gameList.visible_to_followers ?? false,
+        visible_to_following: gameList.visible_to_following ?? false,
+        rating_labels: listRatingLabels,
+        custom_visibility: gameList.custom_visibility ?? false,
+      }}
+      profileRatingLabels={profileRatingLabels}
+      profileVisibility={{
+        is_public: ownerProfile?.default_is_public ?? false,
+        visible_to_followers: ownerProfile?.default_visible_to_followers ?? false,
+        visible_to_following: ownerProfile?.default_visible_to_following ?? false,
+      }}
     />
   );
 }

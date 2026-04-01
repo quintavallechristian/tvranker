@@ -12,20 +12,29 @@ export default async function AnalyticsPage() {
 
   if (!user) redirect("/login");
 
-  const [data, { data: profile }, t] = await Promise.all([
+  const [data, { data: profile }, { data: userList }, t] = await Promise.all([
     getListAnalytics(),
     supabase
       .from("profiles")
       .select("rating_labels")
       .eq("id", user.id)
       .single(),
+    supabase
+      .from("lists")
+      .select("rating_labels")
+      .eq("user_id", user.id)
+      .single(),
     getTranslations("lists"),
   ]);
+
+  const listRatingLabels = userList?.rating_labels as string[] | null;
+  const profileRatingLabels = profile?.rating_labels as string[] | null;
+  const effectiveRatingLabels = listRatingLabels ?? profileRatingLabels;
 
   return (
     <ListAnalyticsPage
       data={data}
-      ratingLabels={profile?.rating_labels as string[] | null}
+      ratingLabels={effectiveRatingLabels}
       backHref="/lists"
       labels={{
         title: t("analytics"),
