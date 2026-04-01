@@ -4,7 +4,9 @@ import { Television, FilmSlate } from "@phosphor-icons/react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 
-export type CountTopic = "show" | "movie" | "anime";
+import { GameController } from "@phosphor-icons/react";
+
+export type CountTopic = "show" | "movie" | "anime" | "game";
 
 export function CountWidget({
   count,
@@ -22,14 +24,29 @@ export function CountWidget({
       ? t("widgets.showCount")
       : topic === "movie"
         ? t("widgets.movieCount")
-        : t("widgets.animeCount");
+        : topic === "anime"
+          ? t("widgets.animeCount")
+          : t("widgets.gameCount");
 
   const defaultHref =
-    topic === "show" ? "/lists" : topic === "movie" ? "/movies" : "/anime";
+    topic === "show"
+      ? "/lists"
+      : topic === "movie"
+        ? "/movies"
+        : topic === "anime"
+          ? "/anime"
+          : "/games";
 
   const href = hrefOverride ?? defaultHref;
 
-  const Icon = topic === "show" ? Television : FilmSlate;
+  const Icon =
+    topic === "show"
+      ? Television
+      : topic === "movie"
+        ? FilmSlate
+        : topic === "anime"
+          ? FilmSlate
+          : GameController;
 
   return (
     <Link

@@ -2,16 +2,17 @@
 
 import { getPosterUrl } from "@/lib/tmdb/client";
 import Image from "next/image";
-import { Television, FilmSlate, ArrowRight } from "@phosphor-icons/react";
+import { Television, FilmSlate, ArrowRight, GameController } from "@phosphor-icons/react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 
-export type SuggestionsTopic = "show" | "movie" | "anime";
+export type SuggestionsTopic = "show" | "movie" | "anime" | "game";
 
 type SuggestionItem = {
   id: string;
   title: string;
   poster_path: string | null;
+  imageUrl?: string | null;
 };
 
 export function SuggestionsWidget({
@@ -28,16 +29,20 @@ export function SuggestionsWidget({
       ? t("widgets.showSuggestions")
       : topic === "movie"
         ? t("widgets.movieSuggestions")
-        : t("widgets.animeSuggestions");
+        : topic === "anime"
+          ? t("widgets.animeSuggestions")
+          : t("widgets.gameSuggestions");
 
   const href =
     topic === "show"
       ? "/explore/shows"
       : topic === "movie"
         ? "/explore/movies"
-        : "/explore/anime";
+        : topic === "anime"
+          ? "/explore/anime"
+          : "/explore/games";
 
-  const Icon = topic === "show" ? Television : FilmSlate;
+  const Icon = topic === "show" ? Television : topic === "game" ? GameController : FilmSlate;
 
   return (
     <Link
@@ -61,7 +66,7 @@ export function SuggestionsWidget({
       {items.length > 0 ? (
         <div className="flex flex-1 gap-2">
           {items.slice(0, 3).map((item) => {
-            const posterUrl = getPosterUrl(item.poster_path, "w185");
+            const posterUrl = item.imageUrl ?? getPosterUrl(item.poster_path, "w185");
             return (
               <div
                 key={item.id}
@@ -75,6 +80,7 @@ export function SuggestionsWidget({
                       fill
                       className="object-cover"
                       sizes="20vw"
+                      unoptimized={!!item.imageUrl}
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center">

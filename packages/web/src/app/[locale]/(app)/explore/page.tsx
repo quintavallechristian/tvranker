@@ -14,6 +14,7 @@ import { getPosterUrl } from "@/lib/tmdb/client";
 import {
   Television,
   FilmSlate,
+  GameController,
   SpinnerGap,
   ArrowRight,
 } from "@phosphor-icons/react";
@@ -29,6 +30,10 @@ import {
   type PopularMovie,
   type PopularAnime,
 } from "./actions";
+import {
+  getPopularGames,
+  type PopularGame,
+} from "@/app/[locale]/(app)/games/actions";
 
 type UserResult = {
   id: string;
@@ -47,6 +52,7 @@ export default function ExplorePage() {
   >([]);
   const [suggestedMovies, setSuggestedMovies] = useState<PopularMovie[]>([]);
   const [suggestedAnime, setSuggestedAnime] = useState<PopularAnime[]>([]);
+  const [suggestedGames, setSuggestedGames] = useState<PopularGame[]>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(true);
   const [similarUsers, setSimilarUsers] = useState<SimilarUser[]>([]);
   const [similarUsersLoading, setSimilarUsersLoading] = useState(true);
@@ -64,7 +70,7 @@ export default function ExplorePage() {
         if (!cancelled) setSimilarUsersLoading(false);
       });
 
-    // Load suggestions: top 3 shows (recs or popular) + top 3 movies + top 3 anime
+    // Load suggestions: top 3 shows (recs or popular) + top 3 movies + top 3 anime + top 3 games
     Promise.all([
       getRecommendations().then((recs) =>
         recs.length > 0
@@ -73,12 +79,14 @@ export default function ExplorePage() {
       ),
       getPopularMovies().then((m) => m.slice(0, 3)),
       getPopularAnime().then((a) => a.slice(0, 3)),
+      getPopularGames().then((g) => g.slice(0, 3)),
     ])
-      .then(([shows, movies, anime]) => {
+      .then(([shows, movies, anime, games]) => {
         if (!cancelled) {
           setSuggestedShows(shows);
           setSuggestedMovies(movies);
           setSuggestedAnime(anime);
+          setSuggestedGames(games);
         }
       })
       .catch(() => {})
@@ -402,7 +410,7 @@ export default function ExplorePage() {
             )}
 
             {!suggestionsLoading && (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-2">
                 {/* Shows widget */}
                 <SuggestionCard
                   title={t("showsTitle")}
@@ -442,6 +450,20 @@ export default function ExplorePage() {
                   }))}
                   icon="film"
                 />
+                {/* Games widget */}
+                <SuggestionCard
+                  title={t("gamesTitle")}
+                  href="/explore/games"
+                  viewAllLabel={t("exploreAll")}
+                  emptyLabel={t("popularGamesEmpty")}
+                  items={suggestedGames.map((g) => ({
+                    id: g.id,
+                    title: g.title,
+                    poster_path: null,
+                    imageUrl: g.cover_url,
+                  }))}
+                  icon="game"
+                />
               </div>
             )}
           </div>
@@ -463,10 +485,16 @@ function SuggestionCard({
   href: string;
   viewAllLabel: string;
   emptyLabel: string;
-  items: { id: string; title: string; poster_path: string | null }[];
-  icon: "tv" | "film";
+  items: {
+    id: string;
+    title: string;
+    poster_path: string | null;
+    imageUrl?: string | null;
+  }[];
+  icon: "tv" | "film" | "game";
 }) {
-  const Icon = icon === "tv" ? Television : FilmSlate;
+  const Icon =
+    icon === "tv" ? Television : icon === "game" ? GameController : FilmSlate;
 
   return (
     <Link
@@ -490,7 +518,8 @@ function SuggestionCard({
       {items.length > 0 ? (
         <div className="flex gap-2">
           {items.slice(0, 3).map((item) => {
-            const posterUrl = getPosterUrl(item.poster_path, "w185");
+            const posterUrl =
+              item.imageUrl ?? getPosterUrl(item.poster_path, "w185");
             return (
               <div
                 key={item.id}

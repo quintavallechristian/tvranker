@@ -560,6 +560,120 @@ export type Database = {
           },
         ];
       };
+      games: {
+        Row: {
+          id: string;
+          igdb_id: number | null;
+          title: string;
+          cover_url: string | null;
+          first_release_date: string | null;
+          overview: string | null;
+          platforms: { id: number; name: string }[] | null;
+          genres: { id: number; name: string }[] | null;
+          igdb_fetched: boolean;
+          url: string | null;
+        };
+        Insert: {
+          id?: string;
+          igdb_id?: number | null;
+          title: string;
+          cover_url?: string | null;
+          first_release_date?: string | null;
+          overview?: string | null;
+          platforms?: { id: number; name: string }[] | null;
+          genres?: { id: number; name: string }[] | null;
+          igdb_fetched?: boolean;
+          url?: string | null;
+        };
+        Update: {
+          igdb_id?: number | null;
+          title?: string;
+          cover_url?: string | null;
+          first_release_date?: string | null;
+          overview?: string | null;
+          platforms?: { id: number; name: string }[] | null;
+          genres?: { id: number; name: string }[] | null;
+          igdb_fetched?: boolean;
+          url?: string | null;
+        };
+        Relationships: [];
+      };
+      game_lists: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          description: string | null;
+          is_public: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name?: string;
+          description?: string | null;
+          is_public?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          name?: string;
+          description?: string | null;
+          is_public?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "game_lists_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      game_list_items: {
+        Row: {
+          id: string;
+          game_list_id: string;
+          game_id: string;
+          rating: number | null;
+          position: number;
+          added_at: string;
+          notes: string | null;
+        };
+        Insert: {
+          id?: string;
+          game_list_id: string;
+          game_id: string;
+          rating?: number | null;
+          position?: number;
+          added_at?: string;
+          notes?: string | null;
+        };
+        Update: {
+          rating?: number | null;
+          position?: number;
+          notes?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "game_list_items_game_list_id_fkey";
+            columns: ["game_list_id"];
+            isOneToOne: false;
+            referencedRelation: "game_lists";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "game_list_items_game_id_fkey";
+            columns: ["game_id"];
+            isOneToOne: false;
+            referencedRelation: "games";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -593,6 +707,10 @@ export type Anime = Database["public"]["Tables"]["animes"]["Row"];
 export type AnimeList = Database["public"]["Tables"]["anime_lists"]["Row"];
 export type AnimeListItem =
   Database["public"]["Tables"]["anime_list_items"]["Row"];
+export type Game = Database["public"]["Tables"]["games"]["Row"];
+export type GameList = Database["public"]["Tables"]["game_lists"]["Row"];
+export type GameListItem =
+  Database["public"]["Tables"]["game_list_items"]["Row"];
 
 export type ListWithItems = List & {
   list_items: (ListItem & { shows: Show })[];

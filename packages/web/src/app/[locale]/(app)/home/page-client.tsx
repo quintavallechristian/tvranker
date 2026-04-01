@@ -101,18 +101,35 @@ export function HomeClient({ data }: { data: HomeData }) {
             rowSpan={config.rowSpan}
           />
         );
+      case "game_podium":
+        return (
+          <PodiumWidget
+            items={data.top10Games.map((g) => ({ ...g, poster_path: null, imageUrl: g.cover_url }))}
+            topic="game"
+            rowSpan={config.rowSpan}
+          />
+        );
       case "show_count":
         return <CountWidget count={data.showCount} topic="show" />;
       case "movie_count":
         return <CountWidget count={data.movieCount} topic="movie" />;
       case "anime_count":
         return <CountWidget count={data.animeCount} topic="anime" />;
+      case "game_count":
+        return <CountWidget count={data.gameCount} topic="game" href="/games" />;
       case "last_show_added":
         return <LastSeenWidget item={data.lastShow} topic="show" />;
       case "last_movie_added":
         return <LastSeenWidget item={data.lastMovie} topic="movie" />;
       case "last_anime_added":
         return <LastSeenWidget item={data.lastAnime} topic="anime" />;
+      case "last_game_added":
+        return (
+          <LastSeenWidget
+            item={data.lastGame ? { ...data.lastGame, poster_path: null, imageUrl: data.lastGame.cover_url } : null}
+            topic="game"
+          />
+        );
       case "notifications":
         return <NotificationsWidget items={data.notifications} />;
       case "recent_follows":
@@ -123,6 +140,8 @@ export function HomeClient({ data }: { data: HomeData }) {
         return <SuggestionsWidget items={data.suggestedMovies} topic="movie" />;
       case "anime_suggestions":
         return <SuggestionsWidget items={data.suggestedAnime} topic="anime" />;
+      case "game_suggestions":
+        return <SuggestionsWidget items={data.suggestedGames} topic="game" />;
     }
   }
 

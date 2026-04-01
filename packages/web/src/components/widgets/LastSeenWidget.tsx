@@ -2,16 +2,17 @@
 
 import { getPosterUrl } from "@/lib/tmdb/client";
 import Image from "next/image";
-import { Television, FilmSlate, Star } from "@phosphor-icons/react";
+import { Television, FilmSlate, Star, GameController } from "@phosphor-icons/react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 
-export type LastSeenTopic = "show" | "movie" | "anime";
+export type LastSeenTopic = "show" | "movie" | "anime" | "game";
 
 type LastItem = {
   id: string;
   title: string;
   poster_path: string | null;
+  imageUrl?: string | null;
   rating: number | null;
   added_at: string;
 };
@@ -30,17 +31,21 @@ export function LastSeenWidget({
       ? t("widgets.lastShowAdded")
       : topic === "movie"
         ? t("widgets.lastMovieAdded")
-        : t("widgets.lastAnimeAdded");
+        : topic === "anime"
+          ? t("widgets.lastAnimeAdded")
+          : t("widgets.lastGameAdded");
 
   const itemHref = item
     ? topic === "show"
       ? `/shows/${item.id}`
       : topic === "movie"
         ? `/movies/${item.id}`
-        : `/anime/${item.id}`
+        : topic === "anime"
+          ? `/anime/${item.id}`
+          : `/games`
     : "#";
 
-  const Icon = topic === "show" ? Television : FilmSlate;
+  const Icon = topic === "show" ? Television : topic === "game" ? GameController : FilmSlate;
 
   return (
     <div className="flex h-full flex-col rounded-xl border border-border bg-bg-surface p-4">
@@ -54,13 +59,14 @@ export function LastSeenWidget({
           className="flex flex-1 items-center gap-3 transition-colors hover:opacity-80"
         >
           <div className="relative h-16 w-11 shrink-0 overflow-hidden rounded-md border border-border bg-bg-elevated">
-            {getPosterUrl(item.poster_path, "w185") ? (
+            {(item.imageUrl ?? getPosterUrl(item.poster_path, "w185")) ? (
               <Image
-                src={getPosterUrl(item.poster_path, "w185")!}
+                src={(item.imageUrl ?? getPosterUrl(item.poster_path, "w185"))!}
                 alt={item.title}
                 fill
                 className="object-cover"
                 sizes="44px"
+                unoptimized={!!item.imageUrl}
               />
             ) : (
               <div className="flex h-full items-center justify-center">
@@ -90,7 +96,9 @@ export function LastSeenWidget({
               ? t("emptyList")
               : topic === "movie"
                 ? t("emptyMovieList")
-                : t("emptyAnimeList")}
+                : topic === "anime"
+                  ? t("emptyAnimeList")
+                  : t("emptyGameList")}
           </p>
         </div>
       )}

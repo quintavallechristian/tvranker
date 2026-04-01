@@ -2,27 +2,31 @@ import { getTranslations } from "next-intl/server";
 import { getTopRatedShows } from "./actions";
 import { getTopRatedMovies } from "./movies/actions";
 import { getTopRatedAnime } from "./anime/actions";
+import { getTopRatedGamesRanking } from "./games/actions";
 import { getPosterUrl } from "@/lib/tmdb/client";
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import {
   Television,
   FilmSlate,
+  GameController,
   Trophy,
   ArrowRight,
 } from "@phosphor-icons/react/dist/ssr";
 
 export default async function RankingsPage() {
   const t = await getTranslations("rankings");
-  const [shows, movies, animes] = await Promise.all([
+  const [shows, movies, animes, games] = await Promise.all([
     getTopRatedShows(),
     getTopRatedMovies(),
     getTopRatedAnime(),
+    getTopRatedGamesRanking(),
   ]);
 
   const top3Shows = shows.slice(0, 3);
   const top3Movies = movies.slice(0, 3);
   const top3Animes = animes.slice(0, 3);
+  const top3Games = games.slice(0, 3);
 
   return (
     <div className="space-y-6">
@@ -36,7 +40,7 @@ export default async function RankingsPage() {
       </div>
 
       {/* Two podium cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2">
         <RankingPodiumCard
           title={t("shows.title")}
           href="/rankings/shows"
@@ -76,6 +80,20 @@ export default async function RankingsPage() {
           }))}
           icon="film"
         />
+        <RankingPodiumCard
+          title={t("games.title")}
+          href="/rankings/games"
+          viewAllLabel={t("viewAll")}
+          emptyLabel={t("games.emptyTitle")}
+          items={top3Games.map((g) => ({
+            id: g.id,
+            title: g.title,
+            poster_path: null,
+            imageUrl: g.cover_url,
+            avg_rating: g.avg_rating,
+          }))}
+          icon="game"
+        />
       </div>
     </div>
   );
@@ -85,6 +103,7 @@ type PodiumItem = {
   id: string;
   title: string;
   poster_path: string | null;
+  imageUrl?: string | null;
   avg_rating: number;
 };
 
@@ -101,9 +120,10 @@ function RankingPodiumCard({
   viewAllLabel: string;
   emptyLabel: string;
   items: PodiumItem[];
-  icon: "tv" | "film";
+  icon: "tv" | "film" | "game";
 }) {
-  const Icon = icon === "tv" ? Television : FilmSlate;
+  const Icon =
+    icon === "tv" ? Television : icon === "game" ? GameController : FilmSlate;
 
   return (
     <Link
@@ -186,10 +206,11 @@ function PodiumSlot({
   posterHeight: string;
   rankColor: string;
   featured?: boolean;
-  icon: "tv" | "film";
+  icon: "tv" | "film" | "game";
 }) {
-  const posterUrl = getPosterUrl(item.poster_path, "w92");
-  const Icon = icon === "tv" ? Television : FilmSlate;
+  const posterUrl = item.imageUrl ?? getPosterUrl(item.poster_path, "w92");
+  const Icon =
+    icon === "tv" ? Television : icon === "game" ? GameController : FilmSlate;
 
   return (
     <div className="flex w-14 flex-col items-center gap-1">

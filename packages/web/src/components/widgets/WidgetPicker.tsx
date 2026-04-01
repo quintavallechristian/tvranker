@@ -13,6 +13,7 @@ import {
   Plus,
   X,
   ArrowLeft,
+  GameController,
 } from "@phosphor-icons/react";
 import { useTranslations } from "next-intl";
 import type {
@@ -43,6 +44,7 @@ const TOPIC_ICONS: Record<WidgetTopic, React.ReactNode> = {
   show: <Television size={20} weight="duotone" />,
   movie: <FilmSlate size={20} weight="duotone" />,
   anime: <FilmSlate size={20} weight="duotone" />,
+  game: <GameController size={20} weight="duotone" />,
 };
 
 function getCategoryColSpan(category: WidgetCategory): 1 | 2 {

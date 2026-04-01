@@ -61,6 +61,10 @@
     "animeCardTitle": "My Anime",
     "animeCardSubtitle": "Your personal anime rankings",
     "emptyAnimeList": "Add some anime to see your podium",
+    "gamesCardLabel": "Your games",
+    "gamesCardTitle": "My Games",
+    "gamesCardSubtitle": "Your personal game rankings",
+    "emptyGameList": "Add some games to see your podium",
     "widgets": {
       "showPodium": "Show Podium",
       "moviePodium": "Movie Podium",
@@ -99,7 +103,11 @@
         "anime_podium": "Anime Podium",
         "anime_count": "Anime Count",
         "last_anime_added": "Last Anime Added",
-        "anime_suggestions": "Anime Suggestions"
+        "anime_suggestions": "Anime Suggestions",
+        "game_podium": "Game Podium",
+        "game_count": "Game Count",
+        "last_game_added": "Last Game Added",
+        "game_suggestions": "Game Suggestions"
       },
       "animePodium": "Anime Podium",
       "top10Anime": "Top 10 Anime",
@@ -107,6 +115,11 @@
       "lastAnimeAdded": "Last Anime Added",
       "animeRankings": "Top Rated Anime",
       "animeSuggestions": "Anime Suggestions",
+      "gamePodium": "Game Podium",
+      "top10Game": "Top 10 Games",
+      "gameCount": "Games",
+      "lastGameAdded": "Last Game Added",
+      "gameSuggestions": "Game Suggestions",
       "showSuggestions": "Discover Shows",
       "movieSuggestions": "Discover Movies",
       "explore": "Explore all",
@@ -123,7 +136,8 @@
       "topics": {
         "show": "TV Shows",
         "movie": "Movies",
-        "anime": "Anime"
+        "anime": "Anime",
+        "game": "Video Games"
       }
     }
   },
@@ -151,6 +165,27 @@
     "longestMovieByYearTitle": "By release year",
     "loadingMore": "Loading more...",
     "importExternal": "Import"
+  },
+  "games": {
+    "title": "My Games",
+    "addGame": "Add game",
+    "searchGames": "Search games...",
+    "added": "Added",
+    "emptyTitle": "No games yet",
+    "emptyDescription": "Search for games and add them to your list",
+    "loading": "Loading...",
+    "loadMore": "Load more",
+    "searchPlaceholder": "Search in your games...",
+    "noSearchResults": "No games match your search",
+    "noSearchResultsHint": "Try a different search term",
+    "noFilterResults": "No games match the selected filters",
+    "noFilterResultsHint": "Try removing some filters",
+    "analytics": "Analytics",
+    "analyticsEmptyHint": "Add and rate games to see analytics",
+    "totalGames": "Total games",
+    "ratedGames": "Rated",
+    "gamesCount": "games",
+    "loadingMore": "Loading more..."
   },
   "anime": {
     "title": "My Anime",
@@ -222,6 +257,11 @@
     "privateAnimeList": "This user's anime list is private.",
     "animeInCommon": "In common ({count})",
     "noAnimeInCommon": "No anime in common.",
+    "gameCount": "{count, plural, =0 {No games} =1 {1 game} other {# games}}",
+    "noGames": "No games yet.",
+    "privateGameList": "This user's game list is private.",
+    "gamesInCommon": "In common ({count})",
+    "noGamesInCommon": "No games in common.",
     "yourRating": "Your rating"
   },
   "lists": {
@@ -392,6 +432,12 @@
     "searchAnimePlaceholder": "Search TMDB for an anime...",
     "popularAnimeTitle": "Popular anime in the community",
     "popularAnimeEmpty": "No anime in public lists yet",
+    "gamesTitle": "Discover Games",
+    "gamesSubtitle": "Find new games to add to your list",
+    "searchGamesPlaceholder": "Search IGDB for a game...",
+    "popularGamesTitle": "Popular games in the community",
+    "popularGamesEmpty": "No games in public lists yet",
+    "popularGamesFallback": "Add games to your list to get personalized suggestions. In the meantime, here are the community favorites:",
     "exploreAll": "Explore all",
     "discoverSection": "Discover"
   },
@@ -597,6 +643,13 @@
       "minVotesHint": "Only anime with at least 2 ratings are shown",
       "emptyTitle": "No anime rankings yet",
       "emptyDescription": "Rate anime in your public list to contribute to the community ranking"
+    },
+    "games": {
+      "title": "Top Games",
+      "subtitle": "Games ranked by average user rating across all public lists",
+      "minVotesHint": "Only games with at least 2 ratings are shown",
+      "emptyTitle": "No game rankings yet",
+      "emptyDescription": "Rate games in your public list to contribute to the community ranking"
     }
   },
   "onboarding": {
@@ -612,6 +665,9 @@
     "moviesAddFirst": "Add a movie",
     "animeTitle": "Welcome to your anime!",
     "animeSubtitle": "Start adding anime you've watched or want to watch, or import from MyAnimeList.",
-    "animeAddFirst": "Add an anime"
+    "animeAddFirst": "Add an anime",
+    "gamesTitle": "Welcome to your games!",
+    "gamesSubtitle": "Start adding games you've played or want to play.",
+    "gamesAddFirst": "Add a game"
   }
 }

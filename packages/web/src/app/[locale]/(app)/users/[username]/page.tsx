@@ -7,6 +7,7 @@ import {
   computeListSimilarity,
   computeMovieListSimilarity,
   computeAnimeListSimilarity,
+  computeGameListSimilarity,
 } from "@/lib/similarity";
 import { fetchAllRows } from "@/lib/supabase/fetchAll";
 import { Link } from "@/i18n/navigation";
@@ -31,27 +32,36 @@ export default async function UserProfilePage({
 
   if (!profile) notFound();
 
-  // Fetch both lists in parallel
-  const [{ data: list }, { data: movieList }, { data: animeList }] =
-    await Promise.all([
-      supabase
-        .from("lists")
-        .select("id, is_public")
-        .eq("user_id", profile.id)
-        .single(),
-      supabase
-        .from("movie_lists")
-        .select("id, is_public")
-        .eq("user_id", profile.id)
-        .single(),
-      supabase
-        .from("anime_lists")
-        .select("id, is_public")
-        .eq("user_id", profile.id)
-        .single(),
-    ]);
+  // Fetch all lists in parallel
+  const [
+    { data: list },
+    { data: movieList },
+    { data: animeList },
+    { data: gameList },
+  ] = await Promise.all([
+    supabase
+      .from("lists")
+      .select("id, is_public")
+      .eq("user_id", profile.id)
+      .single(),
+    supabase
+      .from("movie_lists")
+      .select("id, is_public")
+      .eq("user_id", profile.id)
+      .single(),
+    supabase
+      .from("anime_lists")
+      .select("id, is_public")
+      .eq("user_id", profile.id)
+      .single(),
+    supabase
+      .from("game_lists")
+      .select("id, is_public")
+      .eq("user_id", profile.id)
+      .single(),
+  ]);
 
-  // Fetch top 3 shows + count and top 3 movies + count in parallel
+  // Fetch top 10 shows, movies, anime, games + counts in parallel
   const [
     showTopResult,
     showCountResult,
@@ -59,6 +69,8 @@ export default async function UserProfilePage({
     movieCountResult,
     animeTopResult,
     animeCountResult,
+    gameTopResult,
+    gameCountResult,
   ] = await Promise.all([
     list
       ? supabase
@@ -105,6 +117,21 @@ export default async function UserProfilePage({
           .select("id", { count: "exact", head: true })
           .eq("anime_list_id", animeList.id)
       : Promise.resolve({ count: 0 }),
+    gameList
+      ? supabase
+          .from("game_list_items")
+          .select("rating, games(id, title, cover_url)")
+          .eq("game_list_id", gameList.id)
+          .order("rating", { ascending: false, nullsFirst: false })
+          .order("position", { ascending: true })
+          .range(0, 9)
+      : Promise.resolve({ data: null }),
+    gameList
+      ? supabase
+          .from("game_list_items")
+          .select("id", { count: "exact", head: true })
+          .eq("game_list_id", gameList.id)
+      : Promise.resolve({ count: 0 }),
   ]);
 
   const showPodiumItems: PodiumItem[] = (showTopResult.data ?? []).map(
@@ -137,6 +164,17 @@ export default async function UserProfilePage({
     }),
   );
 
+  const gamePodiumItems: PodiumItem[] = (gameTopResult.data ?? []).map(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (item: any) => ({
+      id: item.games.id,
+      title: item.games.title,
+      poster_path: null,
+      imageUrl: item.games.cover_url,
+      rating: item.rating,
+    }),
+  );
+
   // Current user
   const {
     data: { user },
@@ -147,17 +185,53 @@ export default async function UserProfilePage({
   let showSimilarityScore: number | null = null;
   let movieSimilarityScore: number | null = null;
   let animeSimilarityScore: number | null = null;
+  let gameSimilarityScore: number | null = null;
 
   if (user && !isOwnProfile) {
     const [
       { data: viewerList },
       { data: viewerMovieList },
       { data: viewerAnimeList },
+      { data: viewerGameList },
     ] = await Promise.all([
       supabase.from("lists").select("id").eq("user_id", user.id).single(),
       supabase.from("movie_lists").select("id").eq("user_id", user.id).single(),
       supabase.from("anime_lists").select("id").eq("user_id", user.id).single(),
+      supabase.from("game_lists").select("id").eq("user_id", user.id).single(),
     ]);
+    if (viewerGameList && gameList) {
+      const [viewerGameItemsData, profileGameItemsData] = await Promise.all([
+        fetchAllRows((from, to) =>
+          supabase
+            .from("game_list_items")
+            .select("game_id, rating, position")
+            .eq("game_list_id", viewerGameList.id)
+            .order("position", { ascending: true })
+            .range(from, to),
+        ),
+        fetchAllRows((from, to) =>
+          supabase
+            .from("game_list_items")
+            .select("game_id, rating, position")
+            .eq("game_list_id", gameList.id)
+            .order("position", { ascending: true })
+            .range(from, to),
+        ),
+      ]);
+      const gameListA = viewerGameItemsData.map((i, idx) => ({
+        gameId: i.game_id,
+        rating: i.rating,
+        position: i.position ?? idx,
+      }));
+      const gameListB = profileGameItemsData.map((i, idx) => ({
+        gameId: i.game_id,
+        rating: i.rating,
+        position: i.position ?? idx,
+      }));
+      if (gameListA.length > 0 && gameListB.length > 0) {
+        gameSimilarityScore = computeGameListSimilarity(gameListA, gameListB);
+      }
+    }
 
     if (viewerList && list) {
       const [viewerItemsData, profileItemsData] = await Promise.all([
@@ -276,6 +350,7 @@ export default async function UserProfilePage({
     showSimilarityScore,
     movieSimilarityScore,
     animeSimilarityScore,
+    gameSimilarityScore,
   ].filter((s): s is number => s !== null);
   if (scores.length > 0) {
     compatibilityScore = Math.round(
@@ -332,8 +407,9 @@ export default async function UserProfilePage({
       {/* Count widgets */}
       {((showCountResult.count ?? 0) > 0 ||
         (movieCountResult.count ?? 0) > 0 ||
-        (animeCountResult.count ?? 0) > 0) && (
-        <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+        (animeCountResult.count ?? 0) > 0 ||
+        (gameCountResult.count ?? 0) > 0) && (
+        <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {(showCountResult.count ?? 0) > 0 && (
             <CountWidget
               count={showCountResult.count ?? 0}
@@ -355,11 +431,18 @@ export default async function UserProfilePage({
               href={`/users/${profile.username}/anime`}
             />
           )}
+          {(gameCountResult.count ?? 0) > 0 && (
+            <CountWidget
+              count={gameCountResult.count ?? 0}
+              topic="game"
+              href={`/users/${profile.username}/games`}
+            />
+          )}
         </div>
       )}
 
       {/* Podium cards — extended top10 with rowSpan=2 */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {(showCountResult.count ?? 0) > 0 && (
           <div className="h-105">
             <PodiumWidget
@@ -416,6 +499,27 @@ export default async function UserProfilePage({
                     className="text-xs font-semibold text-accent"
                   >
                     {animeSimilarityScore}%
+                  </Link>
+                ) : undefined
+              }
+            />
+          </div>
+        )}
+
+        {(gameCountResult.count ?? 0) > 0 && (
+          <div className="h-105">
+            <PodiumWidget
+              items={gamePodiumItems}
+              topic="game"
+              rowSpan={2}
+              viewAllHref={`/users/${profile.username}/games`}
+              badge={
+                gameSimilarityScore !== null ? (
+                  <Link
+                    href={`/users/${profile.username}/games`}
+                    className="text-xs font-semibold text-accent"
+                  >
+                    {gameSimilarityScore}%
                   </Link>
                 ) : undefined
               }

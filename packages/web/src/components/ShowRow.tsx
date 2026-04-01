@@ -24,6 +24,7 @@ type ShowRowProps = {
   id: string;
   title: string;
   posterPath: string | null;
+  imageUrl?: string | null;
   rating: number | null;
   position: number;
   onRatingChange?: (rating: number) => void;
@@ -53,6 +54,7 @@ export function ShowRow({
   id,
   title,
   posterPath,
+  imageUrl,
   rating,
   position,
   onRatingChange,
@@ -116,7 +118,7 @@ export function ShowRow({
     }
   };
 
-  const posterUrl = getPosterUrl(posterPath, "w92");
+  const posterUrl = imageUrl ?? getPosterUrl(posterPath, "w92");
 
   return (
     <div
@@ -164,7 +166,7 @@ export function ShowRow({
 
         {/* Title */}
         <div className="min-w-0 flex-1">
-          {(showId || detailHref) ? (
+          {showId || detailHref ? (
             <Link
               href={detailHref ?? `/shows/${showId}`}
               className="block truncate text-sm font-medium text-text-primary hover:text-accent transition-colors"
@@ -332,9 +334,7 @@ export function ShowRow({
               onClick={() => setMobileRatingOpen(true)}
               className="flex items-center gap-0.5"
               aria-label={
-                rating
-                  ? t("ratingTapToChange", { rating })
-                  : t("tapToRate")
+                rating ? t("ratingTapToChange", { rating }) : t("tapToRate")
               }
             >
               {rating ? (

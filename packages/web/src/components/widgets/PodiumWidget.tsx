@@ -3,16 +3,17 @@
 import React from "react";
 import { getPosterUrl } from "@/lib/tmdb/client";
 import Image from "next/image";
-import { Television, FilmSlate } from "@phosphor-icons/react";
+import { Television, FilmSlate, GameController } from "@phosphor-icons/react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 
-export type PodiumTopic = "show" | "movie" | "anime";
+export type PodiumTopic = "show" | "movie" | "anime" | "game";
 
 export type PodiumItem = {
   id: string;
   title: string;
   poster_path: string | null;
+  imageUrl?: string | null;
   rating: number | null;
 };
 
@@ -37,17 +38,32 @@ export function PodiumWidget({
         ? t("widgets.top10Show")
         : topic === "movie"
           ? t("widgets.top10Movie")
-          : t("widgets.top10Anime")
+          : topic === "game"
+            ? t("widgets.top10Game")
+            : t("widgets.top10Anime")
       : topic === "show"
         ? t("widgets.showPodium")
         : topic === "movie"
           ? t("widgets.moviePodium")
-          : t("widgets.animePodium");
+          : topic === "game"
+            ? t("widgets.gamePodium")
+            : t("widgets.animePodium");
 
   const defaultHref =
-    topic === "show" ? "/lists" : topic === "movie" ? "/movies" : "/anime";
+    topic === "show"
+      ? "/lists"
+      : topic === "movie"
+        ? "/movies"
+        : topic === "game"
+          ? "/games"
+          : "/anime";
 
-  const Icon = topic === "show" ? Television : FilmSlate;
+  const Icon =
+    topic === "show"
+      ? Television
+      : topic === "game"
+        ? GameController
+        : FilmSlate;
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-bg-surface p-4">
@@ -118,7 +134,9 @@ export function PodiumWidget({
               ? t("emptyMovieList")
               : topic === "anime"
                 ? t("emptyAnimeList")
-                : t("emptyList")}
+                : topic === "game"
+                  ? t("emptyGameList")
+                  : t("emptyList")}
           </p>
         </div>
       )}
@@ -141,7 +159,7 @@ function PodiumSlot({
   featured?: boolean;
   Icon: React.ElementType;
 }) {
-  const posterUrl = getPosterUrl(item.poster_path, "w92");
+  const posterUrl = item.imageUrl ?? getPosterUrl(item.poster_path, "w92");
 
   return (
     <div className="flex w-12 flex-col items-center gap-1">
@@ -185,7 +203,7 @@ function RankRow({
   rank: number;
   Icon: React.ElementType;
 }) {
-  const posterUrl = getPosterUrl(item.poster_path, "w92");
+  const posterUrl = item.imageUrl ?? getPosterUrl(item.poster_path, "w92");
 
   return (
     <div className="flex items-center gap-2 py-0.5">

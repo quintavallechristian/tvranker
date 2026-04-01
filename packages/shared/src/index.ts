@@ -3,9 +3,11 @@ export {
   computeListSimilarity,
   computeMovieListSimilarity,
   computeAnimeListSimilarity,
+  computeGameListSimilarity,
   type ListEntry,
   type MovieListEntry,
   type AnimeListEntry,
+  type GameListEntry,
 } from "./lib/similarity";
 export {
   scoreRecommendations,
@@ -66,6 +68,9 @@ export type {
   Anime,
   AnimeList,
   AnimeListItem,
+  Game,
+  GameList,
+  GameListItem,
 } from "./lib/supabase/types";
 
 // Import parsers
@@ -82,3 +87,11 @@ export {
   extractBaseTitle,
   validateMalXml,
 } from "./lib/import/mal-parser";
+
+// IGDB types & utilities
+export {
+  getIGDBCoverUrl,
+  type IGDBGame,
+  type IGDBGameSearchResult,
+  type IGDBCoverSize,
+} from "./lib/igdb/types";
