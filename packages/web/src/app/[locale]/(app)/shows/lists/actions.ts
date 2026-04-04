@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { recordFeedEvent } from "@/lib/feed";
 
 // Helper: get the user's single list
 async function getUserList(
@@ -169,6 +170,16 @@ export async function addShowToList(
 
   if (error) throw new Error(error.message);
 
+  await recordFeedEvent(supabase, {
+    userId: user.id,
+    eventType: "add_item",
+    contentType: "show",
+    itemId: existingShow!.id,
+    listId,
+    itemTitle: show.title,
+    posterPath: show.poster_path,
+  });
+
   revalidatePath(`/shows/lists/${listId}`);
 }
 
@@ -222,6 +233,29 @@ export async function updateShowRating(
     .eq("id", itemId);
 
   if (error) throw new Error(error.message);
+
+  const { data: itemData } = await supabase
+    .from("list_items")
+    .select("show_id, shows(title, poster_path)")
+    .eq("id", itemId)
+    .single();
+
+  if (itemData) {
+    const show = itemData.shows as unknown as {
+      title: string;
+      poster_path: string | null;
+    };
+    await recordFeedEvent(supabase, {
+      userId: user.id,
+      eventType: "rate_item",
+      contentType: "show",
+      itemId: itemData.show_id,
+      listId,
+      itemTitle: show?.title ?? "",
+      posterPath: show?.poster_path,
+      rating,
+    });
+  }
 
   revalidatePath(`/shows/lists/${listId}`);
 }
@@ -1225,7 +1259,9 @@ export async function moveAnimesFromShowsToAnimeList(
   // Fetch the corresponding list_items (all pages) for those shows
   const { data: animeListItems } = await supabase
     .from("list_items")
-    .select("id, show_id, rating, shows(id, tmdb_id, title, poster_path, first_air_date, overview)")
+    .select(
+      "id, show_id, rating, shows(id, tmdb_id, title, poster_path, first_air_date, overview)",
+    )
     .eq("list_id", listId)
     .in("show_id", animeShowIds);
 

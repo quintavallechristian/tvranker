@@ -17,6 +17,7 @@ import {
   Bell,
   Trophy,
   StackSimple,
+  Newspaper,
 } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -56,6 +57,7 @@ export function SidebarNav({
 
   const links = [
     { href: "/home", label: t("home"), icon: House, badge: 0 },
+    { href: "/feed", label: t("feed"), icon: Newspaper, badge: 0 },
     { href: "/explore", label: t("explore"), icon: Compass, badge: 0 },
     { href: "/my-lists", label: t("myLists"), icon: StackSimple, badge: 0 },
     { href: "/rankings", label: t("rankings"), icon: Trophy, badge: 0 },

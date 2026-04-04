@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { recordFeedEvent } from "@/lib/feed";
 import {
   getShowDetails,
   extractTrailerUrl,
@@ -215,6 +216,16 @@ export async function addAnimeToList(
 
   if (error) throw new Error(error.message);
 
+  await recordFeedEvent(supabase, {
+    userId: user.id,
+    eventType: "add_item",
+    contentType: "anime",
+    itemId: existingAnime!.id,
+    listId: animeListId,
+    itemTitle: anime.title,
+    posterPath: anime.poster_path,
+  });
+
   revalidatePath("/anime");
 }
 
@@ -274,6 +285,29 @@ export async function updateAnimeRating(itemId: string, rating: number) {
     .eq("id", itemId);
 
   if (error) throw new Error(error.message);
+
+  const { data: itemData } = await supabase
+    .from("anime_list_items")
+    .select("anime_id, anime_list_id, animes(title, poster_path)")
+    .eq("id", itemId)
+    .single();
+
+  if (itemData) {
+    const anime = itemData.animes as unknown as {
+      title: string;
+      poster_path: string | null;
+    };
+    await recordFeedEvent(supabase, {
+      userId: user.id,
+      eventType: "rate_item",
+      contentType: "anime",
+      itemId: itemData.anime_id,
+      listId: itemData.anime_list_id,
+      itemTitle: anime?.title ?? "",
+      posterPath: anime?.poster_path,
+      rating,
+    });
+  }
 
   revalidatePath("/anime");
 }
@@ -498,6 +532,24 @@ export async function addAnimeToMyList(animeId: string) {
     anime_id: animeId,
     position: nextPosition,
   });
+
+  const { data: animeData } = await supabase
+    .from("animes")
+    .select("title, poster_path")
+    .eq("id", animeId)
+    .single();
+
+  if (animeData) {
+    await recordFeedEvent(supabase, {
+      userId: user.id,
+      eventType: "add_item",
+      contentType: "anime",
+      itemId: animeId,
+      listId: animeList.id,
+      itemTitle: animeData.title,
+      posterPath: animeData.poster_path,
+    });
+  }
 
   revalidatePath("/anime");
   return { alreadyExists: false };

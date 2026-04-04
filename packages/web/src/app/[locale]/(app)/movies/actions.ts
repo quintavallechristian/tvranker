@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { recordFeedEvent } from "@/lib/feed";
 import {
   getMovieDetails,
   findByImdbId,
@@ -208,6 +209,16 @@ export async function addMovieToList(
 
   if (error) throw new Error(error.message);
 
+  await recordFeedEvent(supabase, {
+    userId: user.id,
+    eventType: "add_item",
+    contentType: "movie",
+    itemId: existingMovie!.id,
+    listId: movieListId,
+    itemTitle: movie.title,
+    posterPath: movie.poster_path,
+  });
+
   revalidatePath("/movies");
 }
 
@@ -267,6 +278,29 @@ export async function updateMovieRating(itemId: string, rating: number) {
     .eq("id", itemId);
 
   if (error) throw new Error(error.message);
+
+  const { data: itemData } = await supabase
+    .from("movie_list_items")
+    .select("movie_id, movie_list_id, movies(title, poster_path)")
+    .eq("id", itemId)
+    .single();
+
+  if (itemData) {
+    const movie = itemData.movies as unknown as {
+      title: string;
+      poster_path: string | null;
+    };
+    await recordFeedEvent(supabase, {
+      userId: user.id,
+      eventType: "rate_item",
+      contentType: "movie",
+      itemId: itemData.movie_id,
+      listId: itemData.movie_list_id,
+      itemTitle: movie?.title ?? "",
+      posterPath: movie?.poster_path,
+      rating,
+    });
+  }
 
   revalidatePath("/movies");
 }
@@ -507,6 +541,24 @@ export async function addMovieToMyList(movieId: string) {
     movie_id: movieId,
     position: nextPosition,
   });
+
+  const { data: movieData } = await supabase
+    .from("movies")
+    .select("title, poster_path")
+    .eq("id", movieId)
+    .single();
+
+  if (movieData) {
+    await recordFeedEvent(supabase, {
+      userId: user.id,
+      eventType: "add_item",
+      contentType: "movie",
+      itemId: movieId,
+      listId: movieList.id,
+      itemTitle: movieData.title,
+      posterPath: movieData.poster_path,
+    });
+  }
 
   revalidatePath("/movies");
   return { alreadyExists: false };

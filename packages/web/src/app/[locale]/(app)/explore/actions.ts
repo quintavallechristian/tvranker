@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { recordFeedEvent } from "@/lib/feed";
 import { scoreRecommendations, type UserList } from "@/lib/recommendations";
 import { computeListSimilarity, type ListEntry } from "@/lib/similarity";
 import { fetchAllRows } from "@/lib/supabase/fetchAll";
@@ -140,10 +141,7 @@ export async function getSimilarUsers(): Promise<SimilarUser[]> {
       .from("anime_lists")
       .select("id, user_id")
       .in("user_id", topUserIds),
-    supabase
-      .from("game_lists")
-      .select("id, user_id")
-      .in("user_id", topUserIds),
+    supabase.from("game_lists").select("id, user_id").in("user_id", topUserIds),
   ]);
 
   const movieListIdByUser = new Map(
@@ -208,7 +206,8 @@ export async function getSimilarUsers(): Promise<SimilarUser[]> {
     const { profileId, showsCompiled, ...rest } = r;
     return {
       ...rest,
-      lists_compiled: showsCompiled + moviesCompiled + animeCompiled + gamesCompiled,
+      lists_compiled:
+        showsCompiled + moviesCompiled + animeCompiled + gamesCompiled,
     };
   });
 }
@@ -702,6 +701,16 @@ export async function addTmdbMovieToMyList(movie: {
     position: nextPosition,
   });
 
+  await recordFeedEvent(supabase, {
+    userId: user.id,
+    eventType: "add_item",
+    contentType: "movie",
+    itemId: existingMovie.id,
+    listId: movieList.id,
+    itemTitle: movie.title,
+    posterPath: movie.poster_path,
+  });
+
   return { alreadyExists: false };
 }
 
@@ -994,6 +1003,16 @@ export async function addTmdbAnimeToMyList(anime: {
     anime_list_id: animeList.id,
     anime_id: existingAnime.id,
     position: nextPosition,
+  });
+
+  await recordFeedEvent(supabase, {
+    userId: user.id,
+    eventType: "add_item",
+    contentType: "anime",
+    itemId: existingAnime.id,
+    listId: animeList.id,
+    itemTitle: anime.title,
+    posterPath: anime.poster_path,
   });
 
   return { alreadyExists: false };

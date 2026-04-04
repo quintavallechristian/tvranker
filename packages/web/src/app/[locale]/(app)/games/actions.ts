@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { recordFeedEvent } from "@/lib/feed";
 
 export type GameItem = {
   id: string;
@@ -99,6 +100,16 @@ export async function addGameToList(
 
   if (error) throw new Error(error.message);
 
+  await recordFeedEvent(supabase, {
+    userId: user.id,
+    eventType: "add_item",
+    contentType: "game",
+    itemId: existingGame!.id,
+    listId: gameListId,
+    itemTitle: game.title,
+    posterPath: game.cover_url,
+  });
+
   revalidatePath("/games");
 }
 
@@ -134,6 +145,29 @@ export async function updateGameRating(itemId: string, rating: number) {
     .eq("id", itemId);
 
   if (error) throw new Error(error.message);
+
+  const { data: itemData } = await supabase
+    .from("game_list_items")
+    .select("game_id, game_list_id, games(title, cover_url)")
+    .eq("id", itemId)
+    .single();
+
+  if (itemData) {
+    const game = itemData.games as unknown as {
+      title: string;
+      cover_url: string | null;
+    };
+    await recordFeedEvent(supabase, {
+      userId: user.id,
+      eventType: "rate_item",
+      contentType: "game",
+      itemId: itemData.game_id,
+      listId: itemData.game_list_id,
+      itemTitle: game?.title ?? "",
+      posterPath: game?.cover_url,
+      rating,
+    });
+  }
 
   revalidatePath("/games");
 }
@@ -247,6 +281,24 @@ export async function addGameToMyList(gameId: string) {
     game_id: gameId,
     position: nextPosition,
   });
+
+  const { data: gameData } = await supabase
+    .from("games")
+    .select("title, cover_url")
+    .eq("id", gameId)
+    .single();
+
+  if (gameData) {
+    await recordFeedEvent(supabase, {
+      userId: user.id,
+      eventType: "add_item",
+      contentType: "game",
+      itemId: gameId,
+      listId: gameList.id,
+      itemTitle: gameData.title,
+      posterPath: gameData.cover_url,
+    });
+  }
 
   revalidatePath("/games");
   return { alreadyExists: false };
@@ -450,6 +502,16 @@ export async function addTmdbGameToMyList(game: {
     game_list_id: gameList.id,
     game_id: existingGame!.id,
     position: nextPos,
+  });
+
+  await recordFeedEvent(supabase, {
+    userId: user.id,
+    eventType: "add_item",
+    contentType: "game",
+    itemId: existingGame!.id,
+    listId: gameList.id,
+    itemTitle: game.title,
+    posterPath: game.cover_url,
   });
 
   revalidatePath("/games");
