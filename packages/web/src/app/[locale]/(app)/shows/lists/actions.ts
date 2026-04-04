@@ -336,120 +336,169 @@ export async function importToMyList(
     await supabase.from("list_items").delete().eq("list_id", myList.id);
   }
 
-  // Get current max position in the user's list
-  const { data: existingItems } = await supabase
+  const shows = parsed.shows;
+  const CHUNK = 200;
+
+  // ── Phase 1: Batch lookup shows by imdb_id ─────────────────────────────────
+  const imdbIds = [...new Set(shows.map((s) => s.imdb_id).filter(Boolean) as string[])];
+  const imdbToDbId = new Map<string, string>();
+
+  for (let i = 0; i < imdbIds.length; i += CHUNK) {
+    const { data } = await supabase
+      .from("shows")
+      .select("id, imdb_id")
+      .in("imdb_id", imdbIds.slice(i, i + CHUNK));
+    for (const row of data ?? []) {
+      if (row.imdb_id) imdbToDbId.set(row.imdb_id, row.id);
+    }
+  }
+
+  // ── Phase 2: Batch lookup remaining shows by title ─────────────────────────
+  const titlesNeeded = [
+    ...new Set(
+      shows
+        .filter((s) => !s.imdb_id || !imdbToDbId.has(s.imdb_id))
+        .map((s) => s.title),
+    ),
+  ];
+  const titleToDbId = new Map<string, string>();
+
+  for (let i = 0; i < titlesNeeded.length; i += CHUNK) {
+    const { data } = await supabase
+      .from("shows")
+      .select("id, title")
+      .in("title", titlesNeeded.slice(i, i + CHUNK));
+    for (const row of data ?? []) {
+      titleToDbId.set(row.title.toLowerCase(), row.id);
+    }
+  }
+
+  // ── Phase 3: Insert shows not found in DB ──────────────────────────────────
+  const seenTitles = new Set<string>();
+  const showsToInsert = shows
+    .filter((s) => {
+      if (s.imdb_id && imdbToDbId.has(s.imdb_id)) return false;
+      if (titleToDbId.has(s.title.toLowerCase())) return false;
+      if (seenTitles.has(s.title.toLowerCase())) return false;
+      seenTitles.add(s.title.toLowerCase());
+      return true;
+    })
+    .map((s) => ({
+      title: s.title,
+      imdb_id: s.imdb_id ?? null,
+      // null tmdb_id for placeholder shows (enrichment script handles null correctly)
+      tmdb_id: null as null,
+      poster_path: null,
+      first_air_date: null,
+      overview: null,
+    }));
+
+  for (let i = 0; i < showsToInsert.length; i += CHUNK) {
+    const { data: inserted } = await supabase
+      .from("shows")
+      .insert(showsToInsert.slice(i, i + CHUNK))
+      .select("id, title, imdb_id");
+    for (const row of inserted ?? []) {
+      if (row.imdb_id) imdbToDbId.set(row.imdb_id, row.id);
+      titleToDbId.set(row.title.toLowerCase(), row.id);
+    }
+  }
+
+  // ── Phase 4: Get current max position + existing list items ───────────────
+  const { data: currentItems } = await supabase
     .from("list_items")
-    .select("position")
+    .select("id, show_id, position")
     .eq("list_id", myList.id)
-    .order("position", { ascending: false })
-    .limit(1);
+    .order("position", { ascending: false });
 
-  let position = (existingItems?.[0]?.position ?? -1) + 1;
-  let importedCount = 0;
+  const existingByShowId = new Map<string, string>(); // show_id → item id
+  let position = 0;
+  for (const item of currentItems ?? []) {
+    existingByShowId.set(item.show_id, item.id);
+    if (item.position >= position) position = item.position + 1;
+  }
 
-  for (const show of parsed.shows) {
-    try {
-      let dbShowId: string | null = null;
+  // ── Phase 5: Classify shows into inserts vs updates ────────────────────────
+  const toInsert: {
+    list_id: string;
+    show_id: string;
+    position: number;
+    rating: number | null;
+    added_at?: string;
+  }[] = [];
+  const toUpdate: { id: string; rating: number | null; added_at?: string }[] =
+    [];
+  const seenShowIds = new Set(existingByShowId.keys());
 
-      // Try to find existing show by imdb_id first, then by exact title
-      if (show.imdb_id) {
-        const { data: existing } = await supabase
-          .from("shows")
-          .select("id")
-          .eq("imdb_id", show.imdb_id)
-          .limit(1)
-          .single();
-        dbShowId = existing?.id ?? null;
+  for (const show of shows) {
+    const dbShowId =
+      (show.imdb_id && imdbToDbId.get(show.imdb_id)) ||
+      titleToDbId.get(show.title.toLowerCase()) ||
+      null;
+    if (!dbShowId) continue;
+
+    const rating =
+      typeof show.score === "number" && show.score >= 1 && show.score <= 10
+        ? show.score
+        : null;
+
+    if (existingByShowId.has(dbShowId)) {
+      if (options.mode === "merge" && options.duplicateMode === "update") {
+        toUpdate.push({
+          id: existingByShowId.get(dbShowId)!,
+          rating,
+          ...(show.added_at ? { added_at: show.added_at } : {}),
+        });
       }
+    } else if (!seenShowIds.has(dbShowId)) {
+      seenShowIds.add(dbShowId); // deduplicate within the import batch
+      toInsert.push({
+        list_id: myList.id,
+        show_id: dbShowId,
+        position: position++,
+        rating,
+        ...(show.added_at ? { added_at: show.added_at } : {}),
+      });
+    }
+  }
 
-      if (!dbShowId) {
-        const { data: existing } = await supabase
-          .from("shows")
-          .select("id")
-          .ilike("title", show.title)
-          .limit(1)
-          .single();
-        dbShowId = existing?.id ?? null;
-      }
+  // ── Phase 6: Bulk insert list_items ───────────────────────────────────────
+  for (let i = 0; i < toInsert.length; i += CHUNK) {
+    await supabase.from("list_items").insert(toInsert.slice(i, i + CHUNK));
+  }
 
-      // Insert new show if not found
-      if (!dbShowId) {
-        const placeholderTmdbId = -(
-          Math.abs(
-            show.title.split("").reduce((a, c) => a + c.charCodeAt(0) * 31, 0),
-          ) % 2000000000
-        );
-        const { data: newShow } = await supabase
-          .from("shows")
-          .insert({
-            title: show.title,
-            imdb_id: show.imdb_id,
-            tmdb_id: placeholderTmdbId,
-            poster_path: null,
-            first_air_date: null,
-            overview: null,
-          })
-          .select("id")
-          .single();
-        dbShowId = newShow?.id ?? null;
-      }
-
-      if (dbShowId) {
-        const rating =
-          typeof show.score === "number" && show.score >= 1 && show.score <= 10
-            ? show.score
-            : null;
-
-        // Check for duplicate in current list
-        const { data: duplicate } = await supabase
+  // ── Phase 7: Bulk update existing items (if duplicateMode === "update") ────
+  if (toUpdate.length > 0) {
+    await Promise.all(
+      toUpdate.map(({ id, rating, added_at }) =>
+        supabase
           .from("list_items")
-          .select("id")
-          .eq("list_id", myList.id)
-          .eq("show_id", dbShowId)
-          .maybeSingle();
+          .update({ rating, ...(added_at ? { added_at } : {}) })
+          .eq("id", id),
+      ),
+    );
+  }
 
-        if (duplicate) {
-          if (options.mode === "merge" && options.duplicateMode === "update") {
-            // Update rating of existing item
-            await supabase
-              .from("list_items")
-              .update({
-                rating,
-                ...(show.added_at ? { added_at: show.added_at } : {}),
-              })
-              .eq("id", duplicate.id);
-            importedCount++;
-          }
-          // else skip duplicate
-        } else {
-          const { error } = await supabase.from("list_items").insert({
-            list_id: myList.id,
-            show_id: dbShowId,
-            position,
-            rating,
-            ...(show.added_at ? { added_at: show.added_at } : {}),
-          });
-          if (!error) {
-            if (animeTagId) {
-              // Best-effort: keep import resilient even if tag assignment fails.
-              await supabase.from("show_tags").insert({
-                user_id: user.id,
-                show_id: dbShowId,
-                tag_id: animeTagId,
-              });
-            }
-            position++;
-            importedCount++;
-          }
-        }
-      }
-    } catch (e) {
-      console.error(`Failed to save show: ${show.title}`, e);
+  // ── Phase 8: Bulk assign anime tags ───────────────────────────────────────
+  if (animeTagId && toInsert.length > 0) {
+    const tagRows = toInsert.map((item) => ({
+      user_id: user.id,
+      show_id: item.show_id,
+      tag_id: animeTagId!,
+    }));
+    for (let i = 0; i < tagRows.length; i += CHUNK) {
+      // Best-effort: ignore conflicts if tag already assigned
+      await supabase
+        .from("show_tags")
+        .upsert(tagRows.slice(i, i + CHUNK), {
+          onConflict: "user_id,show_id,tag_id",
+          ignoreDuplicates: true,
+        });
     }
   }
 
   revalidatePath("/shows");
-  return { importedCount };
+  return { importedCount: toInsert.length + toUpdate.length };
 }
 
 export type ShowSummary = {
