@@ -14,16 +14,22 @@ import {
 
 type ImportService = "tvtime" | "mal" | "imdb";
 
+type ImportMode = "merge" | "replace";
+type DuplicateMode = "skip" | "update";
+export type ImportOptions = { mode: ImportMode; duplicateMode: DuplicateMode };
+
 type ImportDialogProps = {
   open: boolean;
   onClose: () => void;
-  onImport: (data: unknown) => Promise<void>;
+  onImport: (data: unknown, options: ImportOptions) => Promise<void>;
 };
 
 export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
   const t = useTranslations("import");
   const [service, setService] = useState<ImportService | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [importMode, setImportMode] = useState<ImportMode>("merge");
+  const [duplicateMode, setDuplicateMode] = useState<DuplicateMode>("skip");
   const [preview, setPreview] = useState<{
     name: string;
     showCount: number;
@@ -37,6 +43,8 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
   const resetState = () => {
     setService(null);
     setFile(null);
+    setImportMode("merge");
+    setDuplicateMode("skip");
     setPreview(null);
     setError(null);
     setLoading(false);
@@ -51,6 +59,8 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
     setFile(null);
     setPreview(null);
     setError(null);
+    setImportMode("merge");
+    setDuplicateMode("skip");
     setService(null);
   };
 
@@ -151,7 +161,7 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
             score: s.score ?? undefined,
           })),
         };
-        await onImport(asJson);
+        await onImport(asJson, { mode: importMode, duplicateMode });
       } else if (service === "imdb") {
         const text = await file.text();
         const { parseImdbCsv } = await import("@/lib/import/imdb-parser");
@@ -167,11 +177,11 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
             added_at: s.added_at ?? undefined,
           })),
         };
-        await onImport(asJson);
+        await onImport(asJson, { mode: importMode, duplicateMode });
       } else {
         const text = await file.text();
         const json = JSON.parse(text);
-        await onImport(json);
+        await onImport(json, { mode: importMode, duplicateMode });
       }
       handleClose();
     } catch {
@@ -336,6 +346,97 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
                 )}
               </p>
             </div>
+          </div>
+        )}
+
+        {/* Import mode selector */}
+        {preview && (
+          <div className="mt-4 space-y-3">
+            <div>
+              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-text-faint">
+                {t("importMode")}
+              </p>
+              <div className="flex flex-col gap-1.5">
+                {(["merge", "replace"] as ImportMode[]).map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => setImportMode(m)}
+                    className={`flex items-start gap-3 rounded-md border px-3 py-2.5 text-left transition-colors ${
+                      importMode === m
+                        ? "border-accent bg-accent/5"
+                        : "border-border hover:border-border-hover"
+                    }`}
+                  >
+                    <span
+                      className={`mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border ${
+                        importMode === m
+                          ? "border-accent bg-accent"
+                          : "border-border"
+                      }`}
+                    >
+                      {importMode === m && (
+                        <span className="h-1.5 w-1.5 rounded-full bg-bg-primary" />
+                      )}
+                    </span>
+                    <div>
+                      <p className="text-xs font-medium text-text-primary">
+                        {m === "merge" ? t("mergeLists") : t("replaceLists")}
+                      </p>
+                      <p className="text-[11px] text-text-muted">
+                        {m === "merge"
+                          ? t("mergeListsDesc")
+                          : t("replaceListsDesc")}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {importMode === "merge" && (
+              <div>
+                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-text-faint">
+                  {t("duplicateHandling")}
+                </p>
+                <div className="flex flex-col gap-1.5">
+                  {(["skip", "update"] as DuplicateMode[]).map((m) => (
+                    <button
+                      key={m}
+                      onClick={() => setDuplicateMode(m)}
+                      className={`flex items-start gap-3 rounded-md border px-3 py-2.5 text-left transition-colors ${
+                        duplicateMode === m
+                          ? "border-accent bg-accent/5"
+                          : "border-border hover:border-border-hover"
+                      }`}
+                    >
+                      <span
+                        className={`mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border ${
+                          duplicateMode === m
+                            ? "border-accent bg-accent"
+                            : "border-border"
+                        }`}
+                      >
+                        {duplicateMode === m && (
+                          <span className="h-1.5 w-1.5 rounded-full bg-bg-primary" />
+                        )}
+                      </span>
+                      <div>
+                        <p className="text-xs font-medium text-text-primary">
+                          {m === "skip"
+                            ? t("skipDuplicates")
+                            : t("updateDuplicates")}
+                        </p>
+                        <p className="text-[11px] text-text-muted">
+                          {m === "skip"
+                            ? t("skipDuplicatesDesc")
+                            : t("updateDuplicatesDesc")}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

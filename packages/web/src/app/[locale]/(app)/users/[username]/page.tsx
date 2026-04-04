@@ -452,12 +452,9 @@ export default async function UserProfilePage({
               viewAllHref={`/users/${profile.username}/shows`}
               badge={
                 showSimilarityScore !== null ? (
-                  <Link
-                    href={`/users/${profile.username}/shows`}
-                    className="text-xs font-semibold text-accent"
-                  >
+                  <span className="text-xs font-semibold text-accent">
                     {showSimilarityScore}%
-                  </Link>
+                  </span>
                 ) : undefined
               }
             />
@@ -473,12 +470,9 @@ export default async function UserProfilePage({
               viewAllHref={`/users/${profile.username}/movies`}
               badge={
                 movieSimilarityScore !== null ? (
-                  <Link
-                    href={`/users/${profile.username}/movies`}
-                    className="text-xs font-semibold text-accent"
-                  >
+                  <span className="text-xs font-semibold text-accent">
                     {movieSimilarityScore}%
-                  </Link>
+                  </span>
                 ) : undefined
               }
             />
@@ -494,12 +488,9 @@ export default async function UserProfilePage({
               viewAllHref={`/users/${profile.username}/anime`}
               badge={
                 animeSimilarityScore !== null ? (
-                  <Link
-                    href={`/users/${profile.username}/anime`}
-                    className="text-xs font-semibold text-accent"
-                  >
+                  <span className="text-xs font-semibold text-accent">
                     {animeSimilarityScore}%
-                  </Link>
+                  </span>
                 ) : undefined
               }
             />
@@ -515,12 +506,9 @@ export default async function UserProfilePage({
               viewAllHref={`/users/${profile.username}/games`}
               badge={
                 gameSimilarityScore !== null ? (
-                  <Link
-                    href={`/users/${profile.username}/games`}
-                    className="text-xs font-semibold text-accent"
-                  >
+                  <span className="text-xs font-semibold text-accent">
                     {gameSimilarityScore}%
-                  </Link>
+                  </span>
                 ) : undefined
               }
             />

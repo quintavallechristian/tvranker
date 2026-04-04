@@ -30,6 +30,7 @@ import {
   ChartPie,
   FileArrowUp,
   GearSix,
+  TrashSimple,
 } from "@phosphor-icons/react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
@@ -39,7 +40,11 @@ import { AddMovieDialog } from "@/components/AddMovieDialog";
 import { ImportMoviesDialog } from "@/components/ImportMoviesDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { OnboardingMoviesEmptyState } from "@/components/OnboardingMoviesEmptyState";
-import { ListSettingsModal, type ListSettingsData, type ProfileVisibilityData } from "@/components/ListSettingsModal";
+import {
+  ListSettingsModal,
+  type ListSettingsData,
+  type ProfileVisibilityData,
+} from "@/components/ListSettingsModal";
 import { getRatingLabel } from "@/lib/rating-labels";
 import {
   addMovieToList,
@@ -85,6 +90,8 @@ export function MovieListClient({
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
   const [items, setItems] = useState<MovieItem[]>(initialItems);
   const [existingTmdbIds, setExistingTmdbIds] = useState<number[]>(
     initialExistingTmdbIds,
@@ -168,6 +175,15 @@ export function MovieListClient({
       setLoadingMore(false);
     }
   }, [loadingMore, hasMore, movieListId]);
+
+  // Sync state from server props after router.refresh() (e.g. after import)
+  useEffect(() => {
+    setItems(initialItems);
+    setHasMore(initialHasMore);
+    setExistingTmdbIds(initialExistingTmdbIds);
+    nextPageRef.current = 1;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialItems]);
 
   useEffect(() => {
     if (!hasMore) return;
@@ -306,6 +322,15 @@ export function MovieListClient({
             )}
             {items.length > 0 && (
               <button
+                onClick={() => setShowClearConfirm(true)}
+                className="hidden items-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:border-error/50 hover:bg-error/5 hover:text-error sm:flex"
+              >
+                <TrashSimple size={14} />
+                {t("clearList")}
+              </button>
+            )}
+            {items.length > 0 && (
+              <button
                 onClick={() => setShowImportDialog(true)}
                 className="hidden items-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary sm:flex"
               >
@@ -341,6 +366,12 @@ export function MovieListClient({
             >
               <FileArrowUp size={14} />
               {t("importExternal")}
+            </button>
+            <button
+              onClick={() => setShowClearConfirm(true)}
+              className="flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:border-error/50 hover:bg-error/5 hover:text-error"
+            >
+              <TrashSimple size={14} />
             </button>
           </div>
         )}
@@ -524,12 +555,47 @@ export function MovieListClient({
       <ImportMoviesDialog
         open={showImportDialog}
         onClose={() => setShowImportDialog(false)}
-        onImport={async (data) => {
+        onImport={async (data, options) => {
           const { importToMyMovieList } = await import("./actions");
-          await importToMyMovieList(data);
+          await importToMyMovieList(data, options);
           router.refresh();
         }}
       />
+
+      {showClearConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="relative w-full sm:mx-4 sm:max-w-sm rounded-lg border border-border bg-bg-surface p-6">
+            <h2 className="mb-2 text-base font-semibold text-text-primary">
+              {t("clearListConfirmTitle")}
+            </h2>
+            <p className="mb-6 text-sm text-text-secondary">
+              {t("clearListConfirmDescription", { count: items.length })}
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                className="rounded-md px-4 py-2 text-sm text-text-secondary hover:text-text-primary"
+              >
+                {t("clearListCancel")}
+              </button>
+              <button
+                disabled={isClearing}
+                onClick={async () => {
+                  setIsClearing(true);
+                  setShowClearConfirm(false);
+                  const { clearMovieList } = await import("./actions");
+                  await clearMovieList();
+                  setItems([]);
+                  setIsClearing(false);
+                }}
+                className="rounded-md bg-error px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-error/90 disabled:opacity-50"
+              >
+                {t("clearListConfirm")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {listSettings && profileVisibility && (
         <ListSettingsModal

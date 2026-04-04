@@ -10,10 +10,16 @@ import {
   FilmStrip,
 } from "@phosphor-icons/react";
 
+type ImportSource = "imdb" | "letterboxd";
+
+export type ImportMode = "merge" | "replace";
+export type DuplicateMode = "skip" | "update";
+export type ImportOptions = { mode: ImportMode; duplicateMode: DuplicateMode };
+
 type ImportMoviesDialogProps = {
   open: boolean;
   onClose: () => void;
-  onImport: (data: unknown) => Promise<void>;
+  onImport: (data: unknown, options: ImportOptions) => Promise<void>;
 };
 
 export function ImportMoviesDialog({
@@ -23,6 +29,9 @@ export function ImportMoviesDialog({
 }: ImportMoviesDialogProps) {
   const t = useTranslations("importMovies");
   const [file, setFile] = useState<File | null>(null);
+  const [source, setSource] = useState<ImportSource | null>(null);
+  const [importMode, setImportMode] = useState<ImportMode>("merge");
+  const [duplicateMode, setDuplicateMode] = useState<DuplicateMode>("skip");
   const [preview, setPreview] = useState<{
     movieCount: number;
     showsSkipped: number;
@@ -33,6 +42,9 @@ export function ImportMoviesDialog({
 
   const resetState = () => {
     setFile(null);
+    setSource(null);
+    setImportMode("merge");
+    setDuplicateMode("skip");
     setPreview(null);
     setError(null);
     setLoading(false);
@@ -48,15 +60,25 @@ export function ImportMoviesDialog({
       setError(null);
       try {
         const text = await selectedFile.text();
-        const { parseImdbMoviesCsv } =
-          await import("@/lib/import/imdb-movies-parser");
-        const parsed = parseImdbMoviesCsv(text);
+        const { isLetterboxdCsv, parseLetterboxdDiaryCsv } =
+          await import("@/lib/import/letterboxd-parser");
 
-        setFile(selectedFile);
-        setPreview({
-          movieCount: parsed.shows.length,
-          showsSkipped: parsed.showsSkipped,
-        });
+        if (isLetterboxdCsv(text)) {
+          const parsed = parseLetterboxdDiaryCsv(text);
+          setFile(selectedFile);
+          setSource("letterboxd");
+          setPreview({ movieCount: parsed.shows.length, showsSkipped: 0 });
+        } else {
+          const { parseImdbMoviesCsv } =
+            await import("@/lib/import/imdb-movies-parser");
+          const parsed = parseImdbMoviesCsv(text);
+          setFile(selectedFile);
+          setSource("imdb");
+          setPreview({
+            movieCount: parsed.shows.length,
+            showsSkipped: parsed.showsSkipped,
+          });
+        }
       } catch {
         setError(t("invalidFormatCsv"));
       }
@@ -65,15 +87,24 @@ export function ImportMoviesDialog({
   );
 
   const handleImport = async () => {
-    if (!file) return;
+    if (!file || !source) return;
     setLoading(true);
     setError(null);
 
     try {
       const text = await file.text();
-      const { parseImdbMoviesCsv } =
-        await import("@/lib/import/imdb-movies-parser");
-      const parsed = parseImdbMoviesCsv(text);
+      let parsed;
+
+      if (source === "letterboxd") {
+        const { parseLetterboxdDiaryCsv } =
+          await import("@/lib/import/letterboxd-parser");
+        parsed = parseLetterboxdDiaryCsv(text);
+      } else {
+        const { parseImdbMoviesCsv } =
+          await import("@/lib/import/imdb-movies-parser");
+        parsed = parseImdbMoviesCsv(text);
+      }
+
       const asJson = {
         name: parsed.name,
         description: parsed.description,
@@ -85,7 +116,7 @@ export function ImportMoviesDialog({
           added_at: s.added_at ?? undefined,
         })),
       };
-      await onImport(asJson);
+      await onImport(asJson, { mode: importMode, duplicateMode });
       handleClose();
     } catch {
       setError(t("error"));
@@ -95,6 +126,13 @@ export function ImportMoviesDialog({
   };
 
   if (!open) return null;
+
+  const sourceLabel =
+    source === "letterboxd" ? t("letterboxdTitle") : t("imdbTitle");
+  const sourceDescription =
+    source === "letterboxd"
+      ? t("letterboxdDescription")
+      : t("imdbDescription");
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -113,13 +151,20 @@ export function ImportMoviesDialog({
           </div>
           <div>
             <h2 className="text-lg font-semibold text-text-primary">
-              {t("imdbTitle")}
+              {source ? sourceLabel : t("title")}
             </h2>
             <p className="text-sm text-text-secondary">
-              {t("imdbDescription")}
+              {source ? sourceDescription : t("selectSourceHint")}
             </p>
           </div>
         </div>
+
+        {/* Source hint */}
+        {!file && (
+          <p className="mb-3 text-xs text-text-muted">
+            {t("autoDetectHint")}
+          </p>
+        )}
 
         {/* Dropzone */}
         <div
@@ -150,12 +195,110 @@ export function ImportMoviesDialog({
               <p className="text-sm font-medium text-text-primary">
                 {t("previewMovies", { count: preview.movieCount })}
               </p>
+              {source && (
+                <p className="text-xs text-text-muted">
+                  {source === "letterboxd"
+                    ? t("detectedLetterboxd")
+                    : t("detectedImdb")}
+                </p>
+              )}
               {preview.showsSkipped > 0 && (
                 <p className="text-xs text-text-muted">
                   {t("showsSkipped", { count: preview.showsSkipped })}
                 </p>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Import mode selector */}
+        {preview && (
+          <div className="mt-4 space-y-3">
+            <div>
+              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-text-faint">
+                {t("importMode")}
+              </p>
+              <div className="flex flex-col gap-1.5">
+                {(["merge", "replace"] as ImportMode[]).map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => setImportMode(m)}
+                    className={`flex items-start gap-3 rounded-md border px-3 py-2.5 text-left transition-colors ${
+                      importMode === m
+                        ? "border-accent bg-accent/5"
+                        : "border-border hover:border-border-hover"
+                    }`}
+                  >
+                    <span
+                      className={`mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border ${
+                        importMode === m
+                          ? "border-accent bg-accent"
+                          : "border-border"
+                      }`}
+                    >
+                      {importMode === m && (
+                        <span className="h-1.5 w-1.5 rounded-full bg-bg-primary" />
+                      )}
+                    </span>
+                    <div>
+                      <p className="text-xs font-medium text-text-primary">
+                        {m === "merge" ? t("mergeLists") : t("replaceLists")}
+                      </p>
+                      <p className="text-[11px] text-text-muted">
+                        {m === "merge"
+                          ? t("mergeListsDesc")
+                          : t("replaceListsDesc")}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {importMode === "merge" && (
+              <div>
+                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-text-faint">
+                  {t("duplicateHandling")}
+                </p>
+                <div className="flex flex-col gap-1.5">
+                  {(["skip", "update"] as DuplicateMode[]).map((m) => (
+                    <button
+                      key={m}
+                      onClick={() => setDuplicateMode(m)}
+                      className={`flex items-start gap-3 rounded-md border px-3 py-2.5 text-left transition-colors ${
+                        duplicateMode === m
+                          ? "border-accent bg-accent/5"
+                          : "border-border hover:border-border-hover"
+                      }`}
+                    >
+                      <span
+                        className={`mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border ${
+                          duplicateMode === m
+                            ? "border-accent bg-accent"
+                            : "border-border"
+                        }`}
+                      >
+                        {duplicateMode === m && (
+                          <span className="h-1.5 w-1.5 rounded-full bg-bg-primary" />
+                        )}
+                      </span>
+                      <div>
+                        <p className="text-xs font-medium text-text-primary">
+                          {m === "skip"
+                            ? t("skipDuplicates")
+                            : t("updateDuplicates")}
+                        </p>
+                        <p className="text-[11px] text-text-muted">
+                          {m === "skip"
+                            ? t("skipDuplicatesDesc")
+                            : t("updateDuplicatesDesc")}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

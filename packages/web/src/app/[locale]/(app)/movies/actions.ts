@@ -228,6 +228,30 @@ export async function removeMovieFromList(itemId: string) {
   revalidatePath("/movies");
 }
 
+export async function clearMovieList() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { data: movieList } = await supabase
+    .from("movie_lists")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+  if (!movieList) throw new Error("Movie list not found");
+
+  const { error } = await supabase
+    .from("movie_list_items")
+    .delete()
+    .eq("movie_list_id", movieList.id);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/movies");
+}
+
 export async function updateMovieRating(itemId: string, rating: number) {
   const supabase = await createClient();
   const {
@@ -309,8 +333,13 @@ export async function updateMovieListSettings(
   revalidatePath("/movies");
 }
 
+export type ImportMode = "merge" | "replace";
+export type DuplicateMode = "skip" | "update";
+export type ImportOptions = { mode: ImportMode; duplicateMode: DuplicateMode };
+
 export async function importToMyMovieList(
   jsonData: unknown,
+  options: ImportOptions = { mode: "merge", duplicateMode: "skip" },
 ): Promise<{ importedCount: number }> {
   const supabase = await createClient();
   const {
@@ -327,6 +356,14 @@ export async function importToMyMovieList(
 
   const { parseTraktJson } = await import("@/lib/import/trakt-parser");
   const parsed = parseTraktJson(jsonData);
+
+  // If replace mode: delete all existing items first
+  if (options.mode === "replace") {
+    await supabase
+      .from("movie_list_items")
+      .delete()
+      .eq("movie_list_id", movieList.id);
+  }
 
   const { data: existingItems } = await supabase
     .from("movie_list_items")
@@ -376,31 +413,44 @@ export async function importToMyMovieList(
       movieId = inserted.id;
     }
 
-    // Skip if already in list
+    const rating =
+      show.score != null && show.score >= 1 && show.score <= 10
+        ? Math.round(show.score)
+        : null;
+
+    // Check for duplicate
     const { data: duplicate } = await supabase
       .from("movie_list_items")
       .select("id")
       .eq("movie_list_id", movieList.id)
       .eq("movie_id", movieId)
       .maybeSingle();
-    if (duplicate) continue;
 
-    const rating =
-      show.score != null && show.score >= 1 && show.score <= 10
-        ? Math.round(show.score)
-        : null;
+    if (duplicate) {
+      if (options.mode === "merge" && options.duplicateMode === "update") {
+        await supabase
+          .from("movie_list_items")
+          .update({
+            rating,
+            ...(show.added_at ? { added_at: show.added_at } : {}),
+          })
+          .eq("id", duplicate.id);
+        importedCount++;
+      }
+      // else skip
+    } else {
+      const { error: insertError } = await supabase
+        .from("movie_list_items")
+        .insert({
+          movie_list_id: movieList.id,
+          movie_id: movieId,
+          position: position++,
+          rating,
+          added_at: show.added_at ?? undefined,
+        });
 
-    const { error: insertError } = await supabase
-      .from("movie_list_items")
-      .insert({
-        movie_list_id: movieList.id,
-        movie_id: movieId,
-        position: position++,
-        rating,
-        added_at: show.added_at ?? undefined,
-      });
-
-    if (!insertError) importedCount++;
+      if (!insertError) importedCount++;
+    }
   }
 
   revalidatePath("/movies");

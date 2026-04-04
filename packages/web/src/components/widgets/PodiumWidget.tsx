@@ -71,14 +71,15 @@ export function PodiumWidget({
         <p className="text-xs font-medium uppercase tracking-widest text-text-muted">
           {label}
         </p>
-        {badge ?? (
+        <div className="flex items-center gap-2">
+          {badge}
           <Link
             href={viewAllHref ?? defaultHref}
             className="text-xs text-text-muted transition-colors hover:text-accent"
           >
             {t("widgets.viewAll")}
           </Link>
-        )}
+        </div>
       </div>
 
       {items.length > 0 ? (

@@ -164,7 +164,12 @@
     "longestMovieByYear": "Longest movie per year",
     "longestMovieByYearTitle": "By release year",
     "loadingMore": "Loading more...",
-    "importExternal": "Import"
+    "importExternal": "Import",
+    "clearList": "Clear list",
+    "clearListConfirmTitle": "Clear movie list?",
+    "clearListConfirmDescription": "This will permanently delete all {count} movies from your list. This action cannot be undone.",
+    "clearListConfirm": "Clear",
+    "clearListCancel": "Cancel"
   },
   "games": {
     "title": "My Games",
@@ -210,7 +215,12 @@
     "longestAnimeByYear": "Longest anime per year",
     "longestAnimeByYearTitle": "By release year",
     "loadingMore": "Loading more...",
-    "importExternal": "Import"
+    "importExternal": "Import",
+    "clearList": "Clear list",
+    "clearListConfirmTitle": "Clear anime list?",
+    "clearListConfirmDescription": "This will permanently delete all {count} anime from your list. This action cannot be undone.",
+    "clearListConfirm": "Clear",
+    "clearListCancel": "Cancel"
   },
   "nav": {
     "home": "Home",
@@ -262,7 +272,8 @@
     "privateGameList": "This user's game list is private.",
     "gamesInCommon": "In common ({count})",
     "noGamesInCommon": "No games in common.",
-    "yourRating": "Your rating"
+    "yourRating": "Your rating",
+    "viewList": "View list"
   },
   "lists": {
     "title": "My List",
@@ -323,7 +334,12 @@
     "animeSuggestConfirmAndRemove": "Yes and remove from this list",
     "animeSuggestDismiss": "No thanks",
     "animeSuggestSuccess": "{count, plural, =1 {1 title added to your Anime list} other {# titles added to your Anime list}}",
-    "animeSuggestAlreadyIn": "All anime are already in your Anime list"
+    "animeSuggestAlreadyIn": "All anime are already in your Anime list",
+    "clearList": "Clear list",
+    "clearListConfirmTitle": "Clear show list?",
+    "clearListConfirmDescription": "This will permanently delete all {count} shows from your list. This action cannot be undone.",
+    "clearListConfirm": "Clear",
+    "clearListCancel": "Cancel"
   },
   "shows": {
     "addShow": "Add Show",
@@ -369,7 +385,17 @@
     "previewShows": "{count, plural, =0 {No shows} =1 {1 show} other {# shows}}",
     "moviesSkipped": "{count, plural, =1 {1 movie excluded} other {# movies excluded}}",
     "seasonsSkipped": "{count, plural, =1 {1 duplicate season merged} other {# duplicate seasons merged}}",
-    "importButton": "{count, plural, =0 {Import} =1 {Import 1 show} other {Import # shows}}"
+    "importButton": "{count, plural, =0 {Import} =1 {Import 1 show} other {Import # shows}}",
+    "importMode": "Import mode",
+    "mergeLists": "Merge with current list",
+    "mergeListsDesc": "Add new items to your existing list",
+    "replaceLists": "Replace current list",
+    "replaceListsDesc": "Delete all current items and start fresh",
+    "duplicateHandling": "Duplicates",
+    "skipDuplicates": "Skip duplicates",
+    "skipDuplicatesDesc": "Keep existing items unchanged",
+    "updateDuplicates": "Update duplicates",
+    "updateDuplicatesDesc": "Update item rating with the imported value"
   },
   "importMovies": {
     "title": "Import Movies",
@@ -384,7 +410,23 @@
     "cancel": "Cancel",
     "previewMovies": "{count, plural, =0 {No movies} =1 {1 movie} other {# movies}}",
     "showsSkipped": "{count, plural, =1 {1 TV show excluded} other {# TV shows excluded}}",
-    "importButton": "{count, plural, =0 {Import} =1 {Import 1 movie} other {Import # movies}}"
+    "importButton": "{count, plural, =0 {Import} =1 {Import 1 movie} other {Import # movies}}",
+    "letterboxdTitle": "Import from Letterboxd",
+    "letterboxdDescription": "Upload the diary CSV exported from Letterboxd",
+    "selectSourceHint": "Supports IMDb and Letterboxd exports",
+    "autoDetectHint": "Format is auto-detected (IMDb or Letterboxd diary CSV)",
+    "detectedLetterboxd": "Letterboxd diary detected",
+    "detectedImdb": "IMDb export detected",
+    "importMode": "Import mode",
+    "mergeLists": "Merge with current list",
+    "mergeListsDesc": "Add new items to your existing list",
+    "replaceLists": "Replace current list",
+    "replaceListsDesc": "Delete all current items and start fresh",
+    "duplicateHandling": "Duplicates",
+    "skipDuplicates": "Skip duplicates",
+    "skipDuplicatesDesc": "Keep existing items unchanged",
+    "updateDuplicates": "Update duplicates",
+    "updateDuplicatesDesc": "Update item rating with the imported value"
   },
   "importAnime": {
     "malTitle": "Import from MyAnimeList",
@@ -399,7 +441,17 @@
     "previewAnime": "{count, plural, =0 {No anime} =1 {1 anime} other {# anime}}",
     "moviesSkipped": "{count, plural, =1 {1 movie excluded} other {# movies excluded}}",
     "seasonsSkipped": "{count, plural, =1 {1 duplicate season merged} other {# duplicate seasons merged}}",
-    "importButton": "{count, plural, =0 {Import} =1 {Import 1 anime} other {Import # anime}}"
+    "importButton": "{count, plural, =0 {Import} =1 {Import 1 anime} other {Import # anime}}",
+    "importMode": "Import mode",
+    "mergeLists": "Merge with current list",
+    "mergeListsDesc": "Add new items to your existing list",
+    "replaceLists": "Replace current list",
+    "replaceListsDesc": "Delete all current items and start fresh",
+    "duplicateHandling": "Duplicates",
+    "skipDuplicates": "Skip duplicates",
+    "skipDuplicatesDesc": "Keep existing items unchanged",
+    "updateDuplicates": "Update duplicates",
+    "updateDuplicatesDesc": "Update item rating with the imported value"
   },
   "explore": {
     "title": "Explore",

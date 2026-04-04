@@ -186,6 +186,23 @@ export async function removeShowFromList(listId: string, itemId: string) {
   revalidatePath(`/shows/lists/${listId}`);
 }
 
+export async function clearShowList(listId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { error } = await supabase
+    .from("list_items")
+    .delete()
+    .eq("list_id", listId);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/shows/lists/${listId}`);
+}
+
 export async function updateShowRating(
   listId: string,
   itemId: string,
@@ -247,7 +264,14 @@ export async function reorderListItems(listId: string, itemIds: string[]) {
   revalidatePath(`/shows/lists/${listId}`);
 }
 
-export async function importToMyList(jsonData: unknown) {
+export type ImportMode = "merge" | "replace";
+export type DuplicateMode = "skip" | "update";
+export type ImportOptions = { mode: ImportMode; duplicateMode: DuplicateMode };
+
+export async function importToMyList(
+  jsonData: unknown,
+  options: ImportOptions = { mode: "merge", duplicateMode: "skip" },
+) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -271,6 +295,11 @@ export async function importToMyList(jsonData: unknown) {
       .maybeSingle();
 
     animeTagId = animeTag?.id ?? null;
+  }
+
+  // If replace mode: delete all existing items first
+  if (options.mode === "replace") {
+    await supabase.from("list_items").delete().eq("list_id", myList.id);
   }
 
   // Get current max position in the user's list
@@ -332,30 +361,52 @@ export async function importToMyList(jsonData: unknown) {
       }
 
       if (dbShowId) {
-        // Skip if show already in list (unique constraint)
         const rating =
           typeof show.score === "number" && show.score >= 1 && show.score <= 10
             ? show.score
             : null;
-        const { error } = await supabase.from("list_items").insert({
-          list_id: myList.id,
-          show_id: dbShowId,
-          position,
-          rating,
-          ...(show.added_at ? { added_at: show.added_at } : {}),
-        });
-        if (!error) {
-          if (animeTagId) {
-            // Best-effort: keep import resilient even if tag assignment fails.
-            await supabase.from("show_tags").insert({
-              user_id: user.id,
-              show_id: dbShowId,
-              tag_id: animeTagId,
-            });
-          }
 
-          position++;
-          importedCount++;
+        // Check for duplicate in current list
+        const { data: duplicate } = await supabase
+          .from("list_items")
+          .select("id")
+          .eq("list_id", myList.id)
+          .eq("show_id", dbShowId)
+          .maybeSingle();
+
+        if (duplicate) {
+          if (options.mode === "merge" && options.duplicateMode === "update") {
+            // Update rating of existing item
+            await supabase
+              .from("list_items")
+              .update({
+                rating,
+                ...(show.added_at ? { added_at: show.added_at } : {}),
+              })
+              .eq("id", duplicate.id);
+            importedCount++;
+          }
+          // else skip duplicate
+        } else {
+          const { error } = await supabase.from("list_items").insert({
+            list_id: myList.id,
+            show_id: dbShowId,
+            position,
+            rating,
+            ...(show.added_at ? { added_at: show.added_at } : {}),
+          });
+          if (!error) {
+            if (animeTagId) {
+              // Best-effort: keep import resilient even if tag assignment fails.
+              await supabase.from("show_tags").insert({
+                user_id: user.id,
+                show_id: dbShowId,
+                tag_id: animeTagId,
+              });
+            }
+            position++;
+            importedCount++;
+          }
         }
       }
     } catch (e) {

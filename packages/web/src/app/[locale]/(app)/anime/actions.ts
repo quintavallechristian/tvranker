@@ -235,6 +235,30 @@ export async function removeAnimeFromList(itemId: string) {
   revalidatePath("/anime");
 }
 
+export async function clearAnimeList() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { data: animeList } = await supabase
+    .from("anime_lists")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+  if (!animeList) throw new Error("Anime list not found");
+
+  const { error } = await supabase
+    .from("anime_list_items")
+    .delete()
+    .eq("anime_list_id", animeList.id);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/anime");
+}
+
 export async function updateAnimeRating(itemId: string, rating: number) {
   const supabase = await createClient();
   const {
@@ -316,8 +340,13 @@ export async function updateAnimeListSettings(
   revalidatePath("/anime");
 }
 
+export type ImportMode = "merge" | "replace";
+export type DuplicateMode = "skip" | "update";
+export type ImportOptions = { mode: ImportMode; duplicateMode: DuplicateMode };
+
 export async function importToMyAnimeList(
   jsonData: unknown,
+  options: ImportOptions = { mode: "merge", duplicateMode: "skip" },
 ): Promise<{ importedCount: number }> {
   const supabase = await createClient();
   const {
@@ -334,6 +363,14 @@ export async function importToMyAnimeList(
 
   const { parseTraktJson } = await import("@/lib/import/trakt-parser");
   const parsed = parseTraktJson(jsonData);
+
+  // If replace mode: delete all existing items first
+  if (options.mode === "replace") {
+    await supabase
+      .from("anime_list_items")
+      .delete()
+      .eq("anime_list_id", animeList.id);
+  }
 
   const { data: existingItems } = await supabase
     .from("anime_list_items")
@@ -370,31 +407,44 @@ export async function importToMyAnimeList(
       animeId = inserted.id;
     }
 
-    // Skip if already in list
+    const rating =
+      show.score != null && show.score >= 1 && show.score <= 10
+        ? Math.round(show.score)
+        : null;
+
+    // Check for duplicate
     const { data: duplicate } = await supabase
       .from("anime_list_items")
       .select("id")
       .eq("anime_list_id", animeList.id)
       .eq("anime_id", animeId)
       .maybeSingle();
-    if (duplicate) continue;
 
-    const rating =
-      show.score != null && show.score >= 1 && show.score <= 10
-        ? Math.round(show.score)
-        : null;
+    if (duplicate) {
+      if (options.mode === "merge" && options.duplicateMode === "update") {
+        await supabase
+          .from("anime_list_items")
+          .update({
+            rating,
+            ...(show.added_at ? { added_at: show.added_at } : {}),
+          })
+          .eq("id", duplicate.id);
+        importedCount++;
+      }
+      // else skip
+    } else {
+      const { error: insertError } = await supabase
+        .from("anime_list_items")
+        .insert({
+          anime_list_id: animeList.id,
+          anime_id: animeId,
+          position: position++,
+          rating,
+          added_at: show.added_at ?? undefined,
+        });
 
-    const { error: insertError } = await supabase
-      .from("anime_list_items")
-      .insert({
-        anime_list_id: animeList.id,
-        anime_id: animeId,
-        position: position++,
-        rating,
-        added_at: show.added_at ?? undefined,
-      });
-
-    if (!insertError) importedCount++;
+      if (!insertError) importedCount++;
+    }
   }
 
   revalidatePath("/anime");

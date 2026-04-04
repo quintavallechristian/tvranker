@@ -97,10 +97,10 @@ export type HomeData = {
   top10Movies: MoviePodiumItem[];
   top10Anime: AnimePodiumItem[];
   top10Games: GamePodiumItem[];
-  lastShow: LastAddedShow | null;
-  lastMovie: LastAddedMovie | null;
-  lastAnime: LastAddedAnime | null;
-  lastGame: LastAddedGame | null;
+  lastShows: LastAddedShow[];
+  lastMovies: LastAddedMovie[];
+  lastAnime: LastAddedAnime[];
+  lastGames: LastAddedGame[];
   notifications: NotificationItem[];
   recentFollows: RecentFollowItem[];
   suggestedShows: SuggestionItem[];
@@ -227,7 +227,7 @@ export async function getHomeData(): Promise<HomeData | null> {
           .select("rating, added_at, shows(id, title, poster_path)")
           .eq("list_id", list.id)
           .order("added_at", { ascending: false })
-          .limit(1)
+          .limit(10)
       : Promise.resolve({ data: [] }),
     movieList
       ? supabase
@@ -235,7 +235,7 @@ export async function getHomeData(): Promise<HomeData | null> {
           .select("rating, added_at, movies(id, title, poster_path)")
           .eq("movie_list_id", movieList.id)
           .order("added_at", { ascending: false })
-          .limit(1)
+          .limit(10)
       : Promise.resolve({ data: [] }),
     animeList
       ? supabase
@@ -243,7 +243,7 @@ export async function getHomeData(): Promise<HomeData | null> {
           .select("rating, added_at, animes(id, title, poster_path)")
           .eq("anime_list_id", animeList.id)
           .order("added_at", { ascending: false })
-          .limit(1)
+          .limit(10)
       : Promise.resolve({ data: [] }),
     gameList
       ? supabase
@@ -251,7 +251,7 @@ export async function getHomeData(): Promise<HomeData | null> {
           .select("rating, added_at, games(id, title, cover_url)")
           .eq("game_list_id", gameList.id)
           .order("added_at", { ascending: false })
-          .limit(1)
+          .limit(10)
       : Promise.resolve({ data: [] }),
     supabase
       .from("notifications")
@@ -341,110 +341,108 @@ export async function getHomeData(): Promise<HomeData | null> {
       }
     ).data ?? []
   )
-    .map((item) =>
-      item.games ? { ...item.games, rating: item.rating } : null,
-    )
+    .map((item) => (item.games ? { ...item.games, rating: item.rating } : null))
     .filter((s): s is GamePodiumItem => s !== null);
 
-  // Process last show
-  let lastShow: LastAddedShow | null = null;
-  const lastShowItems = (
-    lastShowResult as {
-      data: Array<{
-        rating: number | null;
-        added_at: string;
-        shows: { id: string; title: string; poster_path: string | null } | null;
-      }> | null;
-    }
-  ).data;
-  if (lastShowItems && lastShowItems.length > 0 && lastShowItems[0].shows) {
-    const item = lastShowItems[0];
-    lastShow = {
+  // Process last shows
+  const lastShows: LastAddedShow[] = (
+    (
+      lastShowResult as {
+        data: Array<{
+          rating: number | null;
+          added_at: string;
+          shows: {
+            id: string;
+            title: string;
+            poster_path: string | null;
+          } | null;
+        }> | null;
+      }
+    ).data ?? []
+  )
+    .filter((item) => item.shows !== null)
+    .map((item) => ({
       id: item.shows!.id,
       title: item.shows!.title,
       poster_path: item.shows!.poster_path,
       rating: item.rating,
       added_at: item.added_at,
-    };
-  }
+    }));
 
-  // Process last movie
-  let lastMovie: LastAddedMovie | null = null;
-  const lastMovieItems = (
-    lastMovieResult as {
-      data: Array<{
-        rating: number | null;
-        added_at: string;
-        movies: {
-          id: string;
-          title: string;
-          poster_path: string | null;
-        } | null;
-      }> | null;
-    }
-  ).data;
-  if (lastMovieItems && lastMovieItems.length > 0 && lastMovieItems[0].movies) {
-    const item = lastMovieItems[0];
-    lastMovie = {
+  // Process last movies
+  const lastMovies: LastAddedMovie[] = (
+    (
+      lastMovieResult as {
+        data: Array<{
+          rating: number | null;
+          added_at: string;
+          movies: {
+            id: string;
+            title: string;
+            poster_path: string | null;
+          } | null;
+        }> | null;
+      }
+    ).data ?? []
+  )
+    .filter((item) => item.movies !== null)
+    .map((item) => ({
       id: item.movies!.id,
       title: item.movies!.title,
       poster_path: item.movies!.poster_path,
       rating: item.rating,
       added_at: item.added_at,
-    };
-  }
+    }));
 
   // Process last anime
-  let lastAnime: LastAddedAnime | null = null;
-  const lastAnimeItems = (
-    lastAnimeResult as {
-      data: Array<{
-        rating: number | null;
-        added_at: string;
-        animes: {
-          id: string;
-          title: string;
-          poster_path: string | null;
-        } | null;
-      }> | null;
-    }
-  ).data;
-  if (lastAnimeItems && lastAnimeItems.length > 0 && lastAnimeItems[0].animes) {
-    const item = lastAnimeItems[0];
-    lastAnime = {
+  const lastAnime: LastAddedAnime[] = (
+    (
+      lastAnimeResult as {
+        data: Array<{
+          rating: number | null;
+          added_at: string;
+          animes: {
+            id: string;
+            title: string;
+            poster_path: string | null;
+          } | null;
+        }> | null;
+      }
+    ).data ?? []
+  )
+    .filter((item) => item.animes !== null)
+    .map((item) => ({
       id: item.animes!.id,
       title: item.animes!.title,
       poster_path: item.animes!.poster_path,
       rating: item.rating,
       added_at: item.added_at,
-    };
-  }
+    }));
 
-  // Process last game
-  let lastGame: LastAddedGame | null = null;
-  const lastGameItems = (
-    lastGameResult as {
-      data: Array<{
-        rating: number | null;
-        added_at: string;
-        games: {
-          id: string;
-          title: string;
-          cover_url: string | null;
-        } | null;
-      }> | null;
-    }
-  ).data;
-  if (lastGameItems && lastGameItems.length > 0 && lastGameItems[0].games) {
-    const item = lastGameItems[0];
-    lastGame = {
+  // Process last games
+  const lastGames: LastAddedGame[] = (
+    (
+      lastGameResult as {
+        data: Array<{
+          rating: number | null;
+          added_at: string;
+          games: {
+            id: string;
+            title: string;
+            cover_url: string | null;
+          } | null;
+        }> | null;
+      }
+    ).data ?? []
+  )
+    .filter((item) => item.games !== null)
+    .map((item) => ({
       id: item.games!.id,
       title: item.games!.title,
       cover_url: item.games!.cover_url,
       rating: item.rating,
       added_at: item.added_at,
-    };
-  }
+    }));
 
   // Process notifications
   const rawNotifications =
@@ -485,10 +483,10 @@ export async function getHomeData(): Promise<HomeData | null> {
     top10Movies,
     top10Anime,
     top10Games,
-    lastShow,
-    lastMovie,
+    lastShows,
+    lastMovies,
     lastAnime,
-    lastGame,
+    lastGames,
     notifications,
     recentFollows: recentFollowsResult,
     suggestedShows,
@@ -641,7 +639,12 @@ async function getTop3PopularGames(
   return top3Ids
     .map((id) => games.find((g) => g.id === id))
     .filter((g): g is NonNullable<typeof g> => g != null)
-    .map((g) => ({ id: g.id, title: g.title, poster_path: null, imageUrl: g.cover_url }));
+    .map((g) => ({
+      id: g.id,
+      title: g.title,
+      poster_path: null,
+      imageUrl: g.cover_url,
+    }));
 }
 
 function parseWidgets(raw: unknown): WidgetConfig[] {

@@ -104,7 +104,11 @@ export function HomeClient({ data }: { data: HomeData }) {
       case "game_podium":
         return (
           <PodiumWidget
-            items={data.top10Games.map((g) => ({ ...g, poster_path: null, imageUrl: g.cover_url }))}
+            items={data.top10Games.map((g) => ({
+              ...g,
+              poster_path: null,
+              imageUrl: g.cover_url,
+            }))}
             topic="game"
             rowSpan={config.rowSpan}
           />
@@ -116,18 +120,43 @@ export function HomeClient({ data }: { data: HomeData }) {
       case "anime_count":
         return <CountWidget count={data.animeCount} topic="anime" />;
       case "game_count":
-        return <CountWidget count={data.gameCount} topic="game" href="/games" />;
+        return (
+          <CountWidget count={data.gameCount} topic="game" href="/games" />
+        );
       case "last_show_added":
-        return <LastSeenWidget item={data.lastShow} topic="show" />;
+        return (
+          <LastSeenWidget
+            items={data.lastShows}
+            topic="show"
+            rowSpan={config.rowSpan}
+          />
+        );
       case "last_movie_added":
-        return <LastSeenWidget item={data.lastMovie} topic="movie" />;
+        return (
+          <LastSeenWidget
+            items={data.lastMovies}
+            topic="movie"
+            rowSpan={config.rowSpan}
+          />
+        );
       case "last_anime_added":
-        return <LastSeenWidget item={data.lastAnime} topic="anime" />;
+        return (
+          <LastSeenWidget
+            items={data.lastAnime}
+            topic="anime"
+            rowSpan={config.rowSpan}
+          />
+        );
       case "last_game_added":
         return (
           <LastSeenWidget
-            item={data.lastGame ? { ...data.lastGame, poster_path: null, imageUrl: data.lastGame.cover_url } : null}
+            items={data.lastGames.map((g) => ({
+              ...g,
+              poster_path: null,
+              imageUrl: g.cover_url,
+            }))}
             topic="game"
+            rowSpan={config.rowSpan}
           />
         );
       case "notifications":
