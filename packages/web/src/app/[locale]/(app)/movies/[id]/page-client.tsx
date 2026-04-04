@@ -40,7 +40,7 @@ function getYouTubeEmbedUrl(url: string): string | null {
 
 type Tab = "trailer" | "stats";
 
-type MovieData = {
+export type MovieData = {
   id: string;
   tmdb_id: number | null;
   imdb_id: string | null;

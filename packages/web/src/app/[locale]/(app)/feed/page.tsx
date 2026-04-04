@@ -133,8 +133,8 @@ export default async function FeedPage({
 
     events = (rawEvents ?? []).map((event) => ({
       id: event.id,
-      event_type: event.event_type,
-      content_type: event.content_type,
+      event_type: event.event_type as FeedEvent["event_type"],
+      content_type: event.content_type as FeedEvent["content_type"],
       item_id: event.item_id,
       list_id: event.list_id,
       item_title: event.item_title,

@@ -957,3 +957,58 @@ export const Constants = {
     Enums: {},
   },
 } as const;
+
+// ─── Convenience table row type aliases ──────────────────────────────────────
+
+export type Profile = Tables<"profiles">;
+export type List = Tables<"lists">;
+export type Show = Tables<"shows">;
+export type ListItem = Tables<"list_items">;
+export type Tag = Tables<"tags">;
+export type ShowTag = Tables<"show_tags">;
+export type Follow = Tables<"follows">;
+export type Notification = Tables<"notifications">;
+export type Movie = Tables<"movies">;
+export type MovieList = Tables<"movie_lists">;
+export type MovieListItem = Tables<"movie_list_items">;
+export type Anime = Tables<"animes">;
+export type AnimeList = Tables<"anime_lists">;
+export type AnimeListItem = Tables<"anime_list_items">;
+export type Game = Tables<"games">;
+export type GameList = Tables<"game_lists">;
+export type GameListItem = Tables<"game_list_items">;
+
+// ─── Custom composite types ───────────────────────────────────────────────────
+
+export type EpisodeInfo = {
+  episode_number: number;
+  name: string;
+  runtime: number | null;
+};
+
+export type SeasonInfo = {
+  season_number: number;
+  name: string;
+  episode_count: number;
+  air_date: string | null;
+  episodes?: EpisodeInfo[];
+};
+
+export type WatchProvider = {
+  provider_id: number;
+  provider_name: string;
+  logo_path: string;
+};
+
+export type WatchProviderRegion = Record<
+  string,
+  {
+    flatrate?: WatchProvider[];
+    buy?: WatchProvider[];
+    rent?: WatchProvider[];
+  }
+>;
+
+export type ListWithItems = List & {
+  list_items: (ListItem & { shows: Show | null })[];
+};

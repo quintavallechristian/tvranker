@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { fetchMovieTmdbData } from "../actions";
 import { MovieDetailClient } from "./page-client";
+import type { MovieData } from "./page-client";
 import type { ShowAnalyticsData } from "@/components/ShowAnalytics";
 import { computeListSimilarity, type ListEntry } from "@/lib/similarity";
 import { fetchAllRows } from "@/lib/supabase/fetchAll";
@@ -205,7 +206,7 @@ export default async function MovieDetailPage({
 
   return (
     <MovieDetailClient
-      movie={finalMovie}
+      movie={finalMovie as unknown as MovieData}
       stats={{ listCount, avgRating, ratingCount: ratings.length }}
       publicLists={publicListsWithSimilarity}
       analyticsData={analyticsData}

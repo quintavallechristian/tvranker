@@ -176,7 +176,7 @@ export default async function UserShowsPage({
             initialHasMore={hasMore}
             isLoggedIn={!!user && !isOwnProfile}
             viewerItems={viewerItems}
-            ratingLabels={list.rating_labels ?? profile.rating_labels}
+            ratingLabels={(list.rating_labels ?? profile.rating_labels) as string[] | null}
           />
         )
       ) : (

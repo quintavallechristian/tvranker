@@ -70,7 +70,7 @@ function getYouTubeEmbedUrl(url: string): string | null {
   }
 }
 
-type ShowData = {
+export type ShowData = {
   id: string;
   tmdb_id: number | null;
   imdb_id: string | null;

@@ -162,7 +162,7 @@ export default async function UserGamesPage({
             initialHasMore={hasMore}
             isLoggedIn={!!user && !isOwnProfile}
             viewerGameIds={viewerGameIds}
-            ratingLabels={gameList.rating_labels ?? profile.rating_labels}
+            ratingLabels={(gameList.rating_labels ?? profile.rating_labels) as string[] | null}
           />
         )
       ) : (

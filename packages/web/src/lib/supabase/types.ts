@@ -1,7 +1,7 @@
 // Re-export from shared package
 export type {
   Database,
-  Profile,
+  Json,
   List,
   Show,
   ListItem,

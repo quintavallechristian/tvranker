@@ -168,7 +168,7 @@ export default async function UserAnimePage({
             initialHasMore={hasMore}
             isLoggedIn={!!user && !isOwnProfile}
             viewerAnimeIds={viewerAnimeIds}
-            ratingLabels={animeList.rating_labels ?? profile.rating_labels}
+            ratingLabels={(animeList.rating_labels ?? profile.rating_labels) as string[] | null}
           />
         )
       ) : (

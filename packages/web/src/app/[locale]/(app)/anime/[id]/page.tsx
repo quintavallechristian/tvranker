@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { fetchAnimeTmdbData } from "../actions";
 import { AnimeDetailClient } from "./page-client";
+import type { AnimeData } from "./page-client";
 import type { ShowAnalyticsData } from "@/components/ShowAnalytics";
 import { computeListSimilarity, type ListEntry } from "@/lib/similarity";
 import { fetchAllRows } from "@/lib/supabase/fetchAll";
@@ -205,7 +206,7 @@ export default async function AnimeDetailPage({
 
   return (
     <AnimeDetailClient
-      anime={finalAnime}
+      anime={finalAnime as unknown as AnimeData}
       stats={{ listCount, avgRating, ratingCount: ratings.length }}
       publicLists={publicListsWithSimilarity}
       analyticsData={analyticsData}

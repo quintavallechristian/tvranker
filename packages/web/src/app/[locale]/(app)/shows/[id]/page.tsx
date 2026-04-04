@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { fetchTmdbData } from "../actions";
 import { ShowDetailClient } from "./page-client";
+import type { ShowData } from "./page-client";
 import type { ShowAnalyticsData } from "@/components/ShowAnalytics";
 import { computeListSimilarity, type ListEntry } from "@/lib/similarity";
 import { fetchAllRows } from "@/lib/supabase/fetchAll";
@@ -214,7 +215,7 @@ export default async function ShowDetailPage({
 
   return (
     <ShowDetailClient
-      show={finalShow}
+      show={finalShow as unknown as ShowData}
       stats={{ listCount, avgRating, ratingCount: ratings.length }}
       publicLists={publicListsWithSimilarity}
       analyticsData={analyticsData}

@@ -173,7 +173,7 @@ export default async function UserMoviesPage({
             initialHasMore={hasMore}
             isLoggedIn={!!user && !isOwnProfile}
             viewerMovieIds={viewerMovieIds}
-            ratingLabels={movieList.rating_labels ?? profile.rating_labels}
+            ratingLabels={(movieList.rating_labels ?? profile.rating_labels) as string[] | null}
           />
         )
       ) : (

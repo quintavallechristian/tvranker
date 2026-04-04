@@ -4,10 +4,10 @@ import {
   validateMalXml,
   extractBaseTitle,
 } from "@/lib/import/mal-parser";
-import { JSDOM } from "jsdom";
 
 // Ensure DOMParser is available in test environment
 if (typeof globalThis.DOMParser === "undefined") {
+  // @ts-ignore - jsdom lacks type declarations; vitest provides jsdom env anyway
   const { JSDOM: JSDOMClass } = await import("jsdom");
   globalThis.DOMParser = new JSDOMClass().window.DOMParser;
 }

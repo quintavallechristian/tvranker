@@ -33,7 +33,7 @@ export default async function ProfilePage() {
 
   return (
     <ProfilePageClient
-      profile={profile}
+      profile={profile as unknown as Parameters<typeof ProfilePageClient>[0]["profile"]}
       publicListCount={count ?? 0}
       initialTags={(tags ?? []) as TagResult[]}
     />

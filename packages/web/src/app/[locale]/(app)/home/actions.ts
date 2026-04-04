@@ -687,7 +687,7 @@ export async function saveWidgets(widgets: WidgetConfig[]) {
   const { error } = await supabase
     .from("profiles")
     .update({
-      homepage_widgets: widgets as unknown as Record<string, unknown>[],
+      homepage_widgets: widgets as unknown as import("@/lib/supabase/types").Json,
     })
     .eq("id", user.id);
 

@@ -46,9 +46,33 @@ export {
   type TMDBFindResult,
 } from "./lib/tmdb/types";
 
+// Import parsers
+export {
+  parseTraktJson,
+  validateTraktJson,
+  type TraktShow,
+  type TraktList,
+  type ParsedShow,
+  type ParseResult,
+} from "./lib/import/trakt-parser";
+export {
+  parseMalXml,
+  extractBaseTitle,
+  validateMalXml,
+} from "./lib/import/mal-parser";
+
+// IGDB types & utilities
+export {
+  getIGDBCoverUrl,
+  type IGDBGame,
+  type IGDBGameSearchResult,
+  type IGDBCoverSize,
+} from "./lib/igdb/types";
+
 // Supabase types
 export type {
   Database,
+  Json,
   Profile,
   List,
   Show,
@@ -72,26 +96,3 @@ export type {
   GameList,
   GameListItem,
 } from "./lib/supabase/types";
-
-// Import parsers
-export {
-  parseTraktJson,
-  validateTraktJson,
-  type TraktShow,
-  type TraktList,
-  type ParsedShow,
-  type ParseResult,
-} from "./lib/import/trakt-parser";
-export {
-  parseMalXml,
-  extractBaseTitle,
-  validateMalXml,
-} from "./lib/import/mal-parser";
-
-// IGDB types & utilities
-export {
-  getIGDBCoverUrl,
-  type IGDBGame,
-  type IGDBGameSearchResult,
-  type IGDBCoverSize,
-} from "./lib/igdb/types";
