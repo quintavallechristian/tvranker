@@ -82,6 +82,7 @@
       "noRankings": "Nessuna classifica disponibile",
       "addWidget": "Aggiungi widget",
       "remove": "Rimuovi",
+      "drag": "Trascina per riordinare",
       "expand": "Espandi larghezza",
       "shrink": "Riduci larghezza",
       "expandHeight": "Espandi altezza",
@@ -233,7 +234,12 @@
     "profile": "Profilo",
     "faq": "FAQ",
     "rankings": "Classifica",
-    "settings": "Impostazioni"
+    "settings": "Impostazioni",
+    "recenti": "Le mie liste",
+    "listShows": "Serie TV",
+    "listAnime": "Anime",
+    "listMovies": "Film",
+    "listGames": "Videogiochi"
   },
   "follows": {
     "title": "Seguiti",
@@ -359,6 +365,8 @@
     "rating": "Voto",
     "noRating": "Non votato",
     "removeFromList": "Rimuovi dalla lista",
+    "confirmRemove": "Rimuovi",
+    "cancel": "Annulla",
     "position": "#",
     "title": "Titolo",
     "dragToReorder": "Trascina per riordinare",
@@ -748,6 +756,7 @@
     "addFirst": "Aggiungi una serie",
     "importExternal": "Importa",
     "communityFavorites": "Preferiti della community",
+    "noThanks": "No grazie",
     "addToList": "Aggiungi",
     "details": "Dettagli",
     "moviesTitle": "Benvenuto nei tuoi film!",

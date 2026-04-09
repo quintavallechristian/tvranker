@@ -71,6 +71,7 @@ import {
   type TagRow,
 } from "../../../tags/actions";
 import { fetchTmdbData } from "../../../shows/actions";
+import { addRecentList } from "@/lib/recent-lists";
 
 type ListItem = ListItemWithShow;
 
@@ -166,6 +167,14 @@ export function ListDetailClient({
   );
   const [items, setItems] = useState<ListItem[]>(list.list_items);
 
+  // Track visit in sidebar recenti (owner only)
+  useEffect(() => {
+    if (isOwner) {
+      addRecentList({ id: list.id, topic: "show", href: `/shows/lists/${list.id}` });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [list.id]);
+
   // Local state for debounced description edits
   const [listDescription, setListDescription] = useState(
     list.description ?? "",
@@ -220,7 +229,17 @@ export function ListDetailClient({
       }),
     [items, showTagsMap, animeTagIds],
   );
-  const [animeBannerDismissed, setAnimeBannerDismissed] = useState(false);
+  const ANIME_BANNER_KEY = `anime_banner_dismissed_${list.id}`;
+  const [animeBannerDismissed, setAnimeBannerDismissed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(ANIME_BANNER_KEY) === "true";
+  });
+
+  function dismissAnimeBanner() {
+    localStorage.setItem(ANIME_BANNER_KEY, "true");
+    setAnimeBannerDismissed(true);
+  }
+
   const [animePopulateStatus, setAnimePopulateStatus] = useState<
     "idle" | "loading" | "done"
   >("idle");
@@ -261,7 +280,7 @@ export function ListDetailClient({
         }
       } catch {
         setAnimePopulateStatus("idle");
-        setAnimeBannerDismissed(true);
+        dismissAnimeBanner();
       }
     },
     [list.id, t, startTransition],
@@ -734,7 +753,7 @@ export function ListDetailClient({
                     {t("animeSuggestConfirmAndRemove")}
                   </button>
                   <button
-                    onClick={() => setAnimeBannerDismissed(true)}
+                    onClick={() => dismissAnimeBanner()}
                     className="text-xs text-text-muted transition-colors hover:text-text-secondary"
                   >
                     {t("animeSuggestDismiss")}
@@ -745,7 +764,7 @@ export function ListDetailClient({
           </div>
           <button
             onClick={() => {
-              setAnimeBannerDismissed(true);
+              dismissAnimeBanner();
               setAnimePopulateStatus("idle");
             }}
             className="mt-0.5 shrink-0 text-text-faint transition-colors hover:text-text-secondary"

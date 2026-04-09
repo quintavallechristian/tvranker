@@ -8,7 +8,24 @@ import {
   ArrowsInLineHorizontal,
   ArrowsOutLineVertical,
   ArrowsInLineVertical,
+  DotsSixVertical,
 } from "@phosphor-icons/react";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  rectSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import type { HomeData } from "@/app/[locale]/(app)/home/actions";
 import { saveWidgets } from "@/app/[locale]/(app)/home/actions";
 import type { WidgetConfig, WidgetType } from "@/lib/widgets";
@@ -26,6 +43,95 @@ import { NotificationsWidget } from "@/components/widgets/NotificationsWidget";
 import { RecentFollowsWidget } from "@/components/widgets/RecentFollowsWidget";
 import { WidgetPicker } from "@/components/widgets/WidgetPicker";
 import { HomeWelcome } from "@/components/HomeWelcome";
+import type { ReactNode } from "react";
+
+type TFunc = ReturnType<typeof useTranslations>;
+
+function SortableWidget({
+  config,
+  t,
+  onToggleColSpan,
+  onToggleRowSpan,
+  onRemove,
+  children,
+}: {
+  config: WidgetConfig;
+  t: TFunc;
+  onToggleColSpan: () => void;
+  onToggleRowSpan: () => void;
+  onRemove: () => void;
+  children: ReactNode;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: config.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`group relative ${
+        config.colSpan === 2 ? "col-span-2" : "col-span-1"
+      } ${config.rowSpan === 2 ? "row-span-2" : "row-span-1"} ${
+        isDragging ? "z-20 opacity-80" : ""
+      }`}
+    >
+      {/* Widget controls — bottom-right on mobile, top-right on desktop (hover) */}
+      <div className="absolute bottom-1 right-1 z-10 flex gap-0.5 sm:bottom-auto sm:-top-2 sm:right-1 sm:opacity-0 sm:group-hover:opacity-100 sm:transition-opacity">
+        {/* Drag handle — desktop hover only */}
+        <button
+          {...attributes}
+          {...listeners}
+          className="hidden cursor-grab active:cursor-grabbing sm:flex h-5 w-5 items-center justify-center rounded bg-bg-elevated text-text-muted shadow-sm transition-colors hover:bg-bg-surface-hover hover:text-text-primary"
+          title={t("widgets.drag")}
+        >
+          <DotsSixVertical size={10} />
+        </button>
+        <button
+          onClick={onToggleColSpan}
+          className="flex h-6 w-6 items-center justify-center rounded bg-bg-elevated text-text-muted shadow-sm transition-colors hover:bg-bg-surface-hover hover:text-text-primary sm:h-5 sm:w-5"
+          title={config.colSpan === 1 ? t("widgets.expand") : t("widgets.shrink")}
+        >
+          {config.colSpan === 1 ? (
+            <ArrowsOutLineHorizontal size={10} />
+          ) : (
+            <ArrowsInLineHorizontal size={10} />
+          )}
+        </button>
+        <button
+          onClick={onToggleRowSpan}
+          className="flex h-6 w-6 items-center justify-center rounded bg-bg-elevated text-text-muted shadow-sm transition-colors hover:bg-bg-surface-hover hover:text-text-primary sm:h-5 sm:w-5"
+          title={config.rowSpan === 1 ? t("widgets.expandHeight") : t("widgets.shrinkHeight")}
+        >
+          {config.rowSpan === 1 ? (
+            <ArrowsOutLineVertical size={10} />
+          ) : (
+            <ArrowsInLineVertical size={10} />
+          )}
+        </button>
+        <button
+          onClick={onRemove}
+          className="flex h-6 w-6 items-center justify-center rounded bg-bg-elevated text-text-muted shadow-sm transition-colors hover:bg-error/20 hover:text-error sm:h-5 sm:w-5"
+          title={t("widgets.remove")}
+        >
+          <X size={10} weight="bold" />
+        </button>
+      </div>
+
+      {children}
+    </div>
+  );
+}
 
 export function HomeClient({ data }: { data: HomeData }) {
   const t = useTranslations("home");
@@ -34,6 +140,11 @@ export function HomeClient({ data }: { data: HomeData }) {
   const savedWidgets = data.widgets.length > 0 ? data.widgets : DEFAULT_WIDGETS;
 
   const [widgets, setOptimisticWidgets] = useOptimistic(savedWidgets);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+  );
 
   function persistWidgets(next: WidgetConfig[]) {
     startTransition(async () => {
@@ -73,6 +184,15 @@ export function HomeClient({ data }: { data: HomeData }) {
       w.id === id ? { ...w, rowSpan: (w.rowSpan === 1 ? 2 : 1) as 1 | 2 } : w,
     );
     persistWidgets(next);
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = widgets.findIndex((w) => w.id === active.id);
+    const newIndex = widgets.findIndex((w) => w.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+    persistWidgets(arrayMove(widgets, oldIndex, newIndex));
   }
 
   function renderWidget(config: WidgetConfig) {
@@ -194,59 +314,31 @@ export function HomeClient({ data }: { data: HomeData }) {
           </div>
           {/* Widget grid — fixed row height so row-span-2 = exactly double */}
           {widgets.length > 0 ? (
-            <div className="grid auto-rows-[200px] grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-              {widgets.map((config) => (
-                <div
-                  key={config.id}
-                  className={`group relative ${
-                    config.colSpan === 2 ? "col-span-2" : "col-span-1"
-                  } ${config.rowSpan === 2 ? "row-span-2" : "row-span-1"}`}
-                >
-                  {/* Widget controls (always visible on mobile, hover on desktop) */}
-                  <div className="absolute -top-2 right-1 z-10 flex gap-0.5 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
-                    <button
-                      onClick={() => toggleColSpan(config.id)}
-                      className="flex h-5 w-5 items-center justify-center rounded bg-bg-elevated text-text-muted shadow-sm transition-colors hover:bg-bg-surface-hover hover:text-text-primary"
-                      title={
-                        config.colSpan === 1
-                          ? t("widgets.expand")
-                          : t("widgets.shrink")
-                      }
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={widgets.map((w) => w.id)}
+                strategy={rectSortingStrategy}
+              >
+                <div className="grid auto-rows-[200px] grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+                  {widgets.map((config) => (
+                    <SortableWidget
+                      key={config.id}
+                      config={config}
+                      t={t}
+                      onToggleColSpan={() => toggleColSpan(config.id)}
+                      onToggleRowSpan={() => toggleRowSpan(config.id)}
+                      onRemove={() => removeWidget(config.id)}
                     >
-                      {config.colSpan === 1 ? (
-                        <ArrowsOutLineHorizontal size={10} />
-                      ) : (
-                        <ArrowsInLineHorizontal size={10} />
-                      )}
-                    </button>
-                    <button
-                      onClick={() => toggleRowSpan(config.id)}
-                      className="flex h-5 w-5 items-center justify-center rounded bg-bg-elevated text-text-muted shadow-sm transition-colors hover:bg-bg-surface-hover hover:text-text-primary"
-                      title={
-                        config.rowSpan === 1
-                          ? t("widgets.expandHeight")
-                          : t("widgets.shrinkHeight")
-                      }
-                    >
-                      {config.rowSpan === 1 ? (
-                        <ArrowsOutLineVertical size={10} />
-                      ) : (
-                        <ArrowsInLineVertical size={10} />
-                      )}
-                    </button>
-                    <button
-                      onClick={() => removeWidget(config.id)}
-                      className="flex h-5 w-5 items-center justify-center rounded bg-bg-elevated text-text-muted shadow-sm transition-colors hover:bg-error/20 hover:text-error"
-                      title={t("widgets.remove")}
-                    >
-                      <X size={10} weight="bold" />
-                    </button>
-                  </div>
-
-                  {renderWidget(config)}
+                      {renderWidget(config)}
+                    </SortableWidget>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </SortableContext>
+            </DndContext>
           ) : (
             <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border py-16 text-center">
               <p className="text-sm text-text-muted">

@@ -56,6 +56,7 @@ import {
   updateAnimeListSettings,
   type AnimeItem,
 } from "./actions";
+import { addRecentList } from "@/lib/recent-lists";
 
 type AnimeListClientProps = {
   animeListId: string;
@@ -93,6 +94,12 @@ export function AnimeListClient({
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [items, setItems] = useState<AnimeItem[]>(initialItems);
+
+  // Track visit in sidebar recenti
+  useEffect(() => {
+    addRecentList({ id: animeListId, topic: "anime", href: "/anime" });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [animeListId]);
   const [existingTmdbIds, setExistingTmdbIds] = useState<number[]>(
     initialExistingTmdbIds,
   );

@@ -18,9 +18,23 @@ import {
   Trophy,
   StackSimple,
   Newspaper,
+  FilmSlate,
+  GameController,
 } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { getRecentLists, type RecentList, type RecentListTopic } from "@/lib/recent-lists";
+
+type TFunc = ReturnType<typeof useTranslations<"nav">>;
+
+function topicMeta(topic: RecentListTopic, t: TFunc) {
+  switch (topic) {
+    case "show":  return { Icon: Television, label: t("listShows") };
+    case "anime": return { Icon: FilmSlate,  label: t("listAnime") };
+    case "movie": return { Icon: FilmSlate,  label: t("listMovies") };
+    case "game":  return { Icon: GameController, label: t("listGames") };
+  }
+}
 
 type SidebarNavProps = {
   username: string;
@@ -37,10 +51,12 @@ export function SidebarNav({
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [recentLists, setRecentLists] = useState<RecentList[]>([]);
 
-  // Close overlay on route change
+  // Close overlay and refresh recent lists on route change
   useEffect(() => {
     setMobileOpen(false);
+    setRecentLists(getRecentLists());
   }, [pathname]);
 
   // Lock body scroll when overlay is open
@@ -132,7 +148,7 @@ export function SidebarNav({
             </div>
 
             {/* Links */}
-            <div className="flex-1 px-2 pt-2">
+            <div className="flex-1 overflow-y-auto px-2 pt-2">
               {links.map(({ href, label, icon: Icon, badge }) => {
                 const isActive = pathname.includes(href);
                 return (
@@ -157,6 +173,33 @@ export function SidebarNav({
                   </Link>
                 );
               })}
+
+              {/* Recent lists */}
+              {recentLists.length > 0 && (
+                <div className="mt-4">
+                  <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-widest text-text-faint">
+                    {t("recenti")}
+                  </p>
+                  {recentLists.map((list) => {
+                    const { Icon, label } = topicMeta(list.topic, t);
+                    const isActive = pathname.includes(list.href) || pathname.includes(list.id);
+                    return (
+                      <Link
+                        key={list.id}
+                        href={list.href}
+                        className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors ${
+                          isActive
+                            ? "bg-bg-surface text-text-primary font-medium"
+                            : "text-text-secondary active:bg-bg-surface"
+                        }`}
+                      >
+                        <Icon size={18} className="shrink-0 text-text-faint" weight={isActive ? "fill" : "regular"} />
+                        <span className="truncate">{label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Bottom: user + logout */}
@@ -193,7 +236,7 @@ export function SidebarNav({
           </span>
         </Link>
 
-        <nav className="flex-1 px-2">
+        <nav className="flex-1 overflow-y-auto px-2">
           {links.map(({ href, label, icon: Icon, badge }) => {
             const isActive = pathname.includes(href);
             return (
@@ -218,6 +261,33 @@ export function SidebarNav({
               </Link>
             );
           })}
+
+          {/* Recent lists */}
+          {recentLists.length > 0 && (
+            <div className="mt-4">
+              <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-widest text-text-faint">
+                {t("recenti")}
+              </p>
+              {recentLists.map((list) => {
+                const { Icon, label } = topicMeta(list.topic, t);
+                const isActive = pathname.includes(list.href) || pathname.includes(list.id);
+                return (
+                  <Link
+                    key={list.id}
+                    href={list.href}
+                    className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors ${
+                      isActive
+                        ? "bg-bg-surface text-text-primary font-medium"
+                        : "text-text-secondary hover:bg-bg-surface hover:text-text-primary"
+                    }`}
+                  >
+                    <Icon size={16} className="shrink-0 text-text-faint" weight={isActive ? "fill" : "regular"} />
+                    <span className="truncate">{label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </nav>
 
         <div className="border-t border-border p-3">

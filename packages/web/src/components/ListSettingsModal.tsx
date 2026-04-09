@@ -136,6 +136,7 @@ export function ListSettingsModal({
     startTransition(async () => {
       await onSave(listId, { rating_labels: labels });
       router.refresh();
+      onClose();
     });
   }
 

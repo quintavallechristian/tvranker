@@ -43,6 +43,7 @@ import {
   updateGameListSettings,
   type GameItem,
 } from "./actions";
+import { addRecentList } from "@/lib/recent-lists";
 
 type GamesListClientProps = {
   gameListId: string;
@@ -77,6 +78,12 @@ export function GamesListClient({
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [items, setItems] = useState<GameItem[]>(initialItems);
+
+  // Track visit in sidebar recenti
+  useEffect(() => {
+    addRecentList({ id: gameListId, topic: "game", href: "/games" });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameListId]);
   const [existingIgdbIds, setExistingIgdbIds] = useState<number[]>(
     initialExistingIgdbIds,
   );

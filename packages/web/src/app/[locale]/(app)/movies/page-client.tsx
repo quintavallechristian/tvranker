@@ -56,6 +56,7 @@ import {
   updateMovieListSettings,
   type MovieItem,
 } from "./actions";
+import { addRecentList } from "@/lib/recent-lists";
 
 type MovieListClientProps = {
   movieListId: string;
@@ -93,6 +94,12 @@ export function MovieListClient({
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [items, setItems] = useState<MovieItem[]>(initialItems);
+
+  // Track visit in sidebar recenti
+  useEffect(() => {
+    addRecentList({ id: movieListId, topic: "movie", href: "/movies" });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [movieListId]);
   const [existingTmdbIds, setExistingTmdbIds] = useState<number[]>(
     initialExistingTmdbIds,
   );

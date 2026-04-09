@@ -82,6 +82,7 @@
       "noRankings": "No rankings yet",
       "addWidget": "Add widget",
       "remove": "Remove",
+      "drag": "Drag to reorder",
       "expand": "Expand width",
       "shrink": "Shrink width",
       "expandHeight": "Expand height",
@@ -233,7 +234,12 @@
     "profile": "Profile",
     "faq": "FAQ",
     "rankings": "Top Rated",
-    "settings": "Settings"
+    "settings": "Settings",
+    "recenti": "My Lists",
+    "listShows": "TV Shows",
+    "listAnime": "Anime",
+    "listMovies": "Movies",
+    "listGames": "Games"
   },
   "follows": {
     "title": "Following",
@@ -359,6 +365,8 @@
     "rating": "Rating",
     "noRating": "Not rated",
     "removeFromList": "Remove from list",
+    "confirmRemove": "Remove",
+    "cancel": "Cancel",
     "position": "#",
     "title": "Title",
     "dragToReorder": "Drag to reorder",
@@ -748,6 +756,7 @@
     "addFirst": "Add a show",
     "importExternal": "Import from external",
     "communityFavorites": "Community favorites",
+    "noThanks": "No thanks",
     "addToList": "Add",
     "details": "Details",
     "moviesTitle": "Welcome to your movies!",

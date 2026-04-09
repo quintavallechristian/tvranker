@@ -9,6 +9,7 @@ import {
   Television,
   PlusCircle,
   NotePencil,
+  X,
 } from "@phosphor-icons/react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -89,6 +90,7 @@ export function ShowRow({
     transition,
   };
 
+  const [confirmRemove, setConfirmRemove] = useState(false);
   const [mobileRatingOpenLocal, setMobileRatingOpenLocal] = useState(false);
   const mobileRatingOpen =
     openMobileRating !== undefined ? openMobileRating : mobileRatingOpenLocal;
@@ -306,13 +308,32 @@ export function ShowRow({
 
         {/* Remove */}
         {onRemove && (
-          <button
-            onClick={onRemove}
-            className="rounded-sm p-1.5 text-text-faint transition-colors hover:bg-error/10 hover:text-error"
-            aria-label={t("removeFromList")}
-          >
-            <Trash size={16} />
-          </button>
+          confirmRemove ? (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => { setConfirmRemove(false); onRemove(); }}
+                className="rounded-sm px-2 py-1 text-[11px] font-medium bg-error/10 text-error hover:bg-error/20 transition-colors"
+                aria-label={t("confirmRemove")}
+              >
+                {t("confirmRemove")}
+              </button>
+              <button
+                onClick={() => setConfirmRemove(false)}
+                className="rounded-sm p-1.5 text-text-faint transition-colors hover:text-text-secondary"
+                aria-label={t("cancel")}
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmRemove(true)}
+              className="rounded-sm p-1.5 text-text-faint transition-colors hover:bg-error/10 hover:text-error"
+              aria-label={t("removeFromList")}
+            >
+              <Trash size={16} />
+            </button>
+          )
         )}
       </div>
 

@@ -35,6 +35,8 @@ type Props = {
   onImport: () => void;
 };
 
+const DISMISSED_KEY = "anime_suggestions_dismissed";
+
 export function OnboardingAnimeEmptyState({ onAddAnime, onImport }: Props) {
   const t = useTranslations("onboarding");
   const router = useRouter();
@@ -43,7 +45,21 @@ export function OnboardingAnimeEmptyState({ onAddAnime, onImport }: Props) {
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const [addingId, setAddingId] = useState<string | null>(null);
   const [activeAnimeId, setActiveAnimeId] = useState<string | null>(null);
+  const [suggestionsDismissed, setSuggestionsDismissed] = useState(false);
   const [, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setSuggestionsDismissed(
+        localStorage.getItem(DISMISSED_KEY) === "true",
+      );
+    }
+  }, []);
+
+  function handleDismissSuggestions() {
+    localStorage.setItem(DISMISSED_KEY, "true");
+    setSuggestionsDismissed(true);
+  }
 
   useEffect(() => {
     if (!activeAnimeId) return;
@@ -136,6 +152,7 @@ export function OnboardingAnimeEmptyState({ onAddAnime, onImport }: Props) {
       </div>
 
       {/* Community favorites */}
+      {!suggestionsDismissed && (
       <div className="mt-10 w-full">
         <div className="mb-4 flex items-center gap-3">
           <div className="h-px flex-1 bg-border" />
@@ -253,7 +270,16 @@ export function OnboardingAnimeEmptyState({ onAddAnime, onImport }: Props) {
             })}
           </div>
         ) : null}
+        <div className="mt-4 flex justify-center">
+          <button
+            onClick={handleDismissSuggestions}
+            className="text-xs text-text-faint transition-colors hover:text-text-secondary"
+          >
+            {t("noThanks")}
+          </button>
+        </div>
       </div>
+      )}
     </div>
   );
 }
