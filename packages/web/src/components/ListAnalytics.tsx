@@ -63,6 +63,8 @@ type Props = {
     longestShowByYear: string;
     seasonsByYearTitle: string;
     noSeasonData: string;
+    genreDistribution: string;
+    noGenres: string;
   };
 };
 
@@ -172,6 +174,7 @@ export function ListAnalyticsPage({
   }
 
   const hasTagData = data.tagCounts.length > 0;
+  const hasGenreData = data.genreCounts.length > 0;
   const hasRatingData = data.ratingCounts.some((d) => d.count > 0);
   const ratedPct =
     data.totalCount > 0
@@ -381,6 +384,52 @@ export function ListAnalyticsPage({
                 </p>
               )}
             </div>
+          </div>
+
+          {/* Genre distribution */}
+          <div className="mt-6 rounded-lg border border-border bg-bg-surface p-4">
+            <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-text-faint">
+              {labels.genreDistribution}
+            </h3>
+            {hasGenreData ? (
+              <div className="grid gap-x-8 gap-y-2.5 sm:grid-cols-2">
+                {data.genreCounts.map((entry) => {
+                  const maxCount = data.genreCounts[0].count;
+                  return (
+                    <button
+                      key={entry.id}
+                      onClick={() =>
+                        openModal(
+                          entry.name,
+                          data.showsByGenre[entry.id] ?? [],
+                        )
+                      }
+                      className="flex items-center gap-3 rounded px-1 py-0.5 transition-colors hover:bg-bg-elevated"
+                    >
+                      <span className="w-28 shrink-0 truncate text-left text-[11px] text-text-secondary">
+                        {entry.name}
+                      </span>
+                      <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-bg-elevated">
+                        <div
+                          className="absolute inset-y-0 left-0 rounded-full"
+                          style={{
+                            width: `${(entry.count / maxCount) * 100}%`,
+                            backgroundColor: "#818cf8",
+                          }}
+                        />
+                      </div>
+                      <span className="w-6 shrink-0 text-right font-mono text-xs tabular-nums text-text-muted">
+                        {entry.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="py-14 text-center text-xs text-text-muted">
+                {labels.noGenres}
+              </p>
+            )}
           </div>
 
           {/* Charts row 2 */}
@@ -686,7 +735,13 @@ export function ListAnalyticsPage({
                       id={data.longestShow.id}
                       title={data.longestShow.title}
                       posterPath={data.longestShow.poster_path}
-                      badge={formatDuration(data.longestShow.totalMinutes)}
+                      badge={
+                        itemType === "anime"
+                          ? tLists("episodeCount", {
+                              count: data.longestShow.totalMinutes,
+                            })
+                          : formatDuration(data.longestShow.totalMinutes)
+                      }
                       itemType={itemType}
                     />
                   </div>
@@ -719,7 +774,9 @@ export function ListAnalyticsPage({
                             href={
                               itemType === "movie"
                                 ? `/movies/${id}`
-                                : `/shows/${id}`
+                                : itemType === "anime"
+                                  ? `/anime/${id}`
+                                  : `/shows/${id}`
                             }
                             className="grid grid-cols-[3rem_2.5rem_1fr] items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-bg-elevated"
                           >
@@ -751,8 +808,12 @@ export function ListAnalyticsPage({
                                 {title}
                               </span>
                               <span className="font-mono text-[10px] text-text-muted">
-                                {formatDuration(totalMinutes)}
-                                {itemType !== "movie" && (
+                                {itemType === "anime"
+                                  ? tLists("episodeCount", {
+                                      count: totalMinutes,
+                                    })
+                                  : formatDuration(totalMinutes)}
+                                {itemType === "show" && (
                                   <>
                                     <span className="mx-1 text-text-faint">
                                       ·
@@ -826,7 +887,9 @@ export function ListAnalyticsPage({
                         detailHref={
                           itemType === "movie"
                             ? `/movies/${show.id}`
-                            : undefined
+                            : itemType === "anime"
+                              ? `/anime/${show.id}`
+                              : undefined
                         }
                         ratingLabels={ratingLabels}
                       />

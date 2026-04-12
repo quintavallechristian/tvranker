@@ -92,6 +92,8 @@ type TMDBWatchProviderRegion = {
   rent?: TMDBWatchProvider[];
 };
 
+type TMDBGenre = { id: number; name: string };
+
 type TMDBShowExtended = {
   id: number;
   name: string;
@@ -99,6 +101,7 @@ type TMDBShowExtended = {
   first_air_date: string;
   overview: string;
   vote_average: number;
+  genres?: TMDBGenre[];
   seasons?: TMDBSeason[];
   videos?: { results: TMDBVideo[] };
   "watch/providers"?: { results: Record<string, TMDBWatchProviderRegion> };
@@ -374,6 +377,7 @@ async function enrichShow(supabase: any, show: Show): Promise<EnrichResult> {
     seasons_data: seasonsData,
     trailer_url: extractTrailerUrl(found.videos),
     watch_providers: found["watch/providers"]?.results ?? null,
+    genres: found.genres ?? null,
   };
 
   if (!DRY_RUN) {

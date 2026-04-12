@@ -86,6 +86,8 @@ type TMDBWatchProviderRegion = {
   rent?: TMDBWatchProvider[];
 };
 
+type TMDBGenre = { id: number; name: string };
+
 type TMDBMovieExtended = {
   id: number;
   title: string;
@@ -94,6 +96,7 @@ type TMDBMovieExtended = {
   overview: string;
   vote_average: number;
   runtime: number | null;
+  genres?: TMDBGenre[];
   videos?: { results: TMDBVideo[] };
   "watch/providers"?: { results: Record<string, TMDBWatchProviderRegion> };
 };
@@ -283,6 +286,7 @@ async function enrichMovie(supabase: any, movie: Movie): Promise<EnrichResult> {
     tmdb_fetched: true,
     trailer_url: extractTrailerUrl(found.videos),
     watch_providers: found["watch/providers"]?.results ?? null,
+    genres: found.genres ?? null,
   };
 
   if (!DRY_RUN) {

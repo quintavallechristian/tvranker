@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { recordFeedEvent } from "@/lib/feed";
+import { computeGenreCounts } from "@/lib/genre-utils";
 
 // Helper: get the user's single list
 async function getUserList(
@@ -529,6 +530,8 @@ export type AnalyticsData = {
   yearAvgRatings: { year: string; avgRating: number }[];
   showsByRating: Record<number, ShowSummary[]>;
   showsByYear: Record<string, ShowSummary[]>;
+  showsByGenre: Record<number, ShowSummary[]>;
+  genreCounts: { id: number; name: string; count: number }[];
   // Season / duration stats
   mostSeasonsShow: {
     id: string;
@@ -578,6 +581,8 @@ const EMPTY_ANALYTICS: AnalyticsData = {
   yearAvgRatings: [],
   showsByRating: {},
   showsByYear: {},
+  showsByGenre: {},
+  genreCounts: [],
   mostSeasonsShow: null,
   mostSeasonsByYear: [],
   longestShowByYear: [],
@@ -631,6 +636,7 @@ export async function getListAnalytics(
       title: string;
       poster_path: string | null;
       first_air_date: string | null;
+      genres: { id: number; name: string }[] | null;
       seasons_data:
         | {
             season_number: number;
@@ -643,7 +649,7 @@ export async function getListAnalytics(
   const { data: rawItems } = await supabase
     .from("list_items")
     .select(
-      "rating, show_id, added_at, shows(id, title, poster_path, first_air_date, seasons_data)",
+      "rating, show_id, added_at, shows(id, title, poster_path, first_air_date, genres, seasons_data)",
     )
     .eq("list_id", resolvedListId);
 
@@ -806,6 +812,7 @@ export async function getListAnalytics(
   // Build show lookup maps for modal drill-through
   const showsByRating: Record<number, ShowSummary[]> = {};
   const showsByYear: Record<string, ShowSummary[]> = {};
+  const showsByGenre: Record<number, ShowSummary[]> = {};
   for (const item of items) {
     const summary: ShowSummary = {
       id: item.shows?.id ?? item.show_id,
@@ -826,6 +833,10 @@ export async function getListAnalytics(
         showsByYear[yr] ??= [];
         showsByYear[yr].push(summary);
       }
+    }
+    for (const genre of item.shows?.genres ?? []) {
+      showsByGenre[genre.id] ??= [];
+      showsByGenre[genre.id].push(summary);
     }
   }
 
@@ -951,6 +962,8 @@ export async function getListAnalytics(
     yearAvgRatings,
     showsByRating,
     showsByYear,
+    showsByGenre,
+    genreCounts: computeGenreCounts(items.map((i) => i.shows?.genres ?? null)),
     mostSeasonsShow,
     mostSeasonsByYear,
     longestShowByYear,

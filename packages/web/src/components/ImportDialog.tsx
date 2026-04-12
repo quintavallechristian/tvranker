@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import {
   UploadSimple,
   X,
   FileText,
-  SpinnerGap,
   ArrowLeft,
   TelevisionSimple,
   FilmStrip,
@@ -38,7 +37,19 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!loading) return;
+    const interval = setInterval(() => {
+      setProgress((p) => {
+        if (p >= 90) return p;
+        return p + Math.max(0.3, (90 - p) * 0.05);
+      });
+    }, 80);
+    return () => clearInterval(interval);
+  }, [loading]);
 
   const resetState = () => {
     setService(null);
@@ -48,6 +59,7 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
     setPreview(null);
     setError(null);
     setLoading(false);
+    setProgress(0);
   };
 
   const handleClose = () => {
@@ -143,6 +155,7 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
   const handleImport = async () => {
     if (!file) return;
     setLoading(true);
+    setProgress(0);
     setError(null);
 
     try {
@@ -183,6 +196,8 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
         const json = JSON.parse(text);
         await onImport(json, { mode: importMode, duplicateMode });
       }
+      setProgress(100);
+      await new Promise((r) => setTimeout(r, 350));
       handleClose();
     } catch {
       setError(t("error"));
@@ -298,6 +313,25 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
               ? t("malDescription")
               : t("tvtimeDescription")}
         </p>
+
+        {/* IMDb instructions */}
+        {isImdb && !preview && (
+          <div className="mb-4 rounded-md border border-border bg-bg-elevated p-3">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-text-faint">
+              {t("imdbStepsTitle")}
+            </p>
+            <ol className="flex flex-col gap-1.5">
+              {(["imdbStep1", "imdbStep2", "imdbStep3", "imdbStep4"] as const).map((key, i) => (
+                <li key={key} className="flex items-start gap-2">
+                  <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-border text-[10px] font-semibold text-text-secondary">
+                    {i + 1}
+                  </span>
+                  <span className="text-xs text-text-secondary">{t(key)}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
 
         {/* Dropzone */}
         <div
@@ -440,6 +474,22 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
           </div>
         )}
 
+        {/* Progress bar */}
+        {loading && (
+          <div className="mt-4 space-y-1.5">
+            <div className="flex items-center justify-between text-[10px] text-text-faint">
+              <span>{t("importing")}</span>
+              <span className="font-mono">{Math.round(progress)}%</span>
+            </div>
+            <div className="h-1 w-full overflow-hidden rounded-full bg-border">
+              <div
+                className="h-full rounded-full bg-accent transition-[width] duration-150 ease-out"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Error */}
         {error && (
           <p className="mt-3 text-xs text-error" role="alert">
@@ -460,7 +510,6 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
             disabled={!file || loading}
             className="flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-medium text-bg-primary transition-colors hover:bg-accent-hover disabled:opacity-50"
           >
-            {loading && <SpinnerGap size={14} className="animate-spin" />}
             {loading
               ? t("importing")
               : t("importButton", { count: preview?.showCount ?? 0 })}

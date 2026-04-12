@@ -113,6 +113,7 @@ export type Database = {
         Row: {
           episode_count: number | null;
           first_air_date: string | null;
+          genres: Json | null;
           id: string;
           imdb_id: string | null;
           mal_id: number | null;
@@ -128,6 +129,7 @@ export type Database = {
         Insert: {
           episode_count?: number | null;
           first_air_date?: string | null;
+          genres?: Json | null;
           id?: string;
           imdb_id?: string | null;
           mal_id?: number | null;
@@ -143,6 +145,7 @@ export type Database = {
         Update: {
           episode_count?: number | null;
           first_air_date?: string | null;
+          genres?: Json | null;
           id?: string;
           imdb_id?: string | null;
           mal_id?: number | null;
@@ -572,6 +575,7 @@ export type Database = {
       };
       movies: {
         Row: {
+          genres: Json | null;
           id: string;
           imdb_id: string | null;
           overview: string | null;
@@ -585,6 +589,7 @@ export type Database = {
           watch_providers: Json | null;
         };
         Insert: {
+          genres?: Json | null;
           id?: string;
           imdb_id?: string | null;
           overview?: string | null;
@@ -598,6 +603,7 @@ export type Database = {
           watch_providers?: Json | null;
         };
         Update: {
+          genres?: Json | null;
           id?: string;
           imdb_id?: string | null;
           overview?: string | null;
@@ -740,6 +746,7 @@ export type Database = {
         Row: {
           episodes_fetched: boolean;
           first_air_date: string | null;
+          genres: Json | null;
           id: string;
           imdb_id: string | null;
           overview: string | null;
@@ -754,6 +761,7 @@ export type Database = {
         Insert: {
           episodes_fetched?: boolean;
           first_air_date?: string | null;
+          genres?: Json | null;
           id?: string;
           imdb_id?: string | null;
           overview?: string | null;
@@ -768,6 +776,7 @@ export type Database = {
         Update: {
           episodes_fetched?: boolean;
           first_air_date?: string | null;
+          genres?: Json | null;
           id?: string;
           imdb_id?: string | null;
           overview?: string | null;

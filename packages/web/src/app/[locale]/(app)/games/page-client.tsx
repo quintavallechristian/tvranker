@@ -465,6 +465,7 @@ export function GamesListClient({
                             rating={item.rating}
                             position={globalIndex + 1}
                             ratingLabels={ratingLabels}
+                            genres={item.games.genres}
                             detailHref={`/games/${item.game_id}`}
                             onRatingChange={(rating) =>
                               handleRatingChange(item.id, rating)

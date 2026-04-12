@@ -54,6 +54,7 @@ export type AnimeData = {
   tmdb_fetched: boolean;
   trailer_url: string | null;
   watch_providers: WatchProviderRegion | null;
+  genres: { id: number; name: string }[] | null;
 };
 
 type PublicList = {
@@ -172,6 +173,20 @@ export function AnimeDetailClient({
               <span className="text-text-faint">{anime.status}</span>
             )}
           </div>
+
+          {/* Genres */}
+          {anime.genres && anime.genres.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {anime.genres.map((genre) => (
+                <span
+                  key={genre.id}
+                  className="inline-flex items-center rounded-md border border-border bg-bg-elevated px-2 py-0.5 text-xs text-text-muted"
+                >
+                  {genre.name}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Stats badges */}
           <div className="mt-4 flex flex-wrap gap-2">

@@ -75,6 +75,8 @@ export default async function UserMovieAnalyticsPage({
         longestShowByYear: t("longestMovieByYear"),
         seasonsByYearTitle: t("longestMovieByYearTitle"),
         noSeasonData: tLists("noSeasonData"),
+        genreDistribution: tLists("genreDistribution"),
+        noGenres: tLists("noGenres"),
       }}
     />
   );

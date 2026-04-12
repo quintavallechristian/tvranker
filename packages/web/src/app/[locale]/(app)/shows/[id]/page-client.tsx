@@ -82,6 +82,7 @@ export type ShowData = {
   seasons_data: SeasonInfo[] | null;
   trailer_url: string | null;
   watch_providers: WatchProviderRegion | null;
+  genres: { id: number; name: string }[] | null;
 };
 
 type PublicList = {
@@ -227,6 +228,20 @@ export function ShowDetailClient({
               <span className="font-mono text-text-faint">{show.imdb_id}</span>
             )}
           </div>
+
+          {/* Genres */}
+          {show.genres && show.genres.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {show.genres.map((genre) => (
+                <span
+                  key={genre.id}
+                  className="inline-flex items-center rounded-md border border-border bg-bg-elevated px-2 py-0.5 text-xs text-text-muted"
+                >
+                  {genre.name}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Stats badges */}
           <div className="mt-4 flex flex-wrap gap-2">

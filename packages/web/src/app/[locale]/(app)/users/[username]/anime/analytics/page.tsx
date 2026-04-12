@@ -75,6 +75,8 @@ export default async function UserAnimeAnalyticsPage({
         longestShowByYear: t("longestAnimeByYear"),
         seasonsByYearTitle: t("longestAnimeByYearTitle"),
         noSeasonData: tLists("noSeasonData"),
+        genreDistribution: tLists("genreDistribution"),
+        noGenres: tLists("noGenres"),
       }}
     />
   );

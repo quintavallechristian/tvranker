@@ -73,6 +73,8 @@ export default async function UserAnalyticsPage({
         longestShowByYear: t("longestShowByYear"),
         seasonsByYearTitle: t("seasonsByYearTitle"),
         noSeasonData: t("noSeasonData"),
+        genreDistribution: t("genreDistribution"),
+        noGenres: t("noGenres"),
       }}
     />
   );

@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import type { AnalyticsData } from "../../shows/lists/actions";
+import { computeGenreCounts } from "@/lib/genre-utils";
 
 const EMPTY_ANALYTICS: AnalyticsData = {
   totalCount: 0,
@@ -20,6 +21,8 @@ const EMPTY_ANALYTICS: AnalyticsData = {
   yearAvgRatings: [],
   showsByRating: {},
   showsByYear: {},
+  showsByGenre: {},
+  genreCounts: [],
   mostSeasonsShow: null,
   mostSeasonsByYear: [],
   longestShowByYear: [],
@@ -68,13 +71,14 @@ export async function getMovieListAnalytics(
       poster_path: string | null;
       release_date: string | null;
       runtime: number | null;
+      genres: { id: number; name: string }[] | null;
     } | null;
   };
 
   const { data: rawItems } = await supabase
     .from("movie_list_items")
     .select(
-      "rating, movie_id, added_at, movies(id, title, poster_path, release_date, runtime)",
+      "rating, movie_id, added_at, movies(id, title, poster_path, release_date, runtime, genres)",
     )
     .eq("movie_list_id", listId);
 
@@ -166,6 +170,7 @@ export async function getMovieListAnalytics(
   const showsByRating: Record<number, AnalyticsData["showsByRating"][number]> =
     {};
   const showsByYear: Record<string, AnalyticsData["showsByYear"][string]> = {};
+  const showsByGenre: Record<number, AnalyticsData["showsByGenre"][number]> = {};
   const longestShowByYearMap: Record<
     string,
     {
@@ -214,6 +219,11 @@ export async function getMovieListAnalytics(
         }
       }
     }
+
+    for (const genre of movie.genres ?? []) {
+      showsByGenre[genre.id] ??= [];
+      showsByGenre[genre.id].push(summary);
+    }
   }
 
   const longestShowByYear = Object.entries(longestShowByYearMap)
@@ -250,6 +260,8 @@ export async function getMovieListAnalytics(
     yearAvgRatings,
     showsByRating,
     showsByYear,
+    showsByGenre,
+    genreCounts: computeGenreCounts(items.map((i) => i.movies?.genres ?? null)),
     mostSeasonsShow: null,
     mostSeasonsByYear: [],
     longestShowByYear,

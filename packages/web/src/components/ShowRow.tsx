@@ -34,6 +34,8 @@ type ShowRowProps = {
   showId?: string;
   detailHref?: string;
   ratingLabels?: string[] | null;
+  // Genres (shown as chips below title, e.g. for games)
+  genres?: { id: number; name: string }[] | null;
   // Tags
   allTags?: TagRow[];
   selectedTagIds?: string[];
@@ -64,6 +66,7 @@ export function ShowRow({
   showId,
   detailHref,
   ratingLabels,
+  genres,
   allTags,
   selectedTagIds,
   onTagAdd,
@@ -179,6 +182,20 @@ export function ShowRow({
             <span className="block truncate text-sm font-medium text-text-primary">
               {title}
             </span>
+          )}
+
+          {/* Genre chips */}
+          {genres && genres.length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {genres.map((genre) => (
+                <span
+                  key={genre.id}
+                  className="inline-flex items-center rounded border border-border bg-bg-elevated px-1.5 py-px text-[10px] text-text-faint"
+                >
+                  {genre.name}
+                </span>
+              ))}
+            </div>
           )}
 
           {/* Tags — mobile: solo pallini colorati */}
