@@ -100,7 +100,9 @@ function SortableWidget({
         <button
           onClick={onToggleColSpan}
           className="flex h-6 w-6 items-center justify-center rounded bg-bg-elevated text-text-muted shadow-sm transition-colors hover:bg-bg-surface-hover hover:text-text-primary sm:h-5 sm:w-5"
-          title={config.colSpan === 1 ? t("widgets.expand") : t("widgets.shrink")}
+          title={
+            config.colSpan === 1 ? t("widgets.expand") : t("widgets.shrink")
+          }
         >
           {config.colSpan === 1 ? (
             <ArrowsOutLineHorizontal size={10} />
@@ -111,7 +113,11 @@ function SortableWidget({
         <button
           onClick={onToggleRowSpan}
           className="flex h-6 w-6 items-center justify-center rounded bg-bg-elevated text-text-muted shadow-sm transition-colors hover:bg-bg-surface-hover hover:text-text-primary sm:h-5 sm:w-5"
-          title={config.rowSpan === 1 ? t("widgets.expandHeight") : t("widgets.shrinkHeight")}
+          title={
+            config.rowSpan === 1
+              ? t("widgets.expandHeight")
+              : t("widgets.shrinkHeight")
+          }
         >
           {config.rowSpan === 1 ? (
             <ArrowsOutLineVertical size={10} />
@@ -143,7 +149,9 @@ export function HomeClient({ data }: { data: HomeData }) {
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 200, tolerance: 5 },
+    }),
   );
 
   function persistWidgets(next: WidgetConfig[]) {
@@ -233,6 +241,18 @@ export function HomeClient({ data }: { data: HomeData }) {
             rowSpan={config.rowSpan}
           />
         );
+      case "boardgame_podium":
+        return (
+          <PodiumWidget
+            items={data.top10Boardgames.map((bg) => ({
+              ...bg,
+              poster_path: null,
+              imageUrl: bg.thumbnail_url,
+            }))}
+            topic="boardgame"
+            rowSpan={config.rowSpan}
+          />
+        );
       case "show_count":
         return <CountWidget count={data.showCount} topic="show" />;
       case "movie_count":
@@ -242,6 +262,14 @@ export function HomeClient({ data }: { data: HomeData }) {
       case "game_count":
         return (
           <CountWidget count={data.gameCount} topic="game" href="/games" />
+        );
+      case "boardgame_count":
+        return (
+          <CountWidget
+            count={data.boardgameCount}
+            topic="boardgame"
+            href="/boardgames"
+          />
         );
       case "last_show_added":
         return (
@@ -279,6 +307,18 @@ export function HomeClient({ data }: { data: HomeData }) {
             rowSpan={config.rowSpan}
           />
         );
+      case "last_boardgame_added":
+        return (
+          <LastSeenWidget
+            items={data.lastBoardgames.map((bg) => ({
+              ...bg,
+              poster_path: null,
+              imageUrl: bg.thumbnail_url,
+            }))}
+            topic="boardgame"
+            rowSpan={config.rowSpan}
+          />
+        );
       case "notifications":
         return <NotificationsWidget items={data.notifications} />;
       case "recent_follows":
@@ -291,6 +331,13 @@ export function HomeClient({ data }: { data: HomeData }) {
         return <SuggestionsWidget items={data.suggestedAnime} topic="anime" />;
       case "game_suggestions":
         return <SuggestionsWidget items={data.suggestedGames} topic="game" />;
+      case "boardgame_suggestions":
+        return (
+          <SuggestionsWidget
+            items={data.suggestedBoardgames}
+            topic="boardgame"
+          />
+        );
     }
   }
 

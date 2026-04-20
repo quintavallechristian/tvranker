@@ -2,11 +2,22 @@
 
 import { getPosterUrl } from "@/lib/tmdb/client";
 import Image from "next/image";
-import { Television, FilmSlate, ArrowRight, GameController } from "@phosphor-icons/react";
+import {
+  Television,
+  FilmSlate,
+  ArrowRight,
+  GameController,
+  PuzzlePiece,
+} from "@phosphor-icons/react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 
-export type SuggestionsTopic = "show" | "movie" | "anime" | "game";
+export type SuggestionsTopic =
+  | "show"
+  | "movie"
+  | "anime"
+  | "game"
+  | "boardgame";
 
 type SuggestionItem = {
   id: string;
@@ -31,7 +42,9 @@ export function SuggestionsWidget({
         ? t("widgets.movieSuggestions")
         : topic === "anime"
           ? t("widgets.animeSuggestions")
-          : t("widgets.gameSuggestions");
+          : topic === "game"
+            ? t("widgets.gameSuggestions")
+            : t("widgets.boardgameSuggestions");
 
   const href =
     topic === "show"
@@ -40,9 +53,18 @@ export function SuggestionsWidget({
         ? "/explore/movies"
         : topic === "anime"
           ? "/explore/anime"
-          : "/explore/games";
+          : topic === "game"
+            ? "/explore/games"
+            : "/explore/boardgames";
 
-  const Icon = topic === "show" ? Television : topic === "game" ? GameController : FilmSlate;
+  const Icon =
+    topic === "show"
+      ? Television
+      : topic === "game"
+        ? GameController
+        : topic === "boardgame"
+          ? PuzzlePiece
+          : FilmSlate;
 
   return (
     <Link
@@ -66,7 +88,8 @@ export function SuggestionsWidget({
       {items.length > 0 ? (
         <div className="flex flex-1 gap-2">
           {items.slice(0, 3).map((item) => {
-            const posterUrl = item.imageUrl ?? getPosterUrl(item.poster_path, "w185");
+            const posterUrl =
+              item.imageUrl ?? getPosterUrl(item.poster_path, "w185");
             return (
               <div
                 key={item.id}

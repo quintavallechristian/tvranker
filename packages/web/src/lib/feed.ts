@@ -15,7 +15,7 @@ export async function recordFeedEvent(
   params: {
     userId: string;
     eventType: "add_item" | "rate_item";
-    contentType: "show" | "movie" | "anime" | "game";
+    contentType: "show" | "movie" | "anime" | "game" | "boardgame";
     itemId: string;
     listId: string;
     itemTitle: string;

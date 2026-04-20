@@ -20,53 +20,73 @@ export default async function MyListsPage() {
     { data: movieList },
     { data: animeList },
     { data: gameList },
+    { data: boardgameList },
   ] = await Promise.all([
     supabase.from("lists").select("id").eq("user_id", user.id).single(),
     supabase.from("movie_lists").select("id").eq("user_id", user.id).single(),
     supabase.from("anime_lists").select("id").eq("user_id", user.id).single(),
     supabase.from("game_lists").select("id").eq("user_id", user.id).single(),
+    supabase
+      .from("boardgame_lists")
+      .select("id")
+      .eq("user_id", user.id)
+      .single(),
   ]);
 
   // Fetch top 10 shows, movies, anime and games in parallel
-  const [showTopResult, movieTopResult, animeTopResult, gameTopResult] =
-    await Promise.all([
-      list
-        ? supabase
-            .from("list_items")
-            .select("rating, shows(id, title, poster_path)")
-            .eq("list_id", list.id)
-            .order("rating", { ascending: false, nullsFirst: false })
-            .order("position", { ascending: true })
-            .limit(10)
-        : Promise.resolve({ data: null }),
-      movieList
-        ? supabase
-            .from("movie_list_items")
-            .select("rating, movies(id, title, poster_path)")
-            .eq("movie_list_id", movieList.id)
-            .order("rating", { ascending: false, nullsFirst: false })
-            .order("position", { ascending: true })
-            .limit(10)
-        : Promise.resolve({ data: null }),
-      animeList
-        ? supabase
-            .from("anime_list_items")
-            .select("rating, animes(id, title, poster_path)")
-            .eq("anime_list_id", animeList.id)
-            .order("rating", { ascending: false, nullsFirst: false })
-            .order("position", { ascending: true })
-            .limit(10)
-        : Promise.resolve({ data: null }),
-      gameList
-        ? supabase
-            .from("game_list_items")
-            .select("rating, games(id, title, cover_url)")
-            .eq("game_list_id", gameList.id)
-            .order("rating", { ascending: false, nullsFirst: false })
-            .order("position", { ascending: true })
-            .limit(10)
-        : Promise.resolve({ data: null }),
-    ]);
+  const [
+    showTopResult,
+    movieTopResult,
+    animeTopResult,
+    gameTopResult,
+    boardgameTopResult,
+  ] = await Promise.all([
+    list
+      ? supabase
+          .from("list_items")
+          .select("rating, shows(id, title, poster_path)")
+          .eq("list_id", list.id)
+          .order("rating", { ascending: false, nullsFirst: false })
+          .order("position", { ascending: true })
+          .limit(10)
+      : Promise.resolve({ data: null }),
+    movieList
+      ? supabase
+          .from("movie_list_items")
+          .select("rating, movies(id, title, poster_path)")
+          .eq("movie_list_id", movieList.id)
+          .order("rating", { ascending: false, nullsFirst: false })
+          .order("position", { ascending: true })
+          .limit(10)
+      : Promise.resolve({ data: null }),
+    animeList
+      ? supabase
+          .from("anime_list_items")
+          .select("rating, animes(id, title, poster_path)")
+          .eq("anime_list_id", animeList.id)
+          .order("rating", { ascending: false, nullsFirst: false })
+          .order("position", { ascending: true })
+          .limit(10)
+      : Promise.resolve({ data: null }),
+    gameList
+      ? supabase
+          .from("game_list_items")
+          .select("rating, games(id, title, cover_url)")
+          .eq("game_list_id", gameList.id)
+          .order("rating", { ascending: false, nullsFirst: false })
+          .order("position", { ascending: true })
+          .limit(10)
+      : Promise.resolve({ data: null }),
+    boardgameList
+      ? supabase
+          .from("boardgame_list_items")
+          .select("rating, boardgames(id, title, thumbnail_url)")
+          .eq("boardgame_list_id", boardgameList.id)
+          .order("rating", { ascending: false, nullsFirst: false })
+          .order("position", { ascending: true })
+          .limit(10)
+      : Promise.resolve({ data: null }),
+  ]);
 
   const showPodiumItems: PodiumItem[] = (showTopResult.data ?? []).map(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -109,6 +129,19 @@ export default async function MyListsPage() {
     }),
   );
 
+  const boardgamePodiumItems: PodiumItem[] = (
+    boardgameTopResult.data ?? []
+  ).map(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (item: any) => ({
+      id: item.boardgames.id,
+      title: item.boardgames.title,
+      poster_path: null,
+      imageUrl: item.boardgames.thumbnail_url,
+      rating: item.rating,
+    }),
+  );
+
   return (
     <div>
       <h1 className="mb-6 text-xl font-semibold tracking-tight text-text-primary">
@@ -146,6 +179,14 @@ export default async function MyListsPage() {
             topic="game"
             rowSpan={2}
             viewAllHref="/games"
+          />
+        </div>
+        <div className="h-105">
+          <PodiumWidget
+            items={boardgamePodiumItems}
+            topic="boardgame"
+            rowSpan={2}
+            viewAllHref="/boardgames"
           />
         </div>
       </div>

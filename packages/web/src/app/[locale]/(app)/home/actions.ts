@@ -33,6 +33,13 @@ export type GamePodiumItem = {
   rating: number | null;
 };
 
+export type BoardgamePodiumItem = {
+  id: string;
+  title: string;
+  thumbnail_url: string | null;
+  rating: number | null;
+};
+
 export type LastAddedShow = {
   id: string;
   title: string;
@@ -65,6 +72,14 @@ export type LastAddedGame = {
   added_at: string;
 };
 
+export type LastAddedBoardgame = {
+  id: string;
+  title: string;
+  thumbnail_url: string | null;
+  rating: number | null;
+  added_at: string;
+};
+
 export type NotificationItem = {
   id: string;
   type: string;
@@ -93,20 +108,24 @@ export type HomeData = {
   movieCount: number;
   animeCount: number;
   gameCount: number;
+  boardgameCount: number;
   top10Shows: ShowPodiumItem[];
   top10Movies: MoviePodiumItem[];
   top10Anime: AnimePodiumItem[];
   top10Games: GamePodiumItem[];
+  top10Boardgames: BoardgamePodiumItem[];
   lastShows: LastAddedShow[];
   lastMovies: LastAddedMovie[];
   lastAnime: LastAddedAnime[];
   lastGames: LastAddedGame[];
+  lastBoardgames: LastAddedBoardgame[];
   notifications: NotificationItem[];
   recentFollows: RecentFollowItem[];
   suggestedShows: SuggestionItem[];
   suggestedMovies: SuggestionItem[];
   suggestedAnime: SuggestionItem[];
   suggestedGames: SuggestionItem[];
+  suggestedBoardgames: SuggestionItem[];
   widgets: WidgetConfig[];
 };
 
@@ -123,6 +142,7 @@ export async function getHomeData(): Promise<HomeData | null> {
     { data: movieList },
     { data: animeList },
     { data: gameList },
+    { data: boardgameList },
   ] = await Promise.all([
     supabase
       .from("profiles")
@@ -133,6 +153,11 @@ export async function getHomeData(): Promise<HomeData | null> {
     supabase.from("movie_lists").select("id").eq("user_id", user.id).single(),
     supabase.from("anime_lists").select("id").eq("user_id", user.id).single(),
     supabase.from("game_lists").select("id").eq("user_id", user.id).single(),
+    supabase
+      .from("boardgame_lists")
+      .select("id")
+      .eq("user_id", user.id)
+      .single(),
   ]);
 
   const username = profile?.username ?? user.email?.split("@")[0] ?? "there";
@@ -146,20 +171,24 @@ export async function getHomeData(): Promise<HomeData | null> {
     movieCountResult,
     animeCountResult,
     gameCountResult,
+    boardgameCountResult,
     top10ShowsResult,
     top10MoviesResult,
     top10AnimeResult,
     top10GamesResult,
+    top10BoardgamesResult,
     lastShowResult,
     lastMovieResult,
     lastAnimeResult,
     lastGameResult,
+    lastBoardgameResult,
     notificationsResult,
     recentFollowsResult,
     suggestedShows,
     suggestedMovies,
     suggestedAnime,
     suggestedGames,
+    suggestedBoardgames,
   ] = await Promise.all([
     list
       ? supabase
@@ -184,6 +213,12 @@ export async function getHomeData(): Promise<HomeData | null> {
           .from("game_list_items")
           .select("id", { count: "exact", head: true })
           .eq("game_list_id", gameList.id)
+      : Promise.resolve({ count: 0 }),
+    boardgameList
+      ? supabase
+          .from("boardgame_list_items")
+          .select("id", { count: "exact", head: true })
+          .eq("boardgame_list_id", boardgameList.id)
       : Promise.resolve({ count: 0 }),
     list
       ? supabase
@@ -221,6 +256,15 @@ export async function getHomeData(): Promise<HomeData | null> {
           .order("position", { ascending: true })
           .limit(10)
       : Promise.resolve({ data: [] }),
+    boardgameList
+      ? supabase
+          .from("boardgame_list_items")
+          .select("rating, boardgames(id, title, thumbnail_url)")
+          .eq("boardgame_list_id", boardgameList.id)
+          .order("rating", { ascending: false, nullsFirst: false })
+          .order("position", { ascending: true })
+          .limit(10)
+      : Promise.resolve({ data: [] }),
     list
       ? supabase
           .from("list_items")
@@ -253,6 +297,14 @@ export async function getHomeData(): Promise<HomeData | null> {
           .order("added_at", { ascending: false })
           .limit(10)
       : Promise.resolve({ data: [] }),
+    boardgameList
+      ? supabase
+          .from("boardgame_list_items")
+          .select("rating, added_at, boardgames(id, title, thumbnail_url)")
+          .eq("boardgame_list_id", boardgameList.id)
+          .order("added_at", { ascending: false })
+          .limit(10)
+      : Promise.resolve({ data: [] }),
     supabase
       .from("notifications")
       .select(
@@ -266,6 +318,7 @@ export async function getHomeData(): Promise<HomeData | null> {
     getTop3PopularMovies(supabase),
     getTop3PopularAnime(supabase),
     getTop3PopularGames(supabase),
+    getTop3PopularBoardgames(supabase),
   ]);
 
   // Process top10 shows
@@ -343,6 +396,26 @@ export async function getHomeData(): Promise<HomeData | null> {
   )
     .map((item) => (item.games ? { ...item.games, rating: item.rating } : null))
     .filter((s): s is GamePodiumItem => s !== null);
+
+  // Process top10 boardgames
+  const top10Boardgames = (
+    (
+      top10BoardgamesResult as {
+        data: Array<{
+          rating: number | null;
+          boardgames: {
+            id: string;
+            title: string;
+            thumbnail_url: string | null;
+          } | null;
+        }> | null;
+      }
+    ).data ?? []
+  )
+    .map((item) =>
+      item.boardgames ? { ...item.boardgames, rating: item.rating } : null,
+    )
+    .filter((s): s is BoardgamePodiumItem => s !== null);
 
   // Process last shows
   const lastShows: LastAddedShow[] = (
@@ -444,6 +517,31 @@ export async function getHomeData(): Promise<HomeData | null> {
       added_at: item.added_at,
     }));
 
+  // Process last boardgames
+  const lastBoardgames: LastAddedBoardgame[] = (
+    (
+      lastBoardgameResult as {
+        data: Array<{
+          rating: number | null;
+          added_at: string;
+          boardgames: {
+            id: string;
+            title: string;
+            thumbnail_url: string | null;
+          } | null;
+        }> | null;
+      }
+    ).data ?? []
+  )
+    .filter((item) => item.boardgames !== null)
+    .map((item) => ({
+      id: item.boardgames!.id,
+      title: item.boardgames!.title,
+      thumbnail_url: item.boardgames!.thumbnail_url,
+      rating: item.rating,
+      added_at: item.added_at,
+    }));
+
   // Process notifications
   const rawNotifications =
     (
@@ -479,20 +577,25 @@ export async function getHomeData(): Promise<HomeData | null> {
     movieCount: (movieCountResult as { count: number | null }).count ?? 0,
     animeCount: (animeCountResult as { count: number | null }).count ?? 0,
     gameCount: (gameCountResult as { count: number | null }).count ?? 0,
+    boardgameCount:
+      (boardgameCountResult as { count: number | null }).count ?? 0,
     top10Shows,
     top10Movies,
     top10Anime,
     top10Games,
+    top10Boardgames,
     lastShows,
     lastMovies,
     lastAnime,
     lastGames,
+    lastBoardgames,
     notifications,
     recentFollows: recentFollowsResult,
     suggestedShows,
     suggestedMovies,
     suggestedAnime,
     suggestedGames,
+    suggestedBoardgames,
     widgets,
   };
 }
@@ -647,6 +750,48 @@ async function getTop3PopularGames(
     }));
 }
 
+async function getTop3PopularBoardgames(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+): Promise<SuggestionItem[]> {
+  const { data: publicLists } = await supabase
+    .from("boardgame_lists")
+    .select("id")
+    .eq("is_public", true);
+  if (!publicLists?.length) return [];
+
+  const listIds = publicLists.map((l) => l.id);
+  const { data: items } = await supabase
+    .from("boardgame_list_items")
+    .select("boardgame_id")
+    .in("boardgame_list_id", listIds);
+  if (!items?.length) return [];
+
+  const countMap = new Map<string, number>();
+  for (const item of items)
+    countMap.set(item.boardgame_id, (countMap.get(item.boardgame_id) ?? 0) + 1);
+
+  const top3Ids = Array.from(countMap.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([id]) => id);
+
+  const { data: boardgames } = await supabase
+    .from("boardgames")
+    .select("id, title, thumbnail_url")
+    .in("id", top3Ids);
+  if (!boardgames) return [];
+
+  return top3Ids
+    .map((id) => boardgames.find((bg) => bg.id === id))
+    .filter((bg): bg is NonNullable<typeof bg> => bg != null)
+    .map((bg) => ({
+      id: bg.id,
+      title: bg.title,
+      poster_path: null,
+      imageUrl: bg.thumbnail_url,
+    }));
+}
+
 function parseWidgets(raw: unknown): WidgetConfig[] {
   if (!Array.isArray(raw)) return [];
   return raw
@@ -687,7 +832,8 @@ export async function saveWidgets(widgets: WidgetConfig[]) {
   const { error } = await supabase
     .from("profiles")
     .update({
-      homepage_widgets: widgets as unknown as import("@/lib/supabase/types").Json,
+      homepage_widgets:
+        widgets as unknown as import("@/lib/supabase/types").Json,
     })
     .eq("id", user.id);
 

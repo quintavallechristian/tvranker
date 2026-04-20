@@ -17,6 +17,10 @@ export const WIDGET_TYPES = [
   "movie_suggestions",
   "anime_suggestions",
   "game_suggestions",
+  "boardgame_podium",
+  "boardgame_count",
+  "last_boardgame_added",
+  "boardgame_suggestions",
 ] as const;
 
 export type WidgetType = (typeof WIDGET_TYPES)[number];
@@ -32,7 +36,13 @@ export const WIDGET_CATEGORIES = [
 
 export type WidgetCategory = (typeof WIDGET_CATEGORIES)[number];
 
-export const WIDGET_TOPICS = ["show", "movie", "anime", "game"] as const;
+export const WIDGET_TOPICS = [
+  "show",
+  "movie",
+  "anime",
+  "game",
+  "boardgame",
+] as const;
 
 export type WidgetTopic = (typeof WIDGET_TOPICS)[number];
 
@@ -51,19 +61,33 @@ export const CATEGORY_TOPIC_TO_TYPE: Record<
   WidgetCategory,
   Partial<Record<WidgetTopic, WidgetType>>
 > = {
-  podium: { show: "show_podium", movie: "movie_podium", anime: "anime_podium", game: "game_podium" },
-  count: { show: "show_count", movie: "movie_count", anime: "anime_count", game: "game_count" },
+  podium: {
+    show: "show_podium",
+    movie: "movie_podium",
+    anime: "anime_podium",
+    game: "game_podium",
+    boardgame: "boardgame_podium",
+  },
+  count: {
+    show: "show_count",
+    movie: "movie_count",
+    anime: "anime_count",
+    game: "game_count",
+    boardgame: "boardgame_count",
+  },
   last_added: {
     show: "last_show_added",
     movie: "last_movie_added",
     anime: "last_anime_added",
     game: "last_game_added",
+    boardgame: "last_boardgame_added",
   },
   suggestions: {
     show: "show_suggestions",
     movie: "movie_suggestions",
     anime: "anime_suggestions",
     game: "game_suggestions",
+    boardgame: "boardgame_suggestions",
   },
   notifications: {},
   recent_follows: {},
@@ -103,6 +127,10 @@ export const DEFAULT_COL_SPAN: Record<WidgetType, 1 | 2> = {
   movie_suggestions: 2,
   anime_suggestions: 2,
   game_suggestions: 2,
+  boardgame_podium: 2,
+  boardgame_count: 1,
+  last_boardgame_added: 1,
+  boardgame_suggestions: 2,
 };
 
 /** Default row span for each widget type */
@@ -125,6 +153,10 @@ export const DEFAULT_ROW_SPAN: Record<WidgetType, 1 | 2> = {
   movie_suggestions: 1,
   anime_suggestions: 1,
   game_suggestions: 1,
+  boardgame_podium: 1,
+  boardgame_count: 1,
+  last_boardgame_added: 1,
+  boardgame_suggestions: 1,
 };
 
 /** Default widgets for new users (no config saved yet) */

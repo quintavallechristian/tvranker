@@ -246,6 +246,176 @@ export type Database = {
           },
         ];
       };
+      boardgame_list_items: {
+        Row: {
+          added_at: string;
+          boardgame_id: string;
+          boardgame_list_id: string;
+          id: string;
+          notes: string | null;
+          position: number;
+          rating: number | null;
+        };
+        Insert: {
+          added_at?: string;
+          boardgame_id: string;
+          boardgame_list_id: string;
+          id?: string;
+          notes?: string | null;
+          position?: number;
+          rating?: number | null;
+        };
+        Update: {
+          added_at?: string;
+          boardgame_id?: string;
+          boardgame_list_id?: string;
+          id?: string;
+          notes?: string | null;
+          position?: number;
+          rating?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "boardgame_list_items_boardgame_id_fkey";
+            columns: ["boardgame_id"];
+            isOneToOne: false;
+            referencedRelation: "boardgames";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "boardgame_list_items_boardgame_list_id_fkey";
+            columns: ["boardgame_list_id"];
+            isOneToOne: false;
+            referencedRelation: "boardgame_lists";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      boardgame_lists: {
+        Row: {
+          bgg_username: string | null;
+          created_at: string;
+          custom_visibility: boolean;
+          description: string | null;
+          id: string;
+          is_public: boolean;
+          last_synced_at: string | null;
+          name: string;
+          rating_labels: Json | null;
+          updated_at: string;
+          user_id: string;
+          visible_to_followers: boolean;
+          visible_to_following: boolean;
+        };
+        Insert: {
+          bgg_username?: string | null;
+          created_at?: string;
+          custom_visibility?: boolean;
+          description?: string | null;
+          id?: string;
+          is_public?: boolean;
+          last_synced_at?: string | null;
+          name?: string;
+          rating_labels?: Json | null;
+          updated_at?: string;
+          user_id: string;
+          visible_to_followers?: boolean;
+          visible_to_following?: boolean;
+        };
+        Update: {
+          bgg_username?: string | null;
+          created_at?: string;
+          custom_visibility?: boolean;
+          description?: string | null;
+          id?: string;
+          is_public?: boolean;
+          last_synced_at?: string | null;
+          name?: string;
+          rating_labels?: Json | null;
+          updated_at?: string;
+          user_id?: string;
+          visible_to_followers?: boolean;
+          visible_to_following?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "boardgame_lists_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      boardgames: {
+        Row: {
+          bgg_fetched: boolean;
+          bgg_id: number | null;
+          bgg_rating: number | null;
+          bgg_weight: number | null;
+          categories: Json | null;
+          description: string | null;
+          designers: Json | null;
+          id: string;
+          image_url: string | null;
+          max_players: number | null;
+          max_playtime: number | null;
+          mechanics: Json | null;
+          min_age: number | null;
+          min_players: number | null;
+          min_playtime: number | null;
+          playing_time: number | null;
+          thumbnail_url: string | null;
+          title: string;
+          url: string | null;
+          year_published: number | null;
+        };
+        Insert: {
+          bgg_fetched?: boolean;
+          bgg_id?: number | null;
+          bgg_rating?: number | null;
+          bgg_weight?: number | null;
+          categories?: Json | null;
+          description?: string | null;
+          designers?: Json | null;
+          id?: string;
+          image_url?: string | null;
+          max_players?: number | null;
+          max_playtime?: number | null;
+          mechanics?: Json | null;
+          min_age?: number | null;
+          min_players?: number | null;
+          min_playtime?: number | null;
+          playing_time?: number | null;
+          thumbnail_url?: string | null;
+          title: string;
+          url?: string | null;
+          year_published?: number | null;
+        };
+        Update: {
+          bgg_fetched?: boolean;
+          bgg_id?: number | null;
+          bgg_rating?: number | null;
+          bgg_weight?: number | null;
+          categories?: Json | null;
+          description?: string | null;
+          designers?: Json | null;
+          id?: string;
+          image_url?: string | null;
+          max_players?: number | null;
+          max_playtime?: number | null;
+          mechanics?: Json | null;
+          min_age?: number | null;
+          min_players?: number | null;
+          min_playtime?: number | null;
+          playing_time?: number | null;
+          thumbnail_url?: string | null;
+          title?: string;
+          url?: string | null;
+          year_published?: number | null;
+        };
+        Relationships: [];
+      };
       game_list_items: {
         Row: {
           added_at: string;
@@ -986,6 +1156,9 @@ export type AnimeListItem = Tables<"anime_list_items">;
 export type Game = Tables<"games">;
 export type GameList = Tables<"game_lists">;
 export type GameListItem = Tables<"game_list_items">;
+export type Boardgame = Tables<"boardgames">;
+export type BoardgameList = Tables<"boardgame_lists">;
+export type BoardgameListItem = Tables<"boardgame_list_items">;
 
 // ─── Custom composite types ───────────────────────────────────────────────────
 

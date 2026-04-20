@@ -65,6 +65,10 @@
     "gamesCardTitle": "I miei Giochi",
     "gamesCardSubtitle": "Le tue classifiche personali di giochi",
     "emptyGameList": "Aggiungi qualche gioco per vedere il podio",
+    "boardgamesCardLabel": "I tuoi giochi da tavolo",
+    "boardgamesCardTitle": "I miei Giochi da Tavolo",
+    "boardgamesCardSubtitle": "Le tue classifiche personali di giochi da tavolo",
+    "emptyBoardgameList": "Aggiungi qualche gioco da tavolo per vedere il podio",
     "widgets": {
       "showPodium": "Podio Serie TV",
       "moviePodium": "Podio Film",
@@ -108,7 +112,11 @@
         "game_podium": "Podio Giochi",
         "game_count": "Conteggio Giochi",
         "last_game_added": "Ultimo gioco aggiunto",
-        "game_suggestions": "Suggerimenti Giochi"
+        "game_suggestions": "Suggerimenti Giochi",
+        "boardgame_podium": "Podio Giochi da Tavolo",
+        "boardgame_count": "Conteggio Giochi da Tavolo",
+        "last_boardgame_added": "Ultimo gioco da tavolo aggiunto",
+        "boardgame_suggestions": "Suggerimenti Giochi da Tavolo"
       },
       "animePodium": "Podio Anime",
       "top10Anime": "Top 10 Anime",
@@ -121,6 +129,11 @@
       "gameCount": "Giochi",
       "lastGameAdded": "Ultimo gioco aggiunto",
       "gameSuggestions": "Suggerimenti Giochi",
+      "boardgamePodium": "Podio Giochi da Tavolo",
+      "top10Boardgame": "Top 10 Giochi da Tavolo",
+      "boardgameCount": "Giochi da Tavolo",
+      "lastBoardgameAdded": "Ultimo gioco da tavolo aggiunto",
+      "boardgameSuggestions": "Suggerimenti Giochi da Tavolo",
       "showSuggestions": "Scopri Serie TV",
       "movieSuggestions": "Scopri Film",
       "explore": "Esplora tutto",
@@ -138,7 +151,8 @@
         "show": "Serie TV",
         "movie": "Film",
         "anime": "Anime",
-        "game": "Videogiochi"
+        "game": "Videogiochi",
+        "boardgame": "Giochi da Tavolo"
       }
     }
   },
@@ -193,6 +207,43 @@
     "gamesCount": "giochi",
     "loadingMore": "Caricamento..."
   },
+  "boardgames": {
+    "title": "I miei Giochi da Tavolo",
+    "addBoardgame": "Aggiungi gioco da tavolo",
+    "syncBGG": "Sincronizza con BGG",
+    "searchBoardgames": "Cerca giochi da tavolo...",
+    "added": "Aggiunto",
+    "emptyTitle": "Nessun gioco da tavolo ancora",
+    "emptyDescription": "Cerca un gioco da tavolo e aggiungilo alla tua lista, oppure sincronizza con BoardGameGeek",
+    "loading": "Caricamento...",
+    "loadMore": "Carica altri",
+    "searchPlaceholder": "Cerca nella tua lista...",
+    "noSearchResults": "Nessun gioco da tavolo corrisponde alla ricerca",
+    "noSearchResultsHint": "Prova con un termine diverso",
+    "noFilterResults": "Nessun gioco da tavolo corrisponde ai filtri selezionati",
+    "noFilterResultsHint": "Prova a rimuovere alcuni filtri",
+    "analytics": "Statistiche",
+    "analyticsEmptyHint": "Aggiungi e vota giochi da tavolo per vedere le statistiche",
+    "totalBoardgames": "Giochi da tavolo totali",
+    "ratedBoardgames": "Votati",
+    "boardgamesCount": "giochi da tavolo",
+    "loadingMore": "Caricamento...",
+    "lastSynced": "Ultima sincronizzazione",
+    "neverSynced": "Mai sincronizzato",
+    "bggUsername": "Nome utente BGG",
+    "fetchCollection": "Carica Collezione",
+    "syncBGGDescription": "Inserisci il tuo nome utente BoardGameGeek per importare la tua collezione",
+    "collectionFound": "{count} giochi trovati",
+    "modeMerge": "Unisci",
+    "modeReplace": "Sostituisci",
+    "syncNow": "Sincronizza Ora",
+    "syncing": "Sincronizzazione...",
+    "syncComplete": "Sincronizzazione completata!",
+    "syncSummary": "{added} aggiunti, {updated} aggiornati, {skipped} saltati",
+    "longestBoardgame": "Gioco più giocato",
+    "longestBoardgameByYear": "Più giocato per anno",
+    "longestBoardgameByYearTitle": "Per anno di pubblicazione"
+  },
   "anime": {
     "title": "I miei Anime",
     "addAnime": "Aggiungi anime",
@@ -239,7 +290,8 @@
     "listShows": "Serie TV",
     "listAnime": "Anime",
     "listMovies": "Film",
-    "listGames": "Videogiochi"
+    "listGames": "Videogiochi",
+    "listBoardgames": "Giochi da Tavolo"
   },
   "follows": {
     "title": "Seguiti",
@@ -265,7 +317,8 @@
     "showList": "Serie TV",
     "movieList": "Film",
     "animeList": "Anime",
-    "gameList": "Giochi"
+    "gameList": "Giochi",
+    "boardgameList": "Giochi da Tavolo"
   },
   "users": {
     "showCount": "{count, plural, =0 {Nessuna serie} =1 {1 serie} other {# serie}}",
@@ -290,6 +343,11 @@
     "privateGameList": "La lista giochi di questo utente è privata.",
     "gamesInCommon": "In comune ({count})",
     "noGamesInCommon": "Nessun gioco in comune.",
+    "boardgameCount": "{count, plural, =0 {Nessun gioco da tavolo} =1 {1 gioco da tavolo} other {# giochi da tavolo}}",
+    "noBoardgames": "Nessun gioco da tavolo ancora.",
+    "privateBoardgameList": "La lista giochi da tavolo di questo utente è privata.",
+    "boardgamesInCommon": "In comune ({count})",
+    "noBoardgamesInCommon": "Nessun gioco da tavolo in comune.",
     "yourRating": "Il tuo voto",
     "viewList": "Vedi lista"
   },
@@ -535,6 +593,12 @@
     "popularGamesTitle": "Giochi popolari nella community",
     "popularGamesEmpty": "Nessun gioco nelle liste pubbliche ancora",
     "popularGamesFallback": "Aggiungi giochi alla tua lista per ricevere suggerimenti personalizzati. Nel frattempo, ecco i preferiti della community:",
+    "boardgamesTitle": "Scopri Giochi da Tavolo",
+    "boardgamesSubtitle": "Trova nuovi giochi da tavolo da aggiungere alla tua lista",
+    "searchBoardgamesPlaceholder": "Cerca su BoardGameGeek...",
+    "popularBoardgamesTitle": "Giochi da tavolo popolari nella community",
+    "popularBoardgamesEmpty": "Nessun gioco da tavolo nelle liste pubbliche ancora",
+    "popularBoardgamesFallback": "Aggiungi giochi da tavolo alla tua lista per ricevere suggerimenti personalizzati. Nel frattempo, ecco i preferiti della community:",
     "exploreAll": "Esplora tutto",
     "discoverSection": "Scopri"
   },
@@ -576,7 +640,9 @@
     "addToList": "Aggiungi alla lista",
     "inMyList": "Nella mia lista",
     "myRating": "Mio voto",
-    "viewOnTmdb": "Visualizza su TMDB"
+    "viewOnTmdb": "Visualizza su TMDB",
+    "readMore": "Leggi tutto",
+    "readLess": "Mostra meno"
   },
   "movieDetail": {
     "overview": "Trama",
@@ -603,7 +669,9 @@
     "addToList": "Aggiungi alla lista",
     "inMyList": "Nella mia lista",
     "myRating": "Mio voto",
-    "viewOnTmdb": "Visualizza su TMDB"
+    "viewOnTmdb": "Visualizza su TMDB",
+    "readMore": "Leggi tutto",
+    "readLess": "Mostra meno"
   },
   "animeDetail": {
     "overview": "Trama",
@@ -629,7 +697,9 @@
     "addToList": "Aggiungi alla lista",
     "inMyList": "Nella mia lista",
     "myRating": "Mio voto",
-    "viewOnTmdb": "Visualizza su TMDB"
+    "viewOnTmdb": "Visualizza su TMDB",
+    "readMore": "Leggi tutto",
+    "readLess": "Mostra meno"
   },
   "profile": {
     "title": "Profilo",
@@ -766,6 +836,13 @@
       "minVotesHint": "Sono inclusi solo i giochi con almeno 2 voti",
       "emptyTitle": "Nessuna classifica disponibile",
       "emptyDescription": "Vota i giochi nella tua lista pubblica per contribuire alla classifica della community"
+    },
+    "boardgames": {
+      "title": "Migliori Giochi da Tavolo",
+      "subtitle": "Giochi da tavolo ordinati per voto medio degli utenti nelle liste pubbliche",
+      "minVotesHint": "Sono inclusi solo i giochi da tavolo con almeno 2 voti",
+      "emptyTitle": "Nessuna classifica disponibile",
+      "emptyDescription": "Vota i giochi da tavolo nella tua lista pubblica per contribuire alla classifica della community"
     }
   },
   "onboarding": {
@@ -785,6 +862,46 @@
     "animeAddFirst": "Aggiungi un anime",
     "gamesTitle": "Benvenuto nei tuoi giochi!",
     "gamesSubtitle": "Inizia ad aggiungere i giochi che hai giocato o che vuoi giocare.",
-    "gamesAddFirst": "Aggiungi un gioco"
+    "gamesAddFirst": "Aggiungi un gioco",
+    "boardgamesTitle": "Benvenuto nei tuoi giochi da tavolo!",
+    "boardgamesSubtitle": "Inizia ad aggiungere i giochi da tavolo che hai giocato o che vuoi giocare, oppure sincronizza con BoardGameGeek.",
+    "boardgamesAddFirst": "Aggiungi un gioco da tavolo"
+  },
+  "boardgameDetail": {
+    "overview": "Descrizione",
+    "description": "Descrizione",
+    "releaseYear": "Anno",
+    "players": "Giocatori",
+    "playersValue": "{min}–{max}",
+    "playingTime": "Durata",
+    "playingTimeValue": "{minutes} min",
+    "minAge": "Età minima",
+    "minAgeValue": "{age}+",
+    "bggRating": "Voto BGG",
+    "bggWeight": "Complessità",
+    "categories": "Categorie",
+    "mechanics": "Meccaniche",
+    "designers": "Designer",
+    "inLists": "{count, plural, =1 {In 1 lista} other {In # liste}}",
+    "avgRating": "Voto medio utenti",
+    "noOverview": "Nessuna descrizione disponibile.",
+    "publicListsTitle": "Liste pubbliche con questo gioco",
+    "usersWithThisBoardgame": "Utenti con questo gioco",
+    "noPublicLists": "Nessuna lista pubblica include ancora questo gioco.",
+    "analyticsTitle": "Statistiche community",
+    "ratedBy": "Votato da",
+    "ratingDistribution": "Distribuzione voti",
+    "noRatings": "Nessun voto ancora",
+    "addedOverTime": "Aggiunte alle liste nel tempo",
+    "boardgames": "aggiunte",
+    "users": "utenti",
+    "tabInfo": "Info",
+    "tabStats": "Statistiche",
+    "addToList": "Aggiungi alla lista",
+    "inMyList": "Nella mia lista",
+    "myRating": "Il mio voto",
+    "viewOnBGG": "Vedi su BGG",
+    "readMore": "Leggi tutto",
+    "readLess": "Mostra meno"
   }
 }

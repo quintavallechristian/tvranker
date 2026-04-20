@@ -15,6 +15,7 @@ import {
   Television,
   FilmSlate,
   GameController,
+  PuzzlePiece,
   SpinnerGap,
   ArrowRight,
 } from "@phosphor-icons/react";
@@ -34,6 +35,10 @@ import {
   getPopularGames,
   type PopularGame,
 } from "@/app/[locale]/(app)/games/actions";
+import {
+  getPopularBoardgames,
+  type PopularBoardgame,
+} from "@/app/[locale]/(app)/boardgames/actions";
 
 type UserResult = {
   id: string;
@@ -54,6 +59,9 @@ export default function ExplorePage() {
   const [suggestedMovies, setSuggestedMovies] = useState<PopularMovie[]>([]);
   const [suggestedAnime, setSuggestedAnime] = useState<PopularAnime[]>([]);
   const [suggestedGames, setSuggestedGames] = useState<PopularGame[]>([]);
+  const [suggestedBoardgames, setSuggestedBoardgames] = useState<
+    PopularBoardgame[]
+  >([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(true);
   const [similarUsers, setSimilarUsers] = useState<SimilarUser[]>([]);
   const [similarUsersLoading, setSimilarUsersLoading] = useState(true);
@@ -81,13 +89,15 @@ export default function ExplorePage() {
       getPopularMovies().then((m) => m.slice(0, 3)),
       getPopularAnime().then((a) => a.slice(0, 3)),
       getPopularGames().then((g) => g.slice(0, 3)),
+      getPopularBoardgames().then((bg) => bg.slice(0, 3)),
     ])
-      .then(([shows, movies, anime, games]) => {
+      .then(([shows, movies, anime, games, boardgames]) => {
         if (!cancelled) {
           setSuggestedShows(shows);
           setSuggestedMovies(movies);
           setSuggestedAnime(anime);
           setSuggestedGames(games);
+          setSuggestedBoardgames(boardgames);
         }
       })
       .catch(() => {})
@@ -161,6 +171,7 @@ export default function ExplorePage() {
       movieListsResult,
       animeListsResult,
       gameListsResult,
+      boardgameListsResult,
       followsResult,
     ] = await Promise.all([
       supabase
@@ -177,6 +188,10 @@ export default function ExplorePage() {
         .in("user_id", profileIds),
       supabase
         .from("game_lists")
+        .select("id, user_id")
+        .in("user_id", profileIds),
+      supabase
+        .from("boardgame_lists")
         .select("id, user_id")
         .in("user_id", profileIds),
       user
@@ -202,6 +217,9 @@ export default function ExplorePage() {
     const gameListIdByUser = new Map(
       (gameListsResult.data ?? []).map((l) => [l.user_id, l.id]),
     );
+    const boardgameListIdByUser = new Map(
+      (boardgameListsResult.data ?? []).map((l) => [l.user_id, l.id]),
+    );
     const followingSet = new Set(
       (followsResult.data ?? []).map((f) => f.following_id),
     );
@@ -212,48 +230,62 @@ export default function ExplorePage() {
     const movieListIds = (movieListsResult.data ?? []).map((l) => l.id);
     const animeListIds = (animeListsResult.data ?? []).map((l) => l.id);
     const gameListIds = (gameListsResult.data ?? []).map((l) => l.id);
+    const boardgameListIds = (boardgameListsResult.data ?? []).map((l) => l.id);
 
     // Batch fetch items for public show lists + existence check for movie/anime/games
-    const [showItemsResult, movieItemsResult, animeItemsResult, gameItemsResult] =
-      await Promise.all([
-        publicShowListIds.length > 0
-          ? supabase
-              .from("list_items")
-              .select("list_id, show_id, rating, position")
-              .in("list_id", publicShowListIds)
-          : Promise.resolve({
-              data: [] as Array<{
-                list_id: string;
-                show_id: string;
-                rating: number | null;
-                position: number;
-              }>,
-            }),
-        movieListIds.length > 0
-          ? supabase
-              .from("movie_list_items")
-              .select("movie_list_id")
-              .in("movie_list_id", movieListIds)
-          : Promise.resolve({
-              data: [] as Array<{ movie_list_id: string }>,
-            }),
-        animeListIds.length > 0
-          ? supabase
-              .from("anime_list_items")
-              .select("anime_list_id")
-              .in("anime_list_id", animeListIds)
-          : Promise.resolve({
-              data: [] as Array<{ anime_list_id: string }>,
-            }),
-        gameListIds.length > 0
-          ? supabase
-              .from("game_list_items")
-              .select("game_list_id")
-              .in("game_list_id", gameListIds)
-          : Promise.resolve({
-              data: [] as Array<{ game_list_id: string }>,
-            }),
-      ]);
+    const [
+      showItemsResult,
+      movieItemsResult,
+      animeItemsResult,
+      gameItemsResult,
+      boardgameItemsResult,
+    ] = await Promise.all([
+      publicShowListIds.length > 0
+        ? supabase
+            .from("list_items")
+            .select("list_id, show_id, rating, position")
+            .in("list_id", publicShowListIds)
+        : Promise.resolve({
+            data: [] as Array<{
+              list_id: string;
+              show_id: string;
+              rating: number | null;
+              position: number;
+            }>,
+          }),
+      movieListIds.length > 0
+        ? supabase
+            .from("movie_list_items")
+            .select("movie_list_id")
+            .in("movie_list_id", movieListIds)
+        : Promise.resolve({
+            data: [] as Array<{ movie_list_id: string }>,
+          }),
+      animeListIds.length > 0
+        ? supabase
+            .from("anime_list_items")
+            .select("anime_list_id")
+            .in("anime_list_id", animeListIds)
+        : Promise.resolve({
+            data: [] as Array<{ anime_list_id: string }>,
+          }),
+      gameListIds.length > 0
+        ? supabase
+            .from("game_list_items")
+            .select("game_list_id")
+            .in("game_list_id", gameListIds)
+        : Promise.resolve({
+            data: [] as Array<{ game_list_id: string }>,
+          }),
+      boardgameListIds.length > 0
+        ? supabase
+            .from("boardgame_list_items")
+            .select("boardgame_list_id")
+            .in("boardgame_list_id", boardgameListIds)
+        : Promise.resolve({
+            data: [] as Array<{ boardgame_list_id: string }>,
+          }),
+    ]);
 
     // Group show items by list_id
     const showItemsByList = new Map<
@@ -278,6 +310,9 @@ export default function ExplorePage() {
     );
     const gameListsWithItems = new Set(
       (gameItemsResult.data ?? []).map((i) => i.game_list_id),
+    );
+    const boardgameListsWithItems = new Set(
+      (boardgameItemsResult.data ?? []).map((i) => i.boardgame_list_id),
     );
 
     const userResultsList: UserResult[] = [];
@@ -309,11 +344,18 @@ export default function ExplorePage() {
       const gameListId = gameListIdByUser.get(p.id);
       const gamesCompiled =
         gameListId && gameListsWithItems.has(gameListId) ? 1 : 0;
+      const boardgameListId = boardgameListIdByUser.get(p.id);
+      const boardgamesCompiled =
+        boardgameListId && boardgameListsWithItems.has(boardgameListId) ? 1 : 0;
 
       userResultsList.push({
         ...p,
         lists_compiled:
-          showsCompiled + moviesCompiled + animeCompiled + gamesCompiled,
+          showsCompiled +
+          moviesCompiled +
+          animeCompiled +
+          gamesCompiled +
+          boardgamesCompiled,
         similarity,
         is_following: followingSet.has(p.id),
       });
@@ -521,6 +563,20 @@ export default function ExplorePage() {
                   }))}
                   icon="game"
                 />
+                {/* Boardgames widget */}
+                <SuggestionCard
+                  title={t("boardgamesTitle")}
+                  href="/explore/boardgames"
+                  viewAllLabel={t("exploreAll")}
+                  emptyLabel={t("popularBoardgamesEmpty")}
+                  items={suggestedBoardgames.map((bg) => ({
+                    id: bg.id,
+                    title: bg.title,
+                    poster_path: null,
+                    imageUrl: bg.thumbnail_url,
+                  }))}
+                  icon="boardgame"
+                />
               </div>
             )}
           </div>
@@ -548,10 +604,16 @@ function SuggestionCard({
     poster_path: string | null;
     imageUrl?: string | null;
   }[];
-  icon: "tv" | "film" | "game";
+  icon: "tv" | "film" | "game" | "boardgame";
 }) {
   const Icon =
-    icon === "tv" ? Television : icon === "game" ? GameController : FilmSlate;
+    icon === "tv"
+      ? Television
+      : icon === "game"
+        ? GameController
+        : icon === "boardgame"
+          ? PuzzlePiece
+          : FilmSlate;
 
   return (
     <Link

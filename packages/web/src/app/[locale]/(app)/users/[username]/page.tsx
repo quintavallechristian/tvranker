@@ -8,6 +8,7 @@ import {
   computeMovieListSimilarity,
   computeAnimeListSimilarity,
   computeGameListSimilarity,
+  computeBoardgameListSimilarity,
 } from "@/lib/similarity";
 import { fetchAllRows } from "@/lib/supabase/fetchAll";
 import { Link } from "@/i18n/navigation";
@@ -38,6 +39,7 @@ export default async function UserProfilePage({
     { data: movieList },
     { data: animeList },
     { data: gameList },
+    { data: boardgameList },
   ] = await Promise.all([
     supabase
       .from("lists")
@@ -59,6 +61,11 @@ export default async function UserProfilePage({
       .select("id, is_public")
       .eq("user_id", profile.id)
       .single(),
+    supabase
+      .from("boardgame_lists")
+      .select("id, is_public")
+      .eq("user_id", profile.id)
+      .single(),
   ]);
 
   // Fetch top 10 shows, movies, anime, games + counts in parallel
@@ -71,6 +78,8 @@ export default async function UserProfilePage({
     animeCountResult,
     gameTopResult,
     gameCountResult,
+    boardgameTopResult,
+    boardgameCountResult,
   ] = await Promise.all([
     list
       ? supabase
@@ -132,6 +141,21 @@ export default async function UserProfilePage({
           .select("id", { count: "exact", head: true })
           .eq("game_list_id", gameList.id)
       : Promise.resolve({ count: 0 }),
+    boardgameList
+      ? supabase
+          .from("boardgame_list_items")
+          .select("rating, boardgames(id, title, thumbnail_url)")
+          .eq("boardgame_list_id", boardgameList.id)
+          .order("rating", { ascending: false, nullsFirst: false })
+          .order("position", { ascending: true })
+          .range(0, 9)
+      : Promise.resolve({ data: null }),
+    boardgameList
+      ? supabase
+          .from("boardgame_list_items")
+          .select("id", { count: "exact", head: true })
+          .eq("boardgame_list_id", boardgameList.id)
+      : Promise.resolve({ count: 0 }),
   ]);
 
   const showPodiumItems: PodiumItem[] = (showTopResult.data ?? []).map(
@@ -175,6 +199,19 @@ export default async function UserProfilePage({
     }),
   );
 
+  const boardgamePodiumItems: PodiumItem[] = (
+    boardgameTopResult.data ?? []
+  ).map(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (item: any) => ({
+      id: item.boardgames.id,
+      title: item.boardgames.title,
+      poster_path: null,
+      imageUrl: item.boardgames.thumbnail_url,
+      rating: item.rating,
+    }),
+  );
+
   // Current user
   const {
     data: { user },
@@ -186,6 +223,7 @@ export default async function UserProfilePage({
   let movieSimilarityScore: number | null = null;
   let animeSimilarityScore: number | null = null;
   let gameSimilarityScore: number | null = null;
+  let boardgameSimilarityScore: number | null = null;
 
   if (user && !isOwnProfile) {
     const [
@@ -193,11 +231,17 @@ export default async function UserProfilePage({
       { data: viewerMovieList },
       { data: viewerAnimeList },
       { data: viewerGameList },
+      { data: viewerBoardgameList },
     ] = await Promise.all([
       supabase.from("lists").select("id").eq("user_id", user.id).single(),
       supabase.from("movie_lists").select("id").eq("user_id", user.id).single(),
       supabase.from("anime_lists").select("id").eq("user_id", user.id).single(),
       supabase.from("game_lists").select("id").eq("user_id", user.id).single(),
+      supabase
+        .from("boardgame_lists")
+        .select("id")
+        .eq("user_id", user.id)
+        .single(),
     ]);
     if (viewerGameList && gameList) {
       const [viewerGameItemsData, profileGameItemsData] = await Promise.all([
@@ -342,6 +386,44 @@ export default async function UserProfilePage({
         );
       }
     }
+
+    if (viewerBoardgameList && boardgameList) {
+      const [viewerBoardgameItemsData, profileBoardgameItemsData] =
+        await Promise.all([
+          fetchAllRows((from, to) =>
+            supabase
+              .from("boardgame_list_items")
+              .select("boardgame_id, rating, position")
+              .eq("boardgame_list_id", viewerBoardgameList.id)
+              .order("position", { ascending: true })
+              .range(from, to),
+          ),
+          fetchAllRows((from, to) =>
+            supabase
+              .from("boardgame_list_items")
+              .select("boardgame_id, rating, position")
+              .eq("boardgame_list_id", boardgameList.id)
+              .order("position", { ascending: true })
+              .range(from, to),
+          ),
+        ]);
+      const boardgameListA = viewerBoardgameItemsData.map((i, idx) => ({
+        boardgameId: i.boardgame_id,
+        rating: i.rating,
+        position: i.position ?? idx,
+      }));
+      const boardgameListB = profileBoardgameItemsData.map((i, idx) => ({
+        boardgameId: i.boardgame_id,
+        rating: i.rating,
+        position: i.position ?? idx,
+      }));
+      if (boardgameListA.length > 0 && boardgameListB.length > 0) {
+        boardgameSimilarityScore = computeBoardgameListSimilarity(
+          boardgameListA,
+          boardgameListB,
+        );
+      }
+    }
   }
 
   // Compatibility = average similarity of all lists both profiles have compiled
@@ -351,6 +433,7 @@ export default async function UserProfilePage({
     movieSimilarityScore,
     animeSimilarityScore,
     gameSimilarityScore,
+    boardgameSimilarityScore,
   ].filter((s): s is number => s !== null);
   if (scores.length > 0) {
     compatibilityScore = Math.round(
@@ -408,7 +491,8 @@ export default async function UserProfilePage({
       {((showCountResult.count ?? 0) > 0 ||
         (movieCountResult.count ?? 0) > 0 ||
         (animeCountResult.count ?? 0) > 0 ||
-        (gameCountResult.count ?? 0) > 0) && (
+        (gameCountResult.count ?? 0) > 0 ||
+        (boardgameCountResult.count ?? 0) > 0) && (
         <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {(showCountResult.count ?? 0) > 0 && (
             <CountWidget
@@ -436,6 +520,13 @@ export default async function UserProfilePage({
               count={gameCountResult.count ?? 0}
               topic="game"
               href={`/users/${profile.username}/games`}
+            />
+          )}
+          {(boardgameCountResult.count ?? 0) > 0 && (
+            <CountWidget
+              count={boardgameCountResult.count ?? 0}
+              topic="boardgame"
+              href={`/users/${profile.username}/boardgames`}
             />
           )}
         </div>
@@ -508,6 +599,24 @@ export default async function UserProfilePage({
                 gameSimilarityScore !== null ? (
                   <span className="text-xs font-semibold text-accent">
                     {gameSimilarityScore}%
+                  </span>
+                ) : undefined
+              }
+            />
+          </div>
+        )}
+
+        {(boardgameCountResult.count ?? 0) > 0 && (
+          <div className="h-105">
+            <PodiumWidget
+              items={boardgamePodiumItems}
+              topic="boardgame"
+              rowSpan={2}
+              viewAllHref={`/users/${profile.username}/boardgames`}
+              badge={
+                boardgameSimilarityScore !== null ? (
+                  <span className="text-xs font-semibold text-accent">
+                    {boardgameSimilarityScore}%
                   </span>
                 ) : undefined
               }

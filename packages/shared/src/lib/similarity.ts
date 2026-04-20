@@ -234,6 +234,74 @@ export function computeGameListSimilarity(
   return Math.round(overlapRatio * agreementScore * 100);
 }
 
+export type BoardgameListEntry = {
+  boardgameId: string;
+  rating: number | null;
+  position: number;
+};
+
+/**
+ * Compute similarity between two board game lists (0–100).
+ * Same formula as computeListSimilarity but keyed by boardgameId.
+ */
+export function computeBoardgameListSimilarity(
+  listA: BoardgameListEntry[],
+  listB: BoardgameListEntry[],
+): number {
+  if (listA.length === 0 || listB.length === 0) return 0;
+
+  const rankedA = toDisplayRanked(listA);
+  const rankedB = toDisplayRanked(listB);
+
+  const mapA = new Map(
+    rankedA.map((e) => [
+      e.boardgameId,
+      { rating: e.rating, position: e.position },
+    ]),
+  );
+  const mapB = new Map(
+    rankedB.map((e) => [
+      e.boardgameId,
+      { rating: e.rating, position: e.position },
+    ]),
+  );
+
+  const commonIds: string[] = [];
+  for (const boardgameId of mapA.keys()) {
+    if (mapB.has(boardgameId)) commonIds.push(boardgameId);
+  }
+
+  if (commonIds.length === 0) return 0;
+
+  const overlapRatio = commonIds.length / Math.min(listA.length, listB.length);
+
+  let ratingSum = 0;
+  let ratingCount = 0;
+  let positionSum = 0;
+  const maxPosA = Math.max(listA.length - 1, 1);
+  const maxPosB = Math.max(listB.length - 1, 1);
+
+  for (const boardgameId of commonIds) {
+    const a = mapA.get(boardgameId)!;
+    const b = mapB.get(boardgameId)!;
+
+    if (a.rating !== null && b.rating !== null) {
+      ratingSum += 1 - Math.abs(a.rating - b.rating) / 9;
+      ratingCount++;
+    }
+
+    const normPosA = a.position / maxPosA;
+    const normPosB = b.position / maxPosB;
+    positionSum += 1 - Math.abs(normPosA - normPosB);
+  }
+
+  const ratingSimilarity = ratingCount > 0 ? ratingSum / ratingCount : 1;
+  const positionSimilarity = positionSum / commonIds.length;
+  const agreementScore = 0.5 * ratingSimilarity + 0.5 * positionSimilarity;
+
+  return Math.round(overlapRatio * agreementScore * 100);
+}
+
 export function computeListSimilarity(
   listA: ListEntry[],
   listB: ListEntry[],

@@ -4,10 +4,12 @@ export {
   computeMovieListSimilarity,
   computeAnimeListSimilarity,
   computeGameListSimilarity,
+  computeBoardgameListSimilarity,
   type ListEntry,
   type MovieListEntry,
   type AnimeListEntry,
   type GameListEntry,
+  type BoardgameListEntry,
 } from "./lib/similarity";
 export {
   scoreRecommendations,
@@ -69,6 +71,13 @@ export {
   type IGDBCoverSize,
 } from "./lib/igdb/types";
 
+// BGG types
+export type {
+  BGGSearchResult,
+  BGGThingItem,
+  BGGCollectionItem,
+} from "./lib/bgg/types";
+
 // Supabase types
 export type {
   Database,
@@ -95,4 +104,7 @@ export type {
   Game,
   GameList,
   GameListItem,
+  Boardgame,
+  BoardgameList,
+  BoardgameListItem,
 } from "./lib/supabase/types";

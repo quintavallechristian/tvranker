@@ -38,7 +38,7 @@ type Props = {
   data: AnalyticsData;
   ratingLabels?: string[] | null;
   backHref: string;
-  itemType?: "show" | "movie" | "anime";
+  itemType?: "show" | "movie" | "anime" | "boardgame";
   labels: {
     title: string;
     backToList: string;
@@ -83,10 +83,12 @@ function ShowStatRow({
   posterPath: string | null;
   badge: string;
   compact?: boolean;
-  itemType?: "show" | "movie" | "anime";
+  itemType?: "show" | "movie" | "anime" | "boardgame";
 }) {
   const posterUrl = posterPath
-    ? `https://image.tmdb.org/t/p/w92${posterPath}`
+    ? itemType === "boardgame" || posterPath.startsWith("http")
+      ? posterPath
+      : `https://image.tmdb.org/t/p/w92${posterPath}`
     : null;
 
   return (
@@ -96,7 +98,9 @@ function ShowStatRow({
           ? `/movies/${id}`
           : itemType === "anime"
             ? `/anime/${id}`
-            : `/shows/${id}`
+            : itemType === "boardgame"
+              ? `/boardgames/${id}`
+              : `/shows/${id}`
       }
       className={`flex items-center gap-2 rounded-md transition-colors hover:bg-bg-surface ${compact ? "" : "border border-border bg-bg-elevated px-2 py-1.5"}`}
     >
@@ -399,10 +403,7 @@ export function ListAnalyticsPage({
                     <button
                       key={entry.id}
                       onClick={() =>
-                        openModal(
-                          entry.name,
-                          data.showsByGenre[entry.id] ?? [],
-                        )
+                        openModal(entry.name, data.showsByGenre[entry.id] ?? [])
                       }
                       className="flex items-center gap-3 rounded px-1 py-0.5 transition-colors hover:bg-bg-elevated"
                     >
@@ -766,7 +767,9 @@ export function ListAnalyticsPage({
                         seasonCount,
                       }) => {
                         const posterUrl = poster_path
-                          ? `https://image.tmdb.org/t/p/w92${poster_path}`
+                          ? poster_path.startsWith("http")
+                            ? poster_path
+                            : `https://image.tmdb.org/t/p/w92${poster_path}`
                           : null;
                         return (
                           <Link
@@ -879,7 +882,16 @@ export function ListAnalyticsPage({
                         key={show.id}
                         id={show.id}
                         title={show.title}
-                        posterPath={show.poster_path}
+                        posterPath={
+                          show.poster_path?.startsWith("http")
+                            ? null
+                            : show.poster_path
+                        }
+                        imageUrl={
+                          show.poster_path?.startsWith("http")
+                            ? show.poster_path
+                            : null
+                        }
                         rating={show.rating}
                         position={i + 1}
                         readOnly

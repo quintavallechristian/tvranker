@@ -65,6 +65,10 @@
     "gamesCardTitle": "My Games",
     "gamesCardSubtitle": "Your personal game rankings",
     "emptyGameList": "Add some games to see your podium",
+    "boardgamesCardLabel": "Your boardgames",
+    "boardgamesCardTitle": "My Boardgames",
+    "boardgamesCardSubtitle": "Your personal boardgame rankings",
+    "emptyBoardgameList": "Add some boardgames to see your podium",
     "widgets": {
       "showPodium": "Show Podium",
       "moviePodium": "Movie Podium",
@@ -108,7 +112,11 @@
         "game_podium": "Game Podium",
         "game_count": "Game Count",
         "last_game_added": "Last Game Added",
-        "game_suggestions": "Game Suggestions"
+        "game_suggestions": "Game Suggestions",
+        "boardgame_podium": "Boardgame Podium",
+        "boardgame_count": "Boardgame Count",
+        "last_boardgame_added": "Last Boardgame Added",
+        "boardgame_suggestions": "Boardgame Suggestions"
       },
       "animePodium": "Anime Podium",
       "top10Anime": "Top 10 Anime",
@@ -121,6 +129,11 @@
       "gameCount": "Games",
       "lastGameAdded": "Last Game Added",
       "gameSuggestions": "Game Suggestions",
+      "boardgamePodium": "Boardgame Podium",
+      "top10Boardgame": "Top 10 Boardgames",
+      "boardgameCount": "Boardgames",
+      "lastBoardgameAdded": "Last Boardgame Added",
+      "boardgameSuggestions": "Boardgame Suggestions",
       "showSuggestions": "Discover Shows",
       "movieSuggestions": "Discover Movies",
       "explore": "Explore all",
@@ -138,7 +151,8 @@
         "show": "TV Shows",
         "movie": "Movies",
         "anime": "Anime",
-        "game": "Video Games"
+        "game": "Video Games",
+        "boardgame": "Board Games"
       }
     }
   },
@@ -193,6 +207,43 @@
     "gamesCount": "games",
     "loadingMore": "Loading more..."
   },
+  "boardgames": {
+    "title": "My Boardgames",
+    "addBoardgame": "Add boardgame",
+    "syncBGG": "Sync with BGG",
+    "searchBoardgames": "Search boardgames...",
+    "added": "Added",
+    "emptyTitle": "No boardgames yet",
+    "emptyDescription": "Search for boardgames and add them to your list, or sync with BoardGameGeek",
+    "loading": "Loading...",
+    "loadMore": "Load more",
+    "searchPlaceholder": "Search in your boardgames...",
+    "noSearchResults": "No boardgames match your search",
+    "noSearchResultsHint": "Try a different search term",
+    "noFilterResults": "No boardgames match the selected filters",
+    "noFilterResultsHint": "Try removing some filters",
+    "analytics": "Analytics",
+    "analyticsEmptyHint": "Add and rate boardgames to see analytics",
+    "totalBoardgames": "Total boardgames",
+    "ratedBoardgames": "Rated",
+    "boardgamesCount": "boardgames",
+    "loadingMore": "Loading more...",
+    "lastSynced": "Last synced",
+    "neverSynced": "Never synced",
+    "bggUsername": "BGG Username",
+    "fetchCollection": "Fetch Collection",
+    "syncBGGDescription": "Enter your BoardGameGeek username to import your collection",
+    "collectionFound": "{count} games found",
+    "modeMerge": "Merge",
+    "modeReplace": "Replace",
+    "syncNow": "Sync Now",
+    "syncing": "Syncing...",
+    "syncComplete": "Sync complete!",
+    "syncSummary": "{added} added, {updated} updated, {skipped} skipped",
+    "longestBoardgame": "Most played boardgame",
+    "longestBoardgameByYear": "Most played by year",
+    "longestBoardgameByYearTitle": "By release year"
+  },
   "anime": {
     "title": "My Anime",
     "addAnime": "Add anime",
@@ -239,7 +290,8 @@
     "listShows": "TV Shows",
     "listAnime": "Anime",
     "listMovies": "Movies",
-    "listGames": "Games"
+    "listGames": "Games",
+    "listBoardgames": "Boardgames"
   },
   "follows": {
     "title": "Following",
@@ -265,7 +317,8 @@
     "showList": "Shows",
     "movieList": "Movies",
     "animeList": "Anime",
-    "gameList": "Games"
+    "gameList": "Games",
+    "boardgameList": "Boardgames"
   },
   "users": {
     "showCount": "{count, plural, =0 {No shows} =1 {1 show} other {# shows}}",
@@ -290,6 +343,11 @@
     "privateGameList": "This user's game list is private.",
     "gamesInCommon": "In common ({count})",
     "noGamesInCommon": "No games in common.",
+    "boardgameCount": "{count, plural, =0 {No boardgames} =1 {1 boardgame} other {# boardgames}}",
+    "noBoardgames": "No boardgames yet.",
+    "privateBoardgameList": "This user's boardgame list is private.",
+    "boardgamesInCommon": "In common ({count})",
+    "noBoardgamesInCommon": "No boardgames in common.",
     "yourRating": "Your rating",
     "viewList": "View list"
   },
@@ -535,6 +593,12 @@
     "popularGamesTitle": "Popular games in the community",
     "popularGamesEmpty": "No games in public lists yet",
     "popularGamesFallback": "Add games to your list to get personalized suggestions. In the meantime, here are the community favorites:",
+    "boardgamesTitle": "Discover Boardgames",
+    "boardgamesSubtitle": "Find new boardgames to add to your list",
+    "searchBoardgamesPlaceholder": "Search BoardGameGeek...",
+    "popularBoardgamesTitle": "Popular boardgames in the community",
+    "popularBoardgamesEmpty": "No boardgames in public lists yet",
+    "popularBoardgamesFallback": "Add boardgames to your list to get personalized suggestions. In the meantime, here are the community favorites:",
     "exploreAll": "Explore all",
     "discoverSection": "Discover"
   },
@@ -576,7 +640,9 @@
     "addToList": "Add to my list",
     "inMyList": "In my list",
     "myRating": "My rating",
-    "viewOnTmdb": "View on TMDB"
+    "viewOnTmdb": "View on TMDB",
+    "readMore": "Read more",
+    "readLess": "Read less"
   },
   "movieDetail": {
     "overview": "Overview",
@@ -603,7 +669,9 @@
     "addToList": "Add to my list",
     "inMyList": "In my list",
     "myRating": "My rating",
-    "viewOnTmdb": "View on TMDB"
+    "viewOnTmdb": "View on TMDB",
+    "readMore": "Read more",
+    "readLess": "Read less"
   },
   "animeDetail": {
     "overview": "Overview",
@@ -629,7 +697,9 @@
     "addToList": "Add to my list",
     "inMyList": "In my list",
     "myRating": "My rating",
-    "viewOnTmdb": "View on TMDB"
+    "viewOnTmdb": "View on TMDB",
+    "readMore": "Read more",
+    "readLess": "Read less"
   },
   "profile": {
     "title": "Profile",
@@ -766,6 +836,13 @@
       "minVotesHint": "Only games with at least 2 ratings are shown",
       "emptyTitle": "No game rankings yet",
       "emptyDescription": "Rate games in your public list to contribute to the community ranking"
+    },
+    "boardgames": {
+      "title": "Top Boardgames",
+      "subtitle": "Boardgames ranked by average user rating across all public lists",
+      "minVotesHint": "Only boardgames with at least 2 ratings are shown",
+      "emptyTitle": "No boardgame rankings yet",
+      "emptyDescription": "Rate boardgames in your public list to contribute to the community ranking"
     }
   },
   "onboarding": {
@@ -785,6 +862,46 @@
     "animeAddFirst": "Add an anime",
     "gamesTitle": "Welcome to your games!",
     "gamesSubtitle": "Start adding games you've played or want to play.",
-    "gamesAddFirst": "Add a game"
+    "gamesAddFirst": "Add a game",
+    "boardgamesTitle": "Welcome to your boardgames!",
+    "boardgamesSubtitle": "Start adding boardgames you've played or want to play, or sync with BoardGameGeek.",
+    "boardgamesAddFirst": "Add a boardgame"
+  },
+  "boardgameDetail": {
+    "overview": "Overview",
+    "description": "Description",
+    "releaseYear": "Released",
+    "players": "Players",
+    "playersValue": "{min}–{max}",
+    "playingTime": "Playing time",
+    "playingTimeValue": "{minutes} min",
+    "minAge": "Min age",
+    "minAgeValue": "{age}+",
+    "bggRating": "BGG Rating",
+    "bggWeight": "Complexity",
+    "categories": "Categories",
+    "mechanics": "Mechanics",
+    "designers": "Designers",
+    "inLists": "{count, plural, =1 {In 1 list} other {In # lists}}",
+    "avgRating": "Average user rating",
+    "noOverview": "No description available yet.",
+    "publicListsTitle": "Public lists with this boardgame",
+    "usersWithThisBoardgame": "Users with this boardgame",
+    "noPublicLists": "No public lists include this boardgame yet.",
+    "analyticsTitle": "Community Analytics",
+    "ratedBy": "Rated by",
+    "ratingDistribution": "Rating distribution",
+    "noRatings": "No ratings yet",
+    "addedOverTime": "Added to lists over time",
+    "boardgames": "adds",
+    "users": "users",
+    "tabInfo": "Info",
+    "tabStats": "Statistics",
+    "addToList": "Add to my list",
+    "inMyList": "In my list",
+    "myRating": "My rating",
+    "viewOnBGG": "View on BGG",
+    "readMore": "Read more",
+    "readLess": "Read less"
   }
 }

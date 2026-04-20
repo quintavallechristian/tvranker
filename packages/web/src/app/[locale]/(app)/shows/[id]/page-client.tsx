@@ -139,6 +139,7 @@ export function ShowDetailClient({
   );
   const [inList, setInList] = useState(initialUserItem !== null);
   const [isPending, startTransition] = useTransition();
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   function toggleSeason(seasonNumber: number) {
     setExpandedSeasons((prev) => {
@@ -191,7 +192,7 @@ export function ShowDetailClient({
       {/* Main layout */}
       <div className="flex flex-col gap-6 sm:flex-row sm:gap-8">
         {/* Poster */}
-        <div className="relative aspect-[2/3] w-full shrink-0 overflow-hidden rounded-[var(--radius-lg)] border border-border bg-bg-elevated sm:w-56">
+        <div className="relative aspect-[2/3] w-full shrink-0 self-start overflow-hidden rounded-[var(--radius-lg)] border border-border bg-bg-elevated sm:w-44">
           {posterUrl ? (
             <Image
               src={posterUrl}
@@ -318,9 +319,23 @@ export function ShowDetailClient({
             <h2 className="mb-2 text-xs font-medium uppercase tracking-wider text-text-muted">
               {t("showDetail.overview")}
             </h2>
-            <p className="text-sm leading-relaxed text-text-secondary">
+            <p
+              className={`text-sm leading-relaxed text-text-secondary ${
+                showFullDescription ? "" : "line-clamp-5"
+              }`}
+            >
               {show.overview || t("showDetail.noOverview")}
             </p>
+            {show.overview && (
+              <button
+                onClick={() => setShowFullDescription((v) => !v)}
+                className="mt-1.5 text-xs text-accent hover:underline"
+              >
+                {showFullDescription
+                  ? t("showDetail.readLess")
+                  : t("showDetail.readMore")}
+              </button>
+            )}
           </div>
 
           {/* Dove guardare (moved here) */}

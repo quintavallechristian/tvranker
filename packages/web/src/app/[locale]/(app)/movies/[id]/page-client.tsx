@@ -98,6 +98,7 @@ export function MovieDetailClient({
   const [inList, setInList] = useState(initialUserItem !== null);
   const [listItemId, setListItemId] = useState(initialUserItem?.id ?? null);
   const [isPending, startTransition] = useTransition();
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     {
@@ -126,7 +127,7 @@ export function MovieDetailClient({
       {/* Main layout */}
       <div className="flex flex-col gap-6 sm:flex-row sm:gap-8">
         {/* Poster */}
-        <div className="relative aspect-2/3 w-full shrink-0 overflow-hidden rounded-lg border border-border bg-bg-elevated sm:w-56">
+        <div className="relative aspect-[2/3] w-full shrink-0 self-start overflow-hidden rounded-lg border border-border bg-bg-elevated sm:w-44">
           {posterUrl ? (
             <Image
               src={posterUrl}
@@ -259,9 +260,21 @@ export function MovieDetailClient({
             <h2 className="mb-2 text-xs font-medium uppercase tracking-wider text-text-muted">
               {t("overview")}
             </h2>
-            <p className="text-sm leading-relaxed text-text-secondary">
+            <p
+              className={`text-sm leading-relaxed text-text-secondary ${
+                showFullDescription ? "" : "line-clamp-5"
+              }`}
+            >
               {movie.overview || t("noOverview")}
             </p>
+            {movie.overview && (
+              <button
+                onClick={() => setShowFullDescription((v) => !v)}
+                className="mt-1.5 text-xs text-accent hover:underline"
+              >
+                {showFullDescription ? t("readLess") : t("readMore")}
+              </button>
+            )}
           </div>
 
           {/* Streaming providers */}

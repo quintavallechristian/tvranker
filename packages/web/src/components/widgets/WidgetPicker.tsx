@@ -14,6 +14,7 @@ import {
   X,
   ArrowLeft,
   GameController,
+  PuzzlePiece,
 } from "@phosphor-icons/react";
 import { useTranslations } from "next-intl";
 import type {
@@ -45,6 +46,7 @@ const TOPIC_ICONS: Record<WidgetTopic, React.ReactNode> = {
   movie: <FilmSlate size={20} weight="duotone" />,
   anime: <FilmSlate size={20} weight="duotone" />,
   game: <GameController size={20} weight="duotone" />,
+  boardgame: <PuzzlePiece size={20} weight="duotone" />,
 };
 
 function getCategoryColSpan(category: WidgetCategory): 1 | 2 {

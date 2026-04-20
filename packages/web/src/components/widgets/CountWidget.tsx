@@ -1,12 +1,12 @@
 "use client";
 
-import { Television, FilmSlate } from "@phosphor-icons/react";
+import { Television, FilmSlate, PuzzlePiece } from "@phosphor-icons/react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 
 import { GameController } from "@phosphor-icons/react";
 
-export type CountTopic = "show" | "movie" | "anime" | "game";
+export type CountTopic = "show" | "movie" | "anime" | "game" | "boardgame";
 
 export function CountWidget({
   count,
@@ -26,7 +26,9 @@ export function CountWidget({
         ? t("widgets.movieCount")
         : topic === "anime"
           ? t("widgets.animeCount")
-          : t("widgets.gameCount");
+          : topic === "game"
+            ? t("widgets.gameCount")
+            : t("widgets.boardgameCount");
 
   const defaultHref =
     topic === "show"
@@ -35,7 +37,9 @@ export function CountWidget({
         ? "/movies"
         : topic === "anime"
           ? "/anime"
-          : "/games";
+          : topic === "game"
+            ? "/games"
+            : "/boardgames";
 
   const href = hrefOverride ?? defaultHref;
 
@@ -46,8 +50,9 @@ export function CountWidget({
         ? FilmSlate
         : topic === "anime"
           ? FilmSlate
-          : GameController;
-
+          : topic === "game"
+            ? GameController
+            : PuzzlePiece;
   return (
     <Link
       href={href}

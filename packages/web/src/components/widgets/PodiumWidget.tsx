@@ -3,11 +3,16 @@
 import React from "react";
 import { getPosterUrl } from "@/lib/tmdb/client";
 import Image from "next/image";
-import { Television, FilmSlate, GameController } from "@phosphor-icons/react";
+import {
+  Television,
+  FilmSlate,
+  GameController,
+  PuzzlePiece,
+} from "@phosphor-icons/react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 
-export type PodiumTopic = "show" | "movie" | "anime" | "game";
+export type PodiumTopic = "show" | "movie" | "anime" | "game" | "boardgame";
 
 export type PodiumItem = {
   id: string;
@@ -40,14 +45,18 @@ export function PodiumWidget({
           ? t("widgets.top10Movie")
           : topic === "game"
             ? t("widgets.top10Game")
-            : t("widgets.top10Anime")
+            : topic === "boardgame"
+              ? t("widgets.top10Boardgame")
+              : t("widgets.top10Anime")
       : topic === "show"
         ? t("widgets.showPodium")
         : topic === "movie"
           ? t("widgets.moviePodium")
           : topic === "game"
             ? t("widgets.gamePodium")
-            : t("widgets.animePodium");
+            : topic === "boardgame"
+              ? t("widgets.boardgamePodium")
+              : t("widgets.animePodium");
 
   const defaultHref =
     topic === "show"
@@ -56,14 +65,18 @@ export function PodiumWidget({
         ? "/movies"
         : topic === "game"
           ? "/games"
-          : "/anime";
+          : topic === "boardgame"
+            ? "/boardgames"
+            : "/anime";
 
   const Icon =
     topic === "show"
       ? Television
       : topic === "game"
         ? GameController
-        : FilmSlate;
+        : topic === "boardgame"
+          ? PuzzlePiece
+          : FilmSlate;
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-bg-surface p-4">

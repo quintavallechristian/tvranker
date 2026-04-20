@@ -1,7 +1,7 @@
 const RECENT_LISTS_KEY = "recent_lists";
 const MAX_RECENT = 3;
 
-export type RecentListTopic = "show" | "anime" | "movie" | "game";
+export type RecentListTopic = "show" | "anime" | "movie" | "game" | "boardgame";
 
 export type RecentList = {
   id: string;

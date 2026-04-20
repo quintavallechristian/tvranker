@@ -3,6 +3,7 @@ import { getTopRatedShows } from "./actions";
 import { getTopRatedMovies } from "./movies/actions";
 import { getTopRatedAnime } from "./anime/actions";
 import { getTopRatedGamesRanking } from "./games/actions";
+import { getTopRatedBoardgamesRanking } from "./boardgames/actions";
 import { getPosterUrl } from "@/lib/tmdb/client";
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
@@ -10,23 +11,26 @@ import {
   Television,
   FilmSlate,
   GameController,
+  PuzzlePiece,
   Trophy,
   ArrowRight,
 } from "@phosphor-icons/react/dist/ssr";
 
 export default async function RankingsPage() {
   const t = await getTranslations("rankings");
-  const [shows, movies, animes, games] = await Promise.all([
+  const [shows, movies, animes, games, boardgames] = await Promise.all([
     getTopRatedShows(),
     getTopRatedMovies(),
     getTopRatedAnime(),
     getTopRatedGamesRanking(),
+    getTopRatedBoardgamesRanking(),
   ]);
 
   const top3Shows = shows.slice(0, 3);
   const top3Movies = movies.slice(0, 3);
   const top3Animes = animes.slice(0, 3);
   const top3Games = games.slice(0, 3);
+  const top3Boardgames = boardgames.slice(0, 3);
 
   return (
     <div className="space-y-6">
@@ -94,6 +98,20 @@ export default async function RankingsPage() {
           }))}
           icon="game"
         />
+        <RankingPodiumCard
+          title={t("boardgames.title")}
+          href="/rankings/boardgames"
+          viewAllLabel={t("viewAll")}
+          emptyLabel={t("boardgames.emptyTitle")}
+          items={top3Boardgames.map((bg) => ({
+            id: bg.id,
+            title: bg.title,
+            poster_path: null,
+            imageUrl: bg.thumbnail_url,
+            avg_rating: bg.avg_rating,
+          }))}
+          icon="boardgame"
+        />
       </div>
     </div>
   );
@@ -120,10 +138,16 @@ function RankingPodiumCard({
   viewAllLabel: string;
   emptyLabel: string;
   items: PodiumItem[];
-  icon: "tv" | "film" | "game";
+  icon: "tv" | "film" | "game" | "boardgame";
 }) {
   const Icon =
-    icon === "tv" ? Television : icon === "game" ? GameController : FilmSlate;
+    icon === "tv"
+      ? Television
+      : icon === "game"
+        ? GameController
+        : icon === "boardgame"
+          ? PuzzlePiece
+          : FilmSlate;
 
   return (
     <Link
@@ -206,11 +230,17 @@ function PodiumSlot({
   posterHeight: string;
   rankColor: string;
   featured?: boolean;
-  icon: "tv" | "film" | "game";
+  icon: "tv" | "film" | "game" | "boardgame";
 }) {
   const posterUrl = item.imageUrl ?? getPosterUrl(item.poster_path, "w92");
   const Icon =
-    icon === "tv" ? Television : icon === "game" ? GameController : FilmSlate;
+    icon === "tv"
+      ? Television
+      : icon === "game"
+        ? GameController
+        : icon === "boardgame"
+          ? PuzzlePiece
+          : FilmSlate;
 
   return (
     <div className="flex w-14 flex-col items-center gap-1">

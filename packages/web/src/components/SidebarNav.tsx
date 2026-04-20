@@ -20,19 +20,30 @@ import {
   Newspaper,
   FilmSlate,
   GameController,
+  PuzzlePiece,
 } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { getRecentLists, type RecentList, type RecentListTopic } from "@/lib/recent-lists";
+import {
+  getRecentLists,
+  type RecentList,
+  type RecentListTopic,
+} from "@/lib/recent-lists";
 
 type TFunc = ReturnType<typeof useTranslations<"nav">>;
 
 function topicMeta(topic: RecentListTopic, t: TFunc) {
   switch (topic) {
-    case "show":  return { Icon: Television, label: t("listShows") };
-    case "anime": return { Icon: FilmSlate,  label: t("listAnime") };
-    case "movie": return { Icon: FilmSlate,  label: t("listMovies") };
-    case "game":  return { Icon: GameController, label: t("listGames") };
+    case "show":
+      return { Icon: Television, label: t("listShows") };
+    case "anime":
+      return { Icon: FilmSlate, label: t("listAnime") };
+    case "movie":
+      return { Icon: FilmSlate, label: t("listMovies") };
+    case "game":
+      return { Icon: GameController, label: t("listGames") };
+    case "boardgame":
+      return { Icon: PuzzlePiece, label: t("listBoardgames") };
   }
 }
 
@@ -182,7 +193,9 @@ export function SidebarNav({
                   </p>
                   {recentLists.map((list) => {
                     const { Icon, label } = topicMeta(list.topic, t);
-                    const isActive = pathname.includes(list.href) || pathname.includes(list.id);
+                    const isActive =
+                      pathname.includes(list.href) ||
+                      pathname.includes(list.id);
                     return (
                       <Link
                         key={list.id}
@@ -193,7 +206,11 @@ export function SidebarNav({
                             : "text-text-secondary active:bg-bg-surface"
                         }`}
                       >
-                        <Icon size={18} className="shrink-0 text-text-faint" weight={isActive ? "fill" : "regular"} />
+                        <Icon
+                          size={18}
+                          className="shrink-0 text-text-faint"
+                          weight={isActive ? "fill" : "regular"}
+                        />
                         <span className="truncate">{label}</span>
                       </Link>
                     );
@@ -270,7 +287,8 @@ export function SidebarNav({
               </p>
               {recentLists.map((list) => {
                 const { Icon, label } = topicMeta(list.topic, t);
-                const isActive = pathname.includes(list.href) || pathname.includes(list.id);
+                const isActive =
+                  pathname.includes(list.href) || pathname.includes(list.id);
                 return (
                   <Link
                     key={list.id}
@@ -281,7 +299,11 @@ export function SidebarNav({
                         : "text-text-secondary hover:bg-bg-surface hover:text-text-primary"
                     }`}
                   >
-                    <Icon size={16} className="shrink-0 text-text-faint" weight={isActive ? "fill" : "regular"} />
+                    <Icon
+                      size={16}
+                      className="shrink-0 text-text-faint"
+                      weight={isActive ? "fill" : "regular"}
+                    />
                     <span className="truncate">{label}</span>
                   </Link>
                 );

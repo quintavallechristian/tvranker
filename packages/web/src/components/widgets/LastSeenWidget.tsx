@@ -7,11 +7,12 @@ import {
   FilmSlate,
   Star,
   GameController,
+  PuzzlePiece,
 } from "@phosphor-icons/react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 
-export type LastSeenTopic = "show" | "movie" | "anime" | "game";
+export type LastSeenTopic = "show" | "movie" | "anime" | "game" | "boardgame";
 
 type LastItem = {
   id: string;
@@ -26,6 +27,7 @@ function getItemHref(topic: LastSeenTopic, item: LastItem): string {
   if (topic === "show") return `/shows/${item.id}`;
   if (topic === "movie") return `/movies/${item.id}`;
   if (topic === "anime") return `/anime/${item.id}`;
+  if (topic === "boardgame") return `/boardgames/${item.id}`;
   return `/games`;
 }
 
@@ -43,7 +45,9 @@ function ItemRow({
       ? Television
       : topic === "game"
         ? GameController
-        : FilmSlate;
+        : topic === "boardgame"
+          ? PuzzlePiece
+          : FilmSlate;
   const href = getItemHref(topic, item);
   const imageUrl = item.imageUrl ?? getPosterUrl(item.poster_path, "w185");
 
@@ -142,14 +146,18 @@ export function LastSeenWidget({
         ? t("widgets.lastMovieAdded")
         : topic === "anime"
           ? t("widgets.lastAnimeAdded")
-          : t("widgets.lastGameAdded");
+          : topic === "game"
+            ? t("widgets.lastGameAdded")
+            : t("widgets.lastBoardgameAdded");
 
   const Icon =
     topic === "show"
       ? Television
       : topic === "game"
         ? GameController
-        : FilmSlate;
+        : topic === "boardgame"
+          ? PuzzlePiece
+          : FilmSlate;
 
   const emptyText =
     topic === "show"
@@ -158,7 +166,9 @@ export function LastSeenWidget({
         ? t("emptyMovieList")
         : topic === "anime"
           ? t("emptyAnimeList")
-          : t("emptyGameList");
+          : topic === "game"
+            ? t("emptyGameList")
+            : t("emptyBoardgameList");
 
   const isExpanded = rowSpan === 2;
 
