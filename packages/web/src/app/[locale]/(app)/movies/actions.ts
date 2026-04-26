@@ -305,6 +305,23 @@ export async function updateMovieRating(itemId: string, rating: number) {
   revalidatePath("/movies");
 }
 
+export async function updateMovieNotes(itemId: string, notes: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { error } = await supabase
+    .from("movie_list_items")
+    .update({ notes })
+    .eq("id", itemId);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/movies");
+}
+
 export async function reorderMovieListItems(itemIds: string[]) {
   const supabase = await createClient();
   const {

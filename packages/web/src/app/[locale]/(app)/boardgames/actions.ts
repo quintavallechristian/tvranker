@@ -138,6 +138,30 @@ export async function removeBoardgameFromList(itemId: string) {
   revalidatePath("/boardgames");
 }
 
+export async function clearBoardgameList() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { data: boardgameList } = await supabase
+    .from("boardgame_lists")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+  if (!boardgameList) throw new Error("Boardgame list not found");
+
+  const { error } = await supabase
+    .from("boardgame_list_items")
+    .delete()
+    .eq("boardgame_list_id", boardgameList.id);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/boardgames");
+}
+
 export async function updateBoardgameRating(itemId: string, rating: number) {
   const supabase = await createClient();
   const {
@@ -176,6 +200,23 @@ export async function updateBoardgameRating(itemId: string, rating: number) {
       rating,
     });
   }
+
+  revalidatePath("/boardgames");
+}
+
+export async function updateBoardgameNotes(itemId: string, notes: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { error } = await supabase
+    .from("boardgame_list_items")
+    .update({ notes })
+    .eq("id", itemId);
+
+  if (error) throw new Error(error.message);
 
   revalidatePath("/boardgames");
 }

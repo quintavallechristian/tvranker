@@ -14,6 +14,7 @@ import {
   ArrowRight,
   ArrowLeft,
 } from "@phosphor-icons/react";
+import { getGameRecommendations, type RecommendedGame } from "../actions";
 import {
   getPopularGames,
   addTmdbGameToMyList,
@@ -33,8 +34,10 @@ export default function ExploreGamesPage() {
   const t = useTranslations("explore");
   const [gameResults, setGameResults] = useState<GameResult[]>([]);
   const [searched, setSearched] = useState(false);
+  const [recommendations, setRecommendations] = useState<RecommendedGame[]>([]);
+  const [recsLoading, setRecsLoading] = useState(true);
   const [popularGames, setPopularGames] = useState<PopularGame[]>([]);
-  const [popularLoading, setPopularLoading] = useState(true);
+  const [popularLoading, setPopularLoading] = useState(false);
   const [addedGameIds, setAddedGameIds] = useState<Set<string>>(new Set());
   const [addingIgdbId, setAddingIgdbId] = useState<number | null>(null);
   const [addedIgdbIds, setAddedIgdbIds] = useState<Set<number>>(new Set());
@@ -50,13 +53,26 @@ export default function ExploreGamesPage() {
 
   useEffect(() => {
     let cancelled = false;
-    getPopularGames()
-      .then((games) => {
-        if (!cancelled) setPopularGames(games);
+    getGameRecommendations()
+      .then((recs) => {
+        if (!cancelled) {
+          setRecommendations(recs);
+          if (recs.length === 0) {
+            setPopularLoading(true);
+            getPopularGames()
+              .then((games) => {
+                if (!cancelled) setPopularGames(games);
+              })
+              .catch(() => {})
+              .finally(() => {
+                if (!cancelled) setPopularLoading(false);
+              });
+          }
+        }
       })
       .catch(() => {})
       .finally(() => {
-        if (!cancelled) setPopularLoading(false);
+        if (!cancelled) setRecsLoading(false);
       });
     return () => {
       cancelled = true;
@@ -215,115 +231,225 @@ export default function ExploreGamesPage() {
       {!searched && (
         <div>
           <h2 className="mb-4 text-sm font-semibold text-text-secondary">
-            {t("popularGamesTitle")}
+            {recsLoading || (!recsLoading && recommendations.length > 0)
+              ? t("suggestedTitle")
+              : t("popularGamesTitle")}
           </h2>
 
-          {popularLoading && (
+          {(recsLoading || popularLoading) && recommendations.length === 0 && (
             <div className="flex items-center justify-center gap-2 py-8">
               <SpinnerGap size={16} className="animate-spin text-text-muted" />
               <p className="text-xs text-text-muted">{t("suggestedLoading")}</p>
             </div>
           )}
 
-          {!popularLoading && popularGames.length === 0 && (
-            <EmptyState title={t("popularGamesEmpty")} />
-          )}
+          {!recsLoading &&
+            recommendations.length === 0 &&
+            !popularLoading &&
+            popularGames.length === 0 && (
+              <EmptyState title={t("popularGamesEmpty")} />
+            )}
 
-          {!popularLoading && popularGames.length > 0 && (
-            <>
-              <p className="mb-3 text-xs text-text-muted">
-                {t("popularGamesFallback")}
-              </p>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                {popularGames.map((game) => {
-                  const isAdded = addedGameIds.has(game.id);
-                  return (
-                    <div
-                      key={game.id}
-                      className="group relative overflow-hidden rounded-lg border border-border bg-bg-surface transition-colors hover:border-border-hover"
-                      onPointerEnter={(e) => {
-                        if (e.pointerType === "mouse") setActiveGameId(game.id);
-                      }}
-                      onPointerLeave={(e) => {
-                        if (e.pointerType === "mouse") setActiveGameId(null);
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveGameId(game.id);
-                      }}
-                    >
-                      <div className="relative aspect-2/3 w-full bg-bg-elevated">
-                        {game.cover_url ? (
-                          <Image
-                            src={game.cover_url}
-                            alt={game.title}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 640px) 50vw, 17vw"
+          {!recsLoading && recommendations.length > 0 && (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+              {recommendations.map((game) => {
+                const isAdded = addedGameIds.has(game.id);
+                return (
+                  <div
+                    key={game.id}
+                    className="group relative overflow-hidden rounded-lg border border-border bg-bg-surface transition-colors hover:border-border-hover"
+                    onPointerEnter={(e) => {
+                      if (e.pointerType === "mouse") setActiveGameId(game.id);
+                    }}
+                    onPointerLeave={(e) => {
+                      if (e.pointerType === "mouse") setActiveGameId(null);
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveGameId(game.id);
+                    }}
+                  >
+                    <div className="absolute right-2 top-2 z-10 flex items-center justify-center rounded-sm bg-bg-primary/80 px-1.5 py-0.5 font-mono text-xs font-bold tabular-nums text-accent backdrop-blur-sm">
+                      {game.score}%
+                    </div>
+                    <div className="relative aspect-2/3 w-full bg-bg-elevated">
+                      {game.cover_url ? (
+                        <Image
+                          src={game.cover_url}
+                          alt={game.title}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 640px) 50vw, 17vw"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center">
+                          <GameController
+                            size={28}
+                            className="text-text-faint"
+                          />
+                        </div>
+                      )}
+                      <div
+                        className={`absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-black/70 transition-opacity ${activeGameId === game.id || isAdded ? "opacity-100" : "pointer-events-none opacity-0"}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveGameId(null);
+                        }}
+                      >
+                        {isAdded ? (
+                          <Check
+                            size={24}
+                            weight="bold"
+                            className="text-accent"
                           />
                         ) : (
-                          <div className="flex h-full items-center justify-center">
-                            <GameController
-                              size={28}
-                              className="text-text-faint"
-                            />
-                          </div>
+                          <>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddPopularGame({
+                                  id: game.id,
+                                  igdb_id: game.igdb_id,
+                                  title: game.title,
+                                  cover_url: game.cover_url,
+                                  first_release_date: game.first_release_date,
+                                  overview: game.overview,
+                                  added_count: game.recommendedBy,
+                                });
+                              }}
+                              className="flex items-center gap-1.5 rounded-full border border-white/40 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-white/25"
+                            >
+                              <Plus size={13} weight="bold" />
+                              {t("addToList")}
+                            </button>
+                            <Link
+                              href={`/games/${game.id}`}
+                              className="flex items-center gap-1.5 rounded-full border border-white/20 bg-black/40 px-3 py-1.5 text-xs font-medium text-white/80 transition-colors hover:bg-black/60"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <ArrowRight size={13} weight="bold" />
+                              {t("details")}
+                            </Link>
+                          </>
                         )}
-                        <div
-                          className={`absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-black/70 transition-opacity ${activeGameId === game.id || isAdded ? "opacity-100" : "pointer-events-none opacity-0"}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setActiveGameId(null);
-                          }}
-                        >
-                          {isAdded ? (
-                            <Check
-                              size={24}
-                              weight="bold"
-                              className="text-accent"
-                            />
-                          ) : (
-                            <>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleAddPopularGame(game);
-                                }}
-                                className="flex items-center gap-1.5 rounded-full border border-white/40 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-white/25"
-                              >
-                                <Plus size={13} weight="bold" />
-                                {t("addToList")}
-                              </button>
-                              <Link
-                                href={`/games/${game.id}`}
-                                className="flex items-center gap-1.5 rounded-full border border-white/20 bg-black/40 px-3 py-1.5 text-xs font-medium text-white/80 transition-colors hover:bg-black/60"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <ArrowRight size={13} weight="bold" />
-                                {t("details")}
-                              </Link>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                      <div className="p-2">
-                        <Link
-                          href={`/games/${game.id}`}
-                          className="block truncate text-xs font-medium text-text-primary transition-colors hover:text-accent"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {game.title}
-                        </Link>
-                        <p className="mt-0.5 text-[10px] text-text-faint">
-                          {t("addedByCount", { count: game.added_count })}
-                        </p>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            </>
+                    <div className="p-2">
+                      <Link
+                        href={`/games/${game.id}`}
+                        className="block truncate text-xs font-medium text-text-primary transition-colors hover:text-accent"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {game.title}
+                      </Link>
+                      <p className="mt-0.5 text-[10px] text-text-faint">
+                        {t("recommendedBy", { count: game.recommendedBy })}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
+
+          {!popularLoading &&
+            recommendations.length === 0 &&
+            popularGames.length > 0 && (
+              <>
+                <p className="mb-3 text-xs text-text-muted">
+                  {t("popularGamesFallback")}
+                </p>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                  {popularGames.map((game) => {
+                    const isAdded = addedGameIds.has(game.id);
+                    return (
+                      <div
+                        key={game.id}
+                        className="group relative overflow-hidden rounded-lg border border-border bg-bg-surface transition-colors hover:border-border-hover"
+                        onPointerEnter={(e) => {
+                          if (e.pointerType === "mouse")
+                            setActiveGameId(game.id);
+                        }}
+                        onPointerLeave={(e) => {
+                          if (e.pointerType === "mouse") setActiveGameId(null);
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveGameId(game.id);
+                        }}
+                      >
+                        <div className="relative aspect-2/3 w-full bg-bg-elevated">
+                          {game.cover_url ? (
+                            <Image
+                              src={game.cover_url}
+                              alt={game.title}
+                              fill
+                              className="object-cover"
+                              sizes="(max-width: 640px) 50vw, 17vw"
+                            />
+                          ) : (
+                            <div className="flex h-full items-center justify-center">
+                              <GameController
+                                size={28}
+                                className="text-text-faint"
+                              />
+                            </div>
+                          )}
+                          <div
+                            className={`absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-black/70 transition-opacity ${activeGameId === game.id || isAdded ? "opacity-100" : "pointer-events-none opacity-0"}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveGameId(null);
+                            }}
+                          >
+                            {isAdded ? (
+                              <Check
+                                size={24}
+                                weight="bold"
+                                className="text-accent"
+                              />
+                            ) : (
+                              <>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAddPopularGame(game);
+                                  }}
+                                  className="flex items-center gap-1.5 rounded-full border border-white/40 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-white/25"
+                                >
+                                  <Plus size={13} weight="bold" />
+                                  {t("addToList")}
+                                </button>
+                                <Link
+                                  href={`/games/${game.id}`}
+                                  className="flex items-center gap-1.5 rounded-full border border-white/20 bg-black/40 px-3 py-1.5 text-xs font-medium text-white/80 transition-colors hover:bg-black/60"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <ArrowRight size={13} weight="bold" />
+                                  {t("details")}
+                                </Link>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        <div className="p-2">
+                          <Link
+                            href={`/games/${game.id}`}
+                            className="block truncate text-xs font-medium text-text-primary transition-colors hover:text-accent"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {game.title}
+                          </Link>
+                          <p className="mt-0.5 text-[10px] text-text-faint">
+                            {t("addedByCount", { count: game.added_count })}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
         </div>
       )}
     </div>

@@ -74,23 +74,11 @@ export function computeMovieListSimilarity(
     const normPosA = a.position / maxPosA;
     const normPosB = b.position / maxPosB;
     positionSum += 1 - Math.abs(normPosA - normPosB);
-    console.log(
-      movieId,
-      a.position,
-      b.position,
-      maxPosA,
-      maxPosB,
-      normPosA,
-      normPosB,
-    );
   }
 
   const ratingSimilarity = ratingCount > 0 ? ratingSum / ratingCount : 1;
   const positionSimilarity = positionSum / commonIds.length;
-
-  console.log(ratingSimilarity, positionSum, commonIds, positionSimilarity);
   const agreementScore = 0.5 * ratingSimilarity + 0.5 * positionSimilarity;
-
   return Math.round(overlapRatio * agreementScore * 100);
 }
 

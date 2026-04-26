@@ -11,36 +11,24 @@ import {
   Plus,
   Check,
   SpinnerGap,
-  PuzzlePiece,
-  Users,
-  Clock,
-  Scales,
+  GameController,
 } from "@phosphor-icons/react";
 import { Link } from "@/i18n/navigation";
 import { ShowAnalyticsSection } from "@/components/ShowAnalytics";
 import type { ShowAnalyticsData } from "@/components/ShowAnalytics";
 import { UserAvatar } from "@/components/UserAvatar";
-import { addBggBoardgameToMyList, removeBoardgameFromList } from "../actions";
+import { addTmdbGameToMyList, removeGameFromList } from "../actions";
 
-type BoardgameData = {
+type GameData = {
   id: string;
-  bgg_id: number | null;
+  igdb_id: number | null;
   title: string;
-  thumbnail_url: string | null;
-  image_url: string | null;
-  year_published: number | null;
-  description: string | null;
-  min_players: number | null;
-  max_players: number | null;
-  playing_time: number | null;
-  min_playtime: number | null;
-  max_playtime: number | null;
-  min_age: number | null;
-  categories: { id: number; name: string }[] | null;
-  mechanics: { id: number; name: string }[] | null;
-  designers: { id: number; name: string }[] | null;
-  bgg_rating: number | null;
-  bgg_weight: number | null;
+  cover_url: string | null;
+  first_release_date: string | null;
+  overview: string | null;
+  platforms: { id: number; name: string }[] | null;
+  genres: { id: number; name: string }[] | null;
+  url: string | null;
 };
 
 type PublicList = {
@@ -56,8 +44,8 @@ type PublicList = {
 
 type Tab = "info" | "stats";
 
-type BoardgameDetailClientProps = {
-  boardgame: BoardgameData;
+type GameDetailClientProps = {
+  game: GameData;
   stats: {
     listCount: number;
     avgRating: number | null;
@@ -67,7 +55,7 @@ type BoardgameDetailClientProps = {
   analyticsData: ShowAnalyticsData;
   userItem: { id: string; rating: number | null } | null;
   isLoggedIn: boolean;
-  showScore?: number | null;
+  gameScore?: number | null;
   analyticsLabels: {
     title: string;
     inLists: string;
@@ -81,68 +69,36 @@ type BoardgameDetailClientProps = {
   };
 };
 
-function decodeHtml(html: string): string {
-  return html
-    .replace(/&#10;/g, "\n")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<[^>]+>/g, "");
-}
-
-export function BoardgameDetailClient({
-  boardgame,
+export function GameDetailClient({
+  game,
   stats,
   publicLists,
   analyticsData,
   userItem: initialUserItem,
   isLoggedIn,
-  showScore,
+  gameScore,
   analyticsLabels,
-}: BoardgameDetailClientProps) {
-  const t = useTranslations();
+}: GameDetailClientProps) {
+  const t = useTranslations("gameDetail");
+  const tCommon = useTranslations("common");
   const [activeTab, setActiveTab] = useState<Tab>("info");
   const [inList, setInList] = useState(initialUserItem !== null);
   const [isPending, startTransition] = useTransition();
   const [showFullDescription, setShowFullDescription] = useState(false);
 
-  const imageUrl = boardgame.image_url || boardgame.thumbnail_url;
-
-  const playersText =
-    boardgame.min_players && boardgame.max_players
-      ? boardgame.min_players === boardgame.max_players
-        ? `${boardgame.min_players}`
-        : `${boardgame.min_players}–${boardgame.max_players}`
-      : boardgame.min_players
-        ? `${boardgame.min_players}+`
-        : null;
-
-  const playtimeText =
-    boardgame.min_playtime && boardgame.max_playtime
-      ? boardgame.min_playtime === boardgame.max_playtime
-        ? `${boardgame.min_playtime} min`
-        : `${boardgame.min_playtime}–${boardgame.max_playtime} min`
-      : boardgame.playing_time
-        ? `${boardgame.playing_time} min`
-        : null;
-
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     {
       id: "info",
-      label: t("boardgameDetail.tabInfo"),
-      icon: <PuzzlePiece size={14} />,
+      label: t("tabInfo"),
+      icon: <GameController size={14} />,
     },
     {
       id: "stats",
-      label: t("boardgameDetail.tabStats"),
+      label: t("tabStats"),
       icon: <ChartBar size={14} />,
     },
   ];
 
-  // Sort public lists: highest similarity first
   const sortedPublicLists = [...publicLists].sort((a, b) => {
     if (a.similarity !== null && b.similarity !== null)
       return b.similarity - a.similarity;
@@ -153,91 +109,80 @@ export function BoardgameDetailClient({
 
   return (
     <div>
-      {/* Back link */}
       <button
         onClick={() => window.history.back()}
         className="mb-6 inline-flex items-center gap-1 text-xs text-text-muted transition-colors hover:text-text-secondary"
       >
         <ArrowLeft size={12} />
-        {t("common.back")}
+        {tCommon("back")}
       </button>
 
-      {/* Main layout */}
       <div className="flex flex-col gap-6 sm:flex-row sm:gap-8">
-        {/* Image */}
         <div className="relative aspect-2/3 w-full shrink-0 self-start overflow-hidden rounded-lg border border-border bg-bg-elevated sm:w-44">
-          {imageUrl ? (
+          {game.cover_url ? (
             <Image
-              src={imageUrl}
-              alt={boardgame.title}
+              src={game.cover_url}
+              alt={game.title}
               fill
               className="object-cover"
               sizes="(max-width: 640px) 100vw, 224px"
               priority
-              unoptimized
             />
           ) : (
             <div className="flex h-full items-center justify-center">
-              <PuzzlePiece size={48} className="text-text-faint" />
+              <GameController size={48} className="text-text-faint" />
             </div>
           )}
         </div>
 
-        {/* Info */}
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
-            {boardgame.title}
+            {game.title}
           </h1>
 
-          {/* Meta row */}
           <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-text-muted">
-            {boardgame.year_published && (
+            {game.first_release_date && (
               <span>
-                <span className="text-text-secondary">
-                  {boardgame.year_published}
-                </span>
+                {t("releaseYear")}:{" "}
+                {new Date(game.first_release_date).getFullYear()}
               </span>
             )}
-            {playersText && (
-              <span className="flex items-center gap-1">
-                <Users size={12} />
-                {playersText} {t("boardgameDetail.players")}
-              </span>
-            )}
-            {playtimeText && (
-              <span className="flex items-center gap-1">
-                <Clock size={12} />
-                {playtimeText}
-              </span>
-            )}
-            {boardgame.bgg_weight && (
-              <span className="flex items-center gap-1">
-                <Scales size={12} />
-                {boardgame.bgg_weight.toFixed(1)}/5
+            {game.igdb_id && (
+              <span className="font-mono text-text-faint">
+                IGDB #{game.igdb_id}
               </span>
             )}
           </div>
 
-          {/* Categories */}
-          {boardgame.categories && boardgame.categories.length > 0 && (
+          {game.platforms && game.platforms.length > 0 && (
+            <div className="mt-3">
+              <h2 className="mb-1 text-xs font-medium uppercase tracking-wider text-text-muted">
+                {t("platforms")}
+              </h2>
+              <p className="text-sm text-text-secondary">
+                {game.platforms.map((p) => p.name).join(", ")}
+              </p>
+            </div>
+          )}
+
+          {game.genres && game.genres.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-1.5">
-              {boardgame.categories.map((cat) => (
+              {game.genres.map((genre) => (
                 <span
-                  key={cat.id}
+                  key={genre.id}
                   className="inline-flex items-center rounded-md border border-border bg-bg-elevated px-2 py-0.5 text-xs text-text-muted"
                 >
-                  {cat.name}
+                  {genre.name}
                 </span>
               ))}
             </div>
           )}
 
-          {/* Stats badges */}
           <div className="mt-4 flex flex-wrap gap-2">
             {stats.listCount > 0 && (
               <div className="inline-flex items-center gap-1.5 rounded-md border border-border bg-bg-surface px-2.5 py-1.5 text-xs text-text-secondary">
                 <ListBullets size={14} className="text-text-muted" />
-                {t("boardgameDetail.inLists", { count: stats.listCount })}
+                {t("inLists", { count: stats.listCount })}
               </div>
             )}
             {stats.avgRating !== null && (
@@ -247,24 +192,17 @@ export function BoardgameDetailClient({
                 <span className="text-text-faint">({stats.ratingCount})</span>
               </div>
             )}
-            {boardgame.bgg_rating && (
-              <div className="inline-flex items-center gap-1.5 rounded-md border border-border bg-bg-surface px-2.5 py-1.5 text-xs text-text-secondary">
-                <Star size={14} weight="fill" className="text-yellow-500" />
-                BGG {boardgame.bgg_rating.toFixed(1)}
-              </div>
-            )}
             {initialUserItem?.rating != null && (
               <div className="inline-flex items-center gap-1.5 rounded-md border border-accent/30 bg-accent/10 px-2.5 py-1.5 text-xs text-accent">
                 <Star size={14} weight="fill" />
-                {t("boardgameDetail.myRating")}: {initialUserItem.rating}/10
+                {t("myRating")}: {initialUserItem.rating}/10
               </div>
             )}
-            {showScore != null && (
+            {gameScore != null && (
               <div className="inline-flex items-center rounded-md border border-accent/30 bg-accent/10 px-2.5 py-1.5 text-xs font-mono font-bold text-accent tabular-nums">
-                {showScore}%
+                {gameScore}%
               </div>
             )}
-            {/* Add / Remove from list button */}
             {isLoggedIn && (
               <button
                 disabled={isPending}
@@ -272,16 +210,19 @@ export function BoardgameDetailClient({
                   startTransition(async () => {
                     if (inList) {
                       if (initialUserItem) {
-                        await removeBoardgameFromList(initialUserItem.id);
+                        await removeGameFromList(initialUserItem.id);
                       }
                       setInList(false);
                     } else {
-                      if (boardgame.bgg_id) {
-                        await addBggBoardgameToMyList({
-                          bgg_id: boardgame.bgg_id,
-                          title: boardgame.title,
-                          thumbnail_url: boardgame.thumbnail_url,
-                          year_published: boardgame.year_published,
+                      if (game.igdb_id) {
+                        await addTmdbGameToMyList({
+                          igdb_id: game.igdb_id,
+                          title: game.title,
+                          cover_url: game.cover_url,
+                          first_release_date: game.first_release_date,
+                          overview: game.overview,
+                          platforms: game.platforms?.map((p) => p.name),
+                          genres: game.genres?.map((g) => g.name),
                         });
                       }
                       setInList(true);
@@ -301,85 +242,47 @@ export function BoardgameDetailClient({
                 ) : (
                   <Plus size={14} weight="bold" />
                 )}
-                {inList
-                  ? t("boardgameDetail.inMyList")
-                  : t("boardgameDetail.addToList")}
+                {inList ? t("inMyList") : t("addToList")}
               </button>
             )}
           </div>
 
-          {/* Description */}
-          {boardgame.description && (
-            <div className="mt-6">
-              <h2 className="mb-2 text-xs font-medium uppercase tracking-wider text-text-muted">
-                {t("boardgameDetail.description")}
-              </h2>
-              <p
-                className={`text-sm leading-relaxed text-text-secondary whitespace-pre-line ${
-                  showFullDescription ? "" : "line-clamp-5"
-                }`}
-              >
-                {decodeHtml(boardgame.description)}
-              </p>
+          <div className="mt-6">
+            <h2 className="mb-2 text-xs font-medium uppercase tracking-wider text-text-muted">
+              {t("overview")}
+            </h2>
+            <p
+              className={`text-sm leading-relaxed text-text-secondary ${
+                showFullDescription ? "" : "line-clamp-5"
+              }`}
+            >
+              {game.overview || t("noOverview")}
+            </p>
+            {game.overview && (
               <button
                 onClick={() => setShowFullDescription((v) => !v)}
                 className="mt-1.5 text-xs text-accent hover:underline"
               >
-                {showFullDescription
-                  ? t("boardgameDetail.readLess")
-                  : t("boardgameDetail.readMore")}
+                {showFullDescription ? t("readLess") : t("readMore")}
               </button>
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* Mechanics */}
-          {boardgame.mechanics && boardgame.mechanics.length > 0 && (
-            <div className="mt-4">
-              <h2 className="mb-2 text-xs font-medium uppercase tracking-wider text-text-muted">
-                {t("boardgameDetail.mechanics")}
-              </h2>
-              <div className="flex flex-wrap gap-1.5">
-                {boardgame.mechanics.map((mech) => (
-                  <span
-                    key={mech.id}
-                    className="inline-flex items-center rounded-full border border-border px-2 py-0.5 text-[11px] text-text-muted"
-                  >
-                    {mech.name}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Designers */}
-          {boardgame.designers && boardgame.designers.length > 0 && (
-            <div className="mt-4">
-              <h2 className="mb-2 text-xs font-medium uppercase tracking-wider text-text-muted">
-                {t("boardgameDetail.designers")}
-              </h2>
-              <p className="text-sm text-text-secondary">
-                {boardgame.designers.map((d) => d.name).join(", ")}
-              </p>
-            </div>
-          )}
-
-          {/* BGG link */}
-          {boardgame.bgg_id && (
+          {game.url && (
             <div className="mt-4">
               <a
-                href={`https://boardgamegeek.com/boardgame/${boardgame.bgg_id}`}
+                href={game.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs text-text-muted transition-colors hover:text-accent"
               >
-                {t("boardgameDetail.viewOnBGG")} &rarr;
+                {t("viewOnIgdb")} &rarr;
               </a>
             </div>
           )}
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="mt-10">
         <div className="flex border-b border-border">
           {tabs.map((tab) => (
@@ -403,49 +306,59 @@ export function BoardgameDetailClient({
 
           {activeTab === "stats" && (
             <div>
-              {/* Public lists section */}
               {sortedPublicLists.length > 0 ? (
                 <div className="mb-10">
                   <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-text-muted">
-                    {t("boardgameDetail.publicListsTitle")}
+                    {t("publicListsTitle")}
                   </h3>
                   <div className="grid gap-2">
                     {sortedPublicLists.map((list) => (
-                      <Link
+                      <div
                         key={list.id}
-                        href={`/boardgames/lists/${list.id}`}
-                        className="flex items-center gap-3 rounded-md border border-border bg-bg-surface p-3 transition-colors hover:border-accent/30"
+                        className="flex items-center gap-3 rounded-md border border-border bg-bg-surface p-3"
                       >
-                        <div className="flex min-w-0 flex-1 items-center gap-2">
+                        <Link
+                          href={`/games/lists/${list.id}`}
+                          className="flex min-w-0 flex-1 items-center gap-2"
+                        >
                           <UserAvatar
                             url={list.owner.avatarUrl}
                             username={list.owner.username}
                             size={28}
                           />
-                          <span className="truncate text-sm text-text-primary">
-                            @{list.owner.username}
-                          </span>
-                        </div>
-                        <div className="flex shrink-0 items-center gap-2">
-                          {list.rating != null && (
-                            <span className="font-mono text-xs tabular-nums text-accent">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-text-primary">
+                              @{list.owner.username}
+                            </p>
+                            <p className="truncate text-xs text-text-muted">
+                              {list.name}
+                            </p>
+                          </div>
+                        </Link>
+
+                        <div className="flex items-center gap-2">
+                          {list.rating !== null && (
+                            <span className="inline-flex items-center rounded-md border border-border px-2 py-0.5 text-xs text-text-secondary">
+                              <Star
+                                size={12}
+                                className="mr-1 text-accent"
+                                weight="fill"
+                              />
                               {list.rating}/10
                             </span>
                           )}
-                          {list.similarity != null && (
-                            <span className="rounded-full border border-accent/30 bg-accent-muted px-2 py-0.5 text-[10px] font-semibold text-accent">
+                          {list.similarity !== null && (
+                            <span className="inline-flex items-center rounded-md border border-accent/30 bg-accent/10 px-2 py-0.5 text-xs font-mono font-semibold text-accent">
                               {list.similarity}%
                             </span>
                           )}
                         </div>
-                      </Link>
+                      </div>
                     ))}
                   </div>
                 </div>
               ) : (
-                <p className="mb-10 text-sm text-text-muted">
-                  {t("boardgameDetail.noPublicLists")}
-                </p>
+                <p className="text-sm text-text-muted">{t("noPublicLists")}</p>
               )}
               <ShowAnalyticsSection
                 data={analyticsData}

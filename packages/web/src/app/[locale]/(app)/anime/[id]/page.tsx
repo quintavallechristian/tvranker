@@ -4,7 +4,10 @@ import { fetchAnimeTmdbData } from "../actions";
 import { AnimeDetailClient } from "./page-client";
 import type { AnimeData } from "./page-client";
 import type { ShowAnalyticsData } from "@/components/ShowAnalytics";
-import { computeListSimilarity, type ListEntry } from "@/lib/similarity";
+import {
+  computeAnimeListSimilarity,
+  type AnimeListEntry,
+} from "@/lib/similarity";
 import { fetchAllRows } from "@/lib/supabase/fetchAll";
 
 export default async function AnimeDetailPage({
@@ -103,7 +106,7 @@ export default async function AnimeDetailPage({
 
   let userItem: { id: string; rating: number | null } | null = null;
   let animeListId: string | null = null;
-  let viewerListEntries: ListEntry[] = [];
+  let viewerListEntries: AnimeListEntry[] = [];
 
   if (user) {
     const { data: myAnimeList } = await supabase
@@ -137,7 +140,7 @@ export default async function AnimeDetailPage({
       );
 
       viewerListEntries = allMyItems.map((i) => ({
-        showId: i.anime_id,
+        animeId: i.anime_id,
         rating: i.rating,
         position: i.position ?? 0,
       }));
@@ -162,12 +165,12 @@ export default async function AnimeDetailPage({
     );
 
     if (allPublicItems.length > 0) {
-      const itemsByList = new Map<string, ListEntry[]>();
+      const itemsByList = new Map<string, AnimeListEntry[]>();
       for (const item of allPublicItems) {
         if (!itemsByList.has(item.anime_list_id))
           itemsByList.set(item.anime_list_id, []);
         itemsByList.get(item.anime_list_id)!.push({
-          showId: item.anime_id,
+          animeId: item.anime_id,
           rating: item.rating,
           position: item.position ?? 0,
         });
@@ -175,7 +178,10 @@ export default async function AnimeDetailPage({
 
       publicListsWithSimilarity = publicLists.map((list) => {
         const otherEntries = itemsByList.get(list.id) ?? [];
-        const score = computeListSimilarity(viewerListEntries, otherEntries);
+        const score = computeAnimeListSimilarity(
+          viewerListEntries,
+          otherEntries,
+        );
         return { ...list, similarity: score > 0 ? score : null };
       });
 

@@ -50,12 +50,14 @@ import {
   addMovieToList,
   removeMovieFromList,
   updateMovieRating,
+  updateMovieNotes,
   reorderMovieListItems,
   updateMovieListDescription,
   getMovieListItemsPage,
   updateMovieListSettings,
   type MovieItem,
 } from "./actions";
+import { getMovieRecommendations } from "../explore/actions";
 import { addRecentList } from "@/lib/recent-lists";
 
 type MovieListClientProps = {
@@ -91,6 +93,9 @@ export function MovieListClient({
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [recScoreMap, setRecScoreMap] = useState<Map<number, number>>(
+    new Map(),
+  );
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [items, setItems] = useState<MovieItem[]>(initialItems);
@@ -98,7 +103,7 @@ export function MovieListClient({
   // Track visit in sidebar recenti
   useEffect(() => {
     addRecentList({ id: movieListId, topic: "movie", href: "/movies" });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [movieListId]);
   const [existingTmdbIds, setExistingTmdbIds] = useState<number[]>(
     initialExistingTmdbIds,
@@ -191,6 +196,17 @@ export function MovieListClient({
     nextPageRef.current = 1;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialItems]);
+
+  useEffect(() => {
+    if (!showAddDialog) return;
+    getMovieRecommendations().then((recs) => {
+      const map = new Map<number, number>();
+      for (const r of recs) {
+        if (r.tmdb_id !== null) map.set(r.tmdb_id, r.score);
+      }
+      setRecScoreMap(map);
+    });
+  }, [showAddDialog]);
 
   useEffect(() => {
     if (!hasMore) return;
@@ -292,6 +308,18 @@ export function MovieListClient({
       );
       startTransition(async () => {
         await updateMovieRating(itemId, rating);
+      });
+    },
+    [startTransition],
+  );
+
+  const handleMovieNotesChange = useCallback(
+    (itemId: string, notes: string) => {
+      setItems((prev) =>
+        prev.map((item) => (item.id === itemId ? { ...item, notes } : item)),
+      );
+      startTransition(async () => {
+        await updateMovieNotes(itemId, notes);
       });
     },
     [startTransition],
@@ -527,6 +555,10 @@ export function MovieListClient({
                               handleRatingChange(item.id, rating)
                             }
                             onRemove={() => handleRemove(item.id)}
+                            notes={item.notes}
+                            onNotesChange={(notes) =>
+                              handleMovieNotesChange(item.id, notes)
+                            }
                             openMobileRating={openRatingItemId === item.id}
                             onMobileRatingChange={(open) =>
                               setOpenRatingItemId(open ? item.id : null)
@@ -557,6 +589,7 @@ export function MovieListClient({
         onClose={() => setShowAddDialog(false)}
         onAdd={handleAdd}
         existingTmdbIds={existingTmdbIds}
+        scoreMap={recScoreMap}
       />
 
       <ImportMoviesDialog

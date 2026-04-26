@@ -3,7 +3,18 @@
 import { createClient } from "@/lib/supabase/server";
 import { recordFeedEvent } from "@/lib/feed";
 import { scoreRecommendations, type UserList } from "@/lib/recommendations";
-import { computeListSimilarity, type ListEntry } from "@/lib/similarity";
+import {
+  computeListSimilarity,
+  computeMovieListSimilarity,
+  computeAnimeListSimilarity,
+  computeGameListSimilarity,
+  computeBoardgameListSimilarity,
+  type ListEntry,
+  type MovieListEntry,
+  type AnimeListEntry,
+  type GameListEntry,
+  type BoardgameListEntry,
+} from "@/lib/similarity";
 import { fetchAllRows } from "@/lib/supabase/fetchAll";
 
 export type SimilarUser = {
@@ -22,194 +33,346 @@ export async function getSimilarUsers(): Promise<SimilarUser[]> {
   } = await supabase.auth.getUser();
   if (!user) return [];
 
-  // Get current user's list items
-  const { data: myList } = await supabase
-    .from("lists")
-    .select("id")
-    .eq("user_id", user.id)
-    .single();
+  const [myShowList, myMovieList, myAnimeList, myGameList, myBoardgameList] =
+    await Promise.all([
+      supabase.from("lists").select("id").eq("user_id", user.id).single(),
+      supabase.from("movie_lists").select("id").eq("user_id", user.id).single(),
+      supabase.from("anime_lists").select("id").eq("user_id", user.id).single(),
+      supabase.from("game_lists").select("id").eq("user_id", user.id).single(),
+      supabase
+        .from("boardgame_lists")
+        .select("id")
+        .eq("user_id", user.id)
+        .single(),
+    ]);
 
-  if (!myList) return [];
+  const [
+    myShowItems,
+    myMovieItems,
+    myAnimeItems,
+    myGameItems,
+    myBoardgameItems,
+  ] = await Promise.all([
+    myShowList.data
+      ? fetchAllRows((from, to) =>
+          supabase
+            .from("list_items")
+            .select("show_id, rating, position")
+            .eq("list_id", myShowList.data.id)
+            .order("position", { ascending: true })
+            .range(from, to),
+        )
+      : Promise.resolve([]),
+    myMovieList.data
+      ? fetchAllRows((from, to) =>
+          supabase
+            .from("movie_list_items")
+            .select("movie_id, rating, position")
+            .eq("movie_list_id", myMovieList.data.id)
+            .order("position", { ascending: true })
+            .range(from, to),
+        )
+      : Promise.resolve([]),
+    myAnimeList.data
+      ? fetchAllRows((from, to) =>
+          supabase
+            .from("anime_list_items")
+            .select("anime_id, rating, position")
+            .eq("anime_list_id", myAnimeList.data.id)
+            .order("position", { ascending: true })
+            .range(from, to),
+        )
+      : Promise.resolve([]),
+    myGameList.data
+      ? fetchAllRows((from, to) =>
+          supabase
+            .from("game_list_items")
+            .select("game_id, rating, position")
+            .eq("game_list_id", myGameList.data.id)
+            .order("position", { ascending: true })
+            .range(from, to),
+        )
+      : Promise.resolve([]),
+    myBoardgameList.data
+      ? fetchAllRows((from, to) =>
+          supabase
+            .from("boardgame_list_items")
+            .select("boardgame_id, rating, position")
+            .eq("boardgame_list_id", myBoardgameList.data.id)
+            .order("position", { ascending: true })
+            .range(from, to),
+        )
+      : Promise.resolve([]),
+  ]);
 
-  const myItems = await fetchAllRows((from, to) =>
-    supabase
-      .from("list_items")
-      .select("show_id, rating, position")
-      .eq("list_id", myList.id)
-      .order("position", { ascending: true })
-      .range(from, to),
-  );
-
-  if (myItems.length === 0) return [];
-
-  const viewerList: ListEntry[] = myItems.map((i, idx) => ({
+  const viewerShowList: ListEntry[] = myShowItems.map((i, idx) => ({
     showId: i.show_id,
     rating: i.rating,
     position: i.position ?? idx,
   }));
-
-  // Fetch all public lists (excluding self) with profile info
-  const { data: publicLists } = await supabase
-    .from("lists")
-    .select("id, user_id, profiles(id, username, avatar_url)")
-    .eq("is_public", true)
-    .neq("user_id", user.id);
-
-  if (!publicLists || publicLists.length === 0) return [];
-
-  const listIds = publicLists.map((l) => l.id);
-
-  // Fetch all items for those lists in one batch
-  const allItems = await fetchAllRows((from, to) =>
-    supabase
-      .from("list_items")
-      .select("list_id, show_id, rating, position")
-      .in("list_id", listIds)
-      .range(from, to),
+  const viewerMovieList: MovieListEntry[] = myMovieItems.map((i, idx) => ({
+    movieId: i.movie_id,
+    rating: i.rating,
+    position: i.position ?? idx,
+  }));
+  const viewerAnimeList: AnimeListEntry[] = myAnimeItems.map((i, idx) => ({
+    animeId: i.anime_id,
+    rating: i.rating,
+    position: i.position ?? idx,
+  }));
+  const viewerGameList: GameListEntry[] = myGameItems.map((i, idx) => ({
+    gameId: i.game_id,
+    rating: i.rating,
+    position: i.position ?? idx,
+  }));
+  const viewerBoardgameList: BoardgameListEntry[] = myBoardgameItems.map(
+    (i, idx) => ({
+      boardgameId: i.boardgame_id,
+      rating: i.rating,
+      position: i.position ?? idx,
+    }),
   );
 
-  if (allItems.length === 0) return [];
+  const [showLists, movieLists, animeLists, gameLists, boardgameLists] =
+    await Promise.all([
+      supabase
+        .from("lists")
+        .select("id, user_id")
+        .eq("is_public", true)
+        .neq("user_id", user.id),
+      supabase
+        .from("movie_lists")
+        .select("id, user_id")
+        .eq("is_public", true)
+        .neq("user_id", user.id),
+      supabase
+        .from("anime_lists")
+        .select("id, user_id")
+        .eq("is_public", true)
+        .neq("user_id", user.id),
+      supabase
+        .from("game_lists")
+        .select("id, user_id")
+        .eq("is_public", true)
+        .neq("user_id", user.id),
+      supabase
+        .from("boardgame_lists")
+        .select("id, user_id")
+        .eq("is_public", true)
+        .neq("user_id", user.id),
+    ]);
 
-  // Group items by list_id
-  const itemsByList = new Map<string, ListEntry[]>();
-  for (const item of allItems) {
-    if (!itemsByList.has(item.list_id)) itemsByList.set(item.list_id, []);
-    itemsByList.get(item.list_id)!.push({
+  const allUserIds = new Set<string>();
+  for (const row of showLists.data ?? []) allUserIds.add(row.user_id);
+  for (const row of movieLists.data ?? []) allUserIds.add(row.user_id);
+  for (const row of animeLists.data ?? []) allUserIds.add(row.user_id);
+  for (const row of gameLists.data ?? []) allUserIds.add(row.user_id);
+  for (const row of boardgameLists.data ?? []) allUserIds.add(row.user_id);
+  if (allUserIds.size === 0) return [];
+
+  const userIds = [...allUserIds];
+
+  const [profilesData, followsData] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("id, username, avatar_url")
+      .in("id", userIds),
+    supabase
+      .from("follows")
+      .select("following_id")
+      .eq("follower_id", user.id)
+      .in("following_id", userIds),
+  ]);
+
+  const profileMap = new Map((profilesData.data ?? []).map((p) => [p.id, p]));
+  const followingIds = new Set(
+    (followsData.data ?? []).map((f) => f.following_id),
+  );
+
+  const showListToUser = new Map(
+    (showLists.data ?? []).map((l) => [l.id, l.user_id]),
+  );
+  const movieListToUser = new Map(
+    (movieLists.data ?? []).map((l) => [l.id, l.user_id]),
+  );
+  const animeListToUser = new Map(
+    (animeLists.data ?? []).map((l) => [l.id, l.user_id]),
+  );
+  const gameListToUser = new Map(
+    (gameLists.data ?? []).map((l) => [l.id, l.user_id]),
+  );
+  const boardgameListToUser = new Map(
+    (boardgameLists.data ?? []).map((l) => [l.id, l.user_id]),
+  );
+
+  const [
+    allShowItems,
+    allMovieItems,
+    allAnimeItems,
+    allGameItems,
+    allBoardgameItems,
+  ] = await Promise.all([
+    showListToUser.size > 0
+      ? fetchAllRows((from, to) =>
+          supabase
+            .from("list_items")
+            .select("list_id, show_id, rating, position")
+            .in("list_id", [...showListToUser.keys()])
+            .range(from, to),
+        )
+      : Promise.resolve([]),
+    movieListToUser.size > 0
+      ? fetchAllRows((from, to) =>
+          supabase
+            .from("movie_list_items")
+            .select("movie_list_id, movie_id, rating, position")
+            .in("movie_list_id", [...movieListToUser.keys()])
+            .range(from, to),
+        )
+      : Promise.resolve([]),
+    animeListToUser.size > 0
+      ? fetchAllRows((from, to) =>
+          supabase
+            .from("anime_list_items")
+            .select("anime_list_id, anime_id, rating, position")
+            .in("anime_list_id", [...animeListToUser.keys()])
+            .range(from, to),
+        )
+      : Promise.resolve([]),
+    gameListToUser.size > 0
+      ? fetchAllRows((from, to) =>
+          supabase
+            .from("game_list_items")
+            .select("game_list_id, game_id, rating, position")
+            .in("game_list_id", [...gameListToUser.keys()])
+            .range(from, to),
+        )
+      : Promise.resolve([]),
+    boardgameListToUser.size > 0
+      ? fetchAllRows((from, to) =>
+          supabase
+            .from("boardgame_list_items")
+            .select("boardgame_list_id, boardgame_id, rating, position")
+            .in("boardgame_list_id", [...boardgameListToUser.keys()])
+            .range(from, to),
+        )
+      : Promise.resolve([]),
+  ]);
+
+  const showsByUser = new Map<string, ListEntry[]>();
+  for (const item of allShowItems) {
+    const uid = showListToUser.get(item.list_id);
+    if (!uid) continue;
+    if (!showsByUser.has(uid)) showsByUser.set(uid, []);
+    showsByUser.get(uid)!.push({
       showId: item.show_id,
       rating: item.rating,
-      position: item.position,
+      position: item.position ?? 0,
     });
   }
 
-  // Check who the current user is already following
-  const { data: followsData } = await supabase
-    .from("follows")
-    .select("following_id")
-    .eq("follower_id", user.id);
+  const moviesByUser = new Map<string, MovieListEntry[]>();
+  for (const item of allMovieItems) {
+    const uid = movieListToUser.get(item.movie_list_id);
+    if (!uid) continue;
+    if (!moviesByUser.has(uid)) moviesByUser.set(uid, []);
+    moviesByUser.get(uid)!.push({
+      movieId: item.movie_id,
+      rating: item.rating,
+      position: item.position ?? 0,
+    });
+  }
 
-  const followingIds = new Set((followsData ?? []).map((f) => f.following_id));
+  const animeByUser = new Map<string, AnimeListEntry[]>();
+  for (const item of allAnimeItems) {
+    const uid = animeListToUser.get(item.anime_list_id);
+    if (!uid) continue;
+    if (!animeByUser.has(uid)) animeByUser.set(uid, []);
+    animeByUser.get(uid)!.push({
+      animeId: item.anime_id,
+      rating: item.rating,
+      position: item.position ?? 0,
+    });
+  }
 
-  // Compute similarity for each user
-  type PreliminaryResult = Omit<SimilarUser, "lists_compiled"> & {
-    profileId: string;
-    showsCompiled: number;
-  };
-  const preliminary: PreliminaryResult[] = [];
+  const gamesByUser = new Map<string, GameListEntry[]>();
+  for (const item of allGameItems) {
+    const uid = gameListToUser.get(item.game_list_id);
+    if (!uid) continue;
+    if (!gamesByUser.has(uid)) gamesByUser.set(uid, []);
+    gamesByUser.get(uid)!.push({
+      gameId: item.game_id,
+      rating: item.rating,
+      position: item.position ?? 0,
+    });
+  }
 
-  for (const list of publicLists) {
-    const profile = Array.isArray(list.profiles)
-      ? list.profiles[0]
-      : list.profiles;
+  const boardgamesByUser = new Map<string, BoardgameListEntry[]>();
+  for (const item of allBoardgameItems) {
+    const uid = boardgameListToUser.get(item.boardgame_list_id);
+    if (!uid) continue;
+    if (!boardgamesByUser.has(uid)) boardgamesByUser.set(uid, []);
+    boardgamesByUser.get(uid)!.push({
+      boardgameId: item.boardgame_id,
+      rating: item.rating,
+      position: item.position ?? 0,
+    });
+  }
+
+  const results: SimilarUser[] = [];
+  for (const uid of userIds) {
+    const profile = profileMap.get(uid);
     if (!profile) continue;
 
-    const otherItems = itemsByList.get(list.id) ?? [];
-    if (otherItems.length === 0) continue;
+    const scores: number[] = [];
+    const otherShows = showsByUser.get(uid) ?? [];
+    const otherMovies = moviesByUser.get(uid) ?? [];
+    const otherAnime = animeByUser.get(uid) ?? [];
+    const otherGames = gamesByUser.get(uid) ?? [];
+    const otherBoardgames = boardgamesByUser.get(uid) ?? [];
 
-    const similarity = computeListSimilarity(viewerList, otherItems);
+    if (viewerShowList.length > 0 && otherShows.length > 0) {
+      scores.push(computeListSimilarity(viewerShowList, otherShows));
+    }
+    if (viewerMovieList.length > 0 && otherMovies.length > 0) {
+      scores.push(computeMovieListSimilarity(viewerMovieList, otherMovies));
+    }
+    if (viewerAnimeList.length > 0 && otherAnime.length > 0) {
+      scores.push(computeAnimeListSimilarity(viewerAnimeList, otherAnime));
+    }
+    if (viewerGameList.length > 0 && otherGames.length > 0) {
+      scores.push(computeGameListSimilarity(viewerGameList, otherGames));
+    }
+    if (viewerBoardgameList.length > 0 && otherBoardgames.length > 0) {
+      scores.push(
+        computeBoardgameListSimilarity(viewerBoardgameList, otherBoardgames),
+      );
+    }
+
+    if (scores.length === 0) continue;
+    const similarity = Math.round(
+      scores.reduce((sum, value) => sum + value, 0) / scores.length,
+    );
     if (similarity === 0) continue;
 
-    preliminary.push({
+    const listsCompiled =
+      (otherShows.length > 0 ? 1 : 0) +
+      (otherMovies.length > 0 ? 1 : 0) +
+      (otherAnime.length > 0 ? 1 : 0) +
+      (otherGames.length > 0 ? 1 : 0) +
+      (otherBoardgames.length > 0 ? 1 : 0);
+
+    results.push({
       id: profile.id,
-      profileId: profile.id,
       username: profile.username,
       avatar_url: profile.avatar_url,
-      showsCompiled: 1,
+      lists_compiled: listsCompiled,
       similarity,
       is_following: followingIds.has(profile.id),
     });
   }
 
-  // Sort by similarity descending, get top 3
-  const top3 = preliminary
-    .sort((a, b) => b.similarity - a.similarity)
-    .slice(0, 3);
-
-  if (top3.length === 0) return [];
-
-  // Fetch movie/anime/game lists for top 3 only to compute lists_compiled
-  const topUserIds = top3.map((r) => r.profileId);
-  const [
-    { data: movieListsData },
-    { data: animeListsData },
-    { data: gameListsData },
-  ] = await Promise.all([
-    supabase
-      .from("movie_lists")
-      .select("id, user_id")
-      .in("user_id", topUserIds),
-    supabase
-      .from("anime_lists")
-      .select("id, user_id")
-      .in("user_id", topUserIds),
-    supabase.from("game_lists").select("id, user_id").in("user_id", topUserIds),
-  ]);
-
-  const movieListIdByUser = new Map(
-    (movieListsData ?? []).map((ml) => [ml.user_id, ml.id]),
-  );
-  const animeListIdByUser = new Map(
-    (animeListsData ?? []).map((al) => [al.user_id, al.id]),
-  );
-  const gameListIdByUser = new Map(
-    (gameListsData ?? []).map((gl) => [gl.user_id, gl.id]),
-  );
-
-  const allMovieListIds = [...movieListIdByUser.values()];
-  const allAnimeListIds = [...animeListIdByUser.values()];
-  const allGameListIds = [...gameListIdByUser.values()];
-
-  const [
-    { data: movieItemsExist },
-    { data: animeItemsExist },
-    { data: gameItemsExist },
-  ] = await Promise.all([
-    allMovieListIds.length > 0
-      ? supabase
-          .from("movie_list_items")
-          .select("movie_list_id")
-          .in("movie_list_id", allMovieListIds)
-      : Promise.resolve({ data: [] as Array<{ movie_list_id: string }> }),
-    allAnimeListIds.length > 0
-      ? supabase
-          .from("anime_list_items")
-          .select("anime_list_id")
-          .in("anime_list_id", allAnimeListIds)
-      : Promise.resolve({ data: [] as Array<{ anime_list_id: string }> }),
-    allGameListIds.length > 0
-      ? supabase
-          .from("game_list_items")
-          .select("game_list_id")
-          .in("game_list_id", allGameListIds)
-      : Promise.resolve({ data: [] as Array<{ game_list_id: string }> }),
-  ]);
-
-  const movieListIdsWithItems = new Set(
-    (movieItemsExist ?? []).map((i) => i.movie_list_id),
-  );
-  const animeListIdsWithItems = new Set(
-    (animeItemsExist ?? []).map((i) => i.anime_list_id),
-  );
-  const gameListIdsWithItems = new Set(
-    (gameItemsExist ?? []).map((i) => i.game_list_id),
-  );
-
-  return top3.map((r) => {
-    const movieListId = movieListIdByUser.get(r.profileId);
-    const moviesCompiled =
-      movieListId && movieListIdsWithItems.has(movieListId) ? 1 : 0;
-    const animeListId = animeListIdByUser.get(r.profileId);
-    const animeCompiled =
-      animeListId && animeListIdsWithItems.has(animeListId) ? 1 : 0;
-    const gameListId = gameListIdByUser.get(r.profileId);
-    const gamesCompiled =
-      gameListId && gameListIdsWithItems.has(gameListId) ? 1 : 0;
-    const { profileId, showsCompiled, ...rest } = r;
-    return {
-      ...rest,
-      lists_compiled:
-        showsCompiled + moviesCompiled + animeCompiled + gamesCompiled,
-    };
-  });
+  return results.sort((a, b) => b.similarity - a.similarity).slice(0, 3);
 }
 
 export type RecommendedShow = {
@@ -826,6 +989,230 @@ export type RecommendedAnime = {
   score: number;
   recommendedBy: number;
 };
+
+export type RecommendedGame = {
+  id: string;
+  igdb_id: number | null;
+  title: string;
+  cover_url: string | null;
+  first_release_date: string | null;
+  overview: string | null;
+  score: number;
+  recommendedBy: number;
+};
+
+export async function getGameRecommendations(): Promise<RecommendedGame[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data: myGameList } = await supabase
+    .from("game_lists")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!myGameList) return [];
+
+  const { data: myItems } = await supabase
+    .from("game_list_items")
+    .select("game_id, rating, position")
+    .eq("game_list_id", myGameList.id)
+    .order("position", { ascending: true });
+
+  if (!myItems || myItems.length === 0) return [];
+
+  const viewerList: ListEntry[] = myItems.map((i, idx) => ({
+    showId: i.game_id,
+    rating: i.rating,
+    position: i.position ?? idx,
+  }));
+
+  const { data: publicLists } = await supabase
+    .from("game_lists")
+    .select("id, user_id")
+    .eq("is_public", true)
+    .neq("user_id", user.id);
+
+  if (!publicLists || publicLists.length === 0) return [];
+
+  const listIds = publicLists.map((l) => l.id);
+
+  const { data: allItems } = await supabase
+    .from("game_list_items")
+    .select("game_list_id, game_id, rating, position")
+    .in("game_list_id", listIds)
+    .order("position", { ascending: true });
+
+  if (!allItems || allItems.length === 0) return [];
+
+  const listToUser = new Map<string, string>();
+  for (const l of publicLists) {
+    listToUser.set(l.id, l.user_id);
+  }
+
+  const userItemsMap = new Map<string, ListEntry[]>();
+  for (const item of allItems) {
+    const userId = listToUser.get(item.game_list_id);
+    if (!userId) continue;
+    if (!userItemsMap.has(userId)) userItemsMap.set(userId, []);
+    userItemsMap.get(userId)!.push({
+      showId: item.game_id,
+      rating: item.rating,
+      position: item.position,
+    });
+  }
+
+  const otherLists: UserList[] = [];
+  for (const [userId, items] of userItemsMap) {
+    otherLists.push({ userId, items });
+  }
+
+  const scored = scoreRecommendations(viewerList, otherLists);
+  if (scored.length === 0) return [];
+
+  const gameIds = scored.map((s) => s.showId);
+  const { data: games } = await supabase
+    .from("games")
+    .select("id, igdb_id, title, cover_url, first_release_date, overview")
+    .in("id", gameIds);
+
+  if (!games) return [];
+
+  const gameMap = new Map(games.map((g) => [g.id, g]));
+
+  return scored
+    .map((s) => {
+      const game = gameMap.get(s.showId);
+      if (!game) return null;
+      return {
+        id: game.id,
+        igdb_id: game.igdb_id,
+        title: game.title,
+        cover_url: game.cover_url,
+        first_release_date: game.first_release_date,
+        overview: game.overview,
+        score: Math.round(s.score * 100) / 100,
+        recommendedBy: s.recommendedBy,
+      };
+    })
+    .filter((r): r is RecommendedGame => r !== null);
+}
+
+export type RecommendedBoardgame = {
+  id: string;
+  bgg_id: number | null;
+  title: string;
+  thumbnail_url: string | null;
+  year_published: number | null;
+  description: string | null;
+  score: number;
+  recommendedBy: number;
+};
+
+export async function getBoardgameRecommendations(): Promise<
+  RecommendedBoardgame[]
+> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data: myBoardgameList } = await supabase
+    .from("boardgame_lists")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!myBoardgameList) return [];
+
+  const { data: myItems } = await supabase
+    .from("boardgame_list_items")
+    .select("boardgame_id, rating, position")
+    .eq("boardgame_list_id", myBoardgameList.id)
+    .order("position", { ascending: true });
+
+  if (!myItems || myItems.length === 0) return [];
+
+  const viewerList: ListEntry[] = myItems.map((i, idx) => ({
+    showId: i.boardgame_id,
+    rating: i.rating,
+    position: i.position ?? idx,
+  }));
+
+  const { data: publicLists } = await supabase
+    .from("boardgame_lists")
+    .select("id, user_id")
+    .eq("is_public", true)
+    .neq("user_id", user.id);
+
+  if (!publicLists || publicLists.length === 0) return [];
+
+  const listIds = publicLists.map((l) => l.id);
+
+  const { data: allItems } = await supabase
+    .from("boardgame_list_items")
+    .select("boardgame_list_id, boardgame_id, rating, position")
+    .in("boardgame_list_id", listIds)
+    .order("position", { ascending: true });
+
+  if (!allItems || allItems.length === 0) return [];
+
+  const listToUser = new Map<string, string>();
+  for (const l of publicLists) {
+    listToUser.set(l.id, l.user_id);
+  }
+
+  const userItemsMap = new Map<string, ListEntry[]>();
+  for (const item of allItems) {
+    const userId = listToUser.get(item.boardgame_list_id);
+    if (!userId) continue;
+    if (!userItemsMap.has(userId)) userItemsMap.set(userId, []);
+    userItemsMap.get(userId)!.push({
+      showId: item.boardgame_id,
+      rating: item.rating,
+      position: item.position,
+    });
+  }
+
+  const otherLists: UserList[] = [];
+  for (const [userId, items] of userItemsMap) {
+    otherLists.push({ userId, items });
+  }
+
+  const scored = scoreRecommendations(viewerList, otherLists);
+  if (scored.length === 0) return [];
+
+  const boardgameIds = scored.map((s) => s.showId);
+  const { data: boardgames } = await supabase
+    .from("boardgames")
+    .select("id, bgg_id, title, thumbnail_url, year_published, description")
+    .in("id", boardgameIds);
+
+  if (!boardgames) return [];
+
+  const boardgameMap = new Map(boardgames.map((bg) => [bg.id, bg]));
+
+  return scored
+    .map((s) => {
+      const bg = boardgameMap.get(s.showId);
+      if (!bg) return null;
+      return {
+        id: bg.id,
+        bgg_id: bg.bgg_id,
+        title: bg.title,
+        thumbnail_url: bg.thumbnail_url,
+        year_published: bg.year_published,
+        description: bg.description,
+        score: Math.round(s.score * 100) / 100,
+        recommendedBy: s.recommendedBy,
+      };
+    })
+    .filter((r): r is RecommendedBoardgame => r !== null);
+}
 
 export async function getAnimeRecommendations(): Promise<RecommendedAnime[]> {
   const supabase = await createClient();

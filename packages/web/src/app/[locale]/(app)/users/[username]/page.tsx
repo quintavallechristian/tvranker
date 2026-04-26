@@ -493,7 +493,7 @@ export default async function UserProfilePage({
         (animeCountResult.count ?? 0) > 0 ||
         (gameCountResult.count ?? 0) > 0 ||
         (boardgameCountResult.count ?? 0) > 0) && (
-        <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="mb-6 grid grid-cols-3 gap-3 sm:grid-cols-5">
           {(showCountResult.count ?? 0) > 0 && (
             <CountWidget
               count={showCountResult.count ?? 0}
@@ -532,96 +532,86 @@ export default async function UserProfilePage({
         </div>
       )}
 
-      {/* Podium cards — extended top10 with rowSpan=2 */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      {/* Podium cards — compact top-3 view */}
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
         {(showCountResult.count ?? 0) > 0 && (
-          <div className="h-105">
-            <PodiumWidget
-              items={showPodiumItems}
-              topic="show"
-              rowSpan={2}
-              viewAllHref={`/users/${profile.username}/shows`}
-              badge={
-                showSimilarityScore !== null ? (
-                  <span className="text-xs font-semibold text-accent">
-                    {showSimilarityScore}%
-                  </span>
-                ) : undefined
-              }
-            />
-          </div>
+          <PodiumWidget
+            items={showPodiumItems}
+            topic="show"
+            rowSpan={1}
+            viewAllHref={`/users/${profile.username}/shows`}
+            badge={
+              showSimilarityScore !== null ? (
+                <span className="text-xs font-semibold text-accent">
+                  {showSimilarityScore}%
+                </span>
+              ) : undefined
+            }
+          />
         )}
 
         {(movieCountResult.count ?? 0) > 0 && (
-          <div className="h-105">
-            <PodiumWidget
-              items={moviePodiumItems}
-              topic="movie"
-              rowSpan={2}
-              viewAllHref={`/users/${profile.username}/movies`}
-              badge={
-                movieSimilarityScore !== null ? (
-                  <span className="text-xs font-semibold text-accent">
-                    {movieSimilarityScore}%
-                  </span>
-                ) : undefined
-              }
-            />
-          </div>
+          <PodiumWidget
+            items={moviePodiumItems}
+            topic="movie"
+            rowSpan={1}
+            viewAllHref={`/users/${profile.username}/movies`}
+            badge={
+              movieSimilarityScore !== null ? (
+                <span className="text-xs font-semibold text-accent">
+                  {movieSimilarityScore}%
+                </span>
+              ) : undefined
+            }
+          />
         )}
 
         {(animeCountResult.count ?? 0) > 0 && (
-          <div className="h-105">
-            <PodiumWidget
-              items={animePodiumItems}
-              topic="anime"
-              rowSpan={2}
-              viewAllHref={`/users/${profile.username}/anime`}
-              badge={
-                animeSimilarityScore !== null ? (
-                  <span className="text-xs font-semibold text-accent">
-                    {animeSimilarityScore}%
-                  </span>
-                ) : undefined
-              }
-            />
-          </div>
+          <PodiumWidget
+            items={animePodiumItems}
+            topic="anime"
+            rowSpan={1}
+            viewAllHref={`/users/${profile.username}/anime`}
+            badge={
+              animeSimilarityScore !== null ? (
+                <span className="text-xs font-semibold text-accent">
+                  {animeSimilarityScore}%
+                </span>
+              ) : undefined
+            }
+          />
         )}
 
         {(gameCountResult.count ?? 0) > 0 && (
-          <div className="h-105">
-            <PodiumWidget
-              items={gamePodiumItems}
-              topic="game"
-              rowSpan={2}
-              viewAllHref={`/users/${profile.username}/games`}
-              badge={
-                gameSimilarityScore !== null ? (
-                  <span className="text-xs font-semibold text-accent">
-                    {gameSimilarityScore}%
-                  </span>
-                ) : undefined
-              }
-            />
-          </div>
+          <PodiumWidget
+            items={gamePodiumItems}
+            topic="game"
+            rowSpan={1}
+            viewAllHref={`/users/${profile.username}/games`}
+            badge={
+              gameSimilarityScore !== null ? (
+                <span className="text-xs font-semibold text-accent">
+                  {gameSimilarityScore}%
+                </span>
+              ) : undefined
+            }
+          />
         )}
 
         {(boardgameCountResult.count ?? 0) > 0 && (
-          <div className="h-105">
-            <PodiumWidget
-              items={boardgamePodiumItems}
-              topic="boardgame"
-              rowSpan={2}
-              viewAllHref={`/users/${profile.username}/boardgames`}
-              badge={
-                boardgameSimilarityScore !== null ? (
-                  <span className="text-xs font-semibold text-accent">
-                    {boardgameSimilarityScore}%
-                  </span>
-                ) : undefined
-              }
-            />
-          </div>
+          <PodiumWidget
+            items={boardgamePodiumItems}
+            topic="boardgame"
+            rowSpan={1}
+            viewAllHref={`/users/${profile.username}/boardgames`}
+            badge={
+              boardgameSimilarityScore !== null ? (
+                <span className="text-xs font-semibold text-accent">
+                  {boardgameSimilarityScore}%
+                </span>
+              ) : undefined
+            }
+          />
         )}
       </div>
     </div>

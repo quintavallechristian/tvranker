@@ -130,6 +130,30 @@ export async function removeGameFromList(itemId: string) {
   revalidatePath("/games");
 }
 
+export async function clearGameList() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { data: gameList } = await supabase
+    .from("game_lists")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+  if (!gameList) throw new Error("Game list not found");
+
+  const { error } = await supabase
+    .from("game_list_items")
+    .delete()
+    .eq("game_list_id", gameList.id);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/games");
+}
+
 export async function updateGameRating(itemId: string, rating: number) {
   const supabase = await createClient();
   const {
@@ -168,6 +192,23 @@ export async function updateGameRating(itemId: string, rating: number) {
       rating,
     });
   }
+
+  revalidatePath("/games");
+}
+
+export async function updateGameNotes(itemId: string, notes: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { error } = await supabase
+    .from("game_list_items")
+    .update({ notes })
+    .eq("id", itemId);
+
+  if (error) throw new Error(error.message);
 
   revalidatePath("/games");
 }

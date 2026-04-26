@@ -10,6 +10,7 @@ import {
   Television,
   FilmSlate,
   GameController,
+  PuzzlePiece,
   Plus,
 } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
@@ -17,7 +18,7 @@ import Image from "next/image";
 type FeedEvent = {
   id: string;
   event_type: "add_item" | "rate_item";
-  content_type: "show" | "movie" | "anime" | "game";
+  content_type: "show" | "movie" | "anime" | "game" | "boardgame";
   item_id: string;
   list_id: string;
   item_title: string;
@@ -53,6 +54,7 @@ const CONTENT_TYPE_ROUTES: Record<string, string> = {
   movie: "movies",
   anime: "anime",
   game: "games",
+  boardgame: "boardgames",
 };
 
 function getImageUrl(
@@ -60,14 +62,16 @@ function getImageUrl(
   posterPath: string | null,
 ): string | null {
   if (!posterPath) return null;
-  // Games store full IGDB URLs; shows/movies/anime store TMDB relative paths
-  if (contentType === "game") return posterPath;
+  // Games store full IGDB URLs; boardgames store full BGG URLs; shows/movies/anime store TMDB relative paths
+  if (contentType === "game" || contentType === "boardgame") return posterPath;
   return getPosterUrl(posterPath, "w185");
 }
 
 function ContentIcon({ type }: { type: string }) {
   if (type === "game")
     return <GameController size={14} className="text-text-faint" />;
+  if (type === "boardgame")
+    return <PuzzlePiece size={14} className="text-text-faint" />;
   if (type === "show" || type === "anime")
     return <Television size={14} className="text-text-faint" />;
   return <FilmSlate size={14} className="text-text-faint" />;
@@ -172,7 +176,8 @@ export default async function FeedPage({
                 | "showList"
                 | "movieList"
                 | "animeList"
-                | "gameList",
+                | "gameList"
+                | "boardgameList",
             );
             const imageUrl = getImageUrl(event.content_type, event.poster_path);
             const isRating = event.event_type === "rate_item";
@@ -192,7 +197,10 @@ export default async function FeedPage({
                         fill
                         className="object-cover"
                         sizes="48px"
-                        unoptimized={event.content_type === "game"}
+                        unoptimized={
+                          event.content_type === "game" ||
+                          event.content_type === "boardgame"
+                        }
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center">

@@ -38,7 +38,7 @@ type Props = {
   data: AnalyticsData;
   ratingLabels?: string[] | null;
   backHref: string;
-  itemType?: "show" | "movie" | "anime" | "boardgame";
+  itemType?: "show" | "movie" | "anime" | "game" | "boardgame";
   labels: {
     title: string;
     backToList: string;
@@ -83,10 +83,12 @@ function ShowStatRow({
   posterPath: string | null;
   badge: string;
   compact?: boolean;
-  itemType?: "show" | "movie" | "anime" | "boardgame";
+  itemType?: "show" | "movie" | "anime" | "game" | "boardgame";
 }) {
   const posterUrl = posterPath
-    ? itemType === "boardgame" || posterPath.startsWith("http")
+    ? itemType === "boardgame" ||
+      itemType === "game" ||
+      posterPath.startsWith("http")
       ? posterPath
       : `https://image.tmdb.org/t/p/w92${posterPath}`
     : null;
@@ -98,9 +100,11 @@ function ShowStatRow({
           ? `/movies/${id}`
           : itemType === "anime"
             ? `/anime/${id}`
-            : itemType === "boardgame"
-              ? `/boardgames/${id}`
-              : `/shows/${id}`
+            : itemType === "game"
+              ? `/games/${id}`
+              : itemType === "boardgame"
+                ? `/boardgames/${id}`
+                : `/shows/${id}`
       }
       className={`flex items-center gap-2 rounded-md transition-colors hover:bg-bg-surface ${compact ? "" : "border border-border bg-bg-elevated px-2 py-1.5"}`}
     >
@@ -756,7 +760,7 @@ export function ListAnalyticsPage({
                     <Clock size={13} />
                     {labels.seasonsByYearTitle}
                   </h3>
-                  <div className="max-h-[28rem] overflow-y-auto space-y-1">
+                  <div className="max-h-112 overflow-y-auto space-y-1">
                     {data.longestShowByYear.map(
                       ({
                         year,
@@ -779,7 +783,9 @@ export function ListAnalyticsPage({
                                 ? `/movies/${id}`
                                 : itemType === "anime"
                                   ? `/anime/${id}`
-                                  : `/shows/${id}`
+                                  : itemType === "game"
+                                    ? `/games/${id}`
+                                    : `/shows/${id}`
                             }
                             className="grid grid-cols-[3rem_2.5rem_1fr] items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-bg-elevated"
                           >
@@ -901,7 +907,9 @@ export function ListAnalyticsPage({
                             ? `/movies/${show.id}`
                             : itemType === "anime"
                               ? `/anime/${show.id}`
-                              : undefined
+                              : itemType === "game"
+                                ? `/games/${show.id}`
+                                : undefined
                         }
                         ratingLabels={ratingLabels}
                       />

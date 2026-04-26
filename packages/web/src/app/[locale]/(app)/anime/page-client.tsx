@@ -50,12 +50,14 @@ import {
   addAnimeToList,
   removeAnimeFromList,
   updateAnimeRating,
+  updateAnimeNotes,
   reorderAnimeListItems,
   updateAnimeListDescription,
   getAnimeListItemsPage,
   updateAnimeListSettings,
   type AnimeItem,
 } from "./actions";
+import { getAnimeRecommendations } from "../explore/actions";
 import { addRecentList } from "@/lib/recent-lists";
 
 type AnimeListClientProps = {
@@ -91,6 +93,9 @@ export function AnimeListClient({
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [recScoreMap, setRecScoreMap] = useState<Map<number, number>>(
+    new Map(),
+  );
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [items, setItems] = useState<AnimeItem[]>(initialItems);
@@ -98,7 +103,7 @@ export function AnimeListClient({
   // Track visit in sidebar recenti
   useEffect(() => {
     addRecentList({ id: animeListId, topic: "anime", href: "/anime" });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [animeListId]);
   const [existingTmdbIds, setExistingTmdbIds] = useState<number[]>(
     initialExistingTmdbIds,
@@ -191,6 +196,17 @@ export function AnimeListClient({
     nextPageRef.current = 1;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialItems]);
+
+  useEffect(() => {
+    if (!showAddDialog) return;
+    getAnimeRecommendations().then((recs) => {
+      const map = new Map<number, number>();
+      for (const r of recs) {
+        if (r.tmdb_id !== null) map.set(r.tmdb_id, r.score);
+      }
+      setRecScoreMap(map);
+    });
+  }, [showAddDialog]);
 
   useEffect(() => {
     if (!hasMore) return;
@@ -292,6 +308,18 @@ export function AnimeListClient({
       );
       startTransition(async () => {
         await updateAnimeRating(itemId, rating);
+      });
+    },
+    [startTransition],
+  );
+
+  const handleAnimeNotesChange = useCallback(
+    (itemId: string, notes: string) => {
+      setItems((prev) =>
+        prev.map((item) => (item.id === itemId ? { ...item, notes } : item)),
+      );
+      startTransition(async () => {
+        await updateAnimeNotes(itemId, notes);
       });
     },
     [startTransition],
@@ -527,6 +555,10 @@ export function AnimeListClient({
                               handleRatingChange(item.id, rating)
                             }
                             onRemove={() => handleRemove(item.id)}
+                            notes={item.notes}
+                            onNotesChange={(notes) =>
+                              handleAnimeNotesChange(item.id, notes)
+                            }
                             openMobileRating={openRatingItemId === item.id}
                             onMobileRatingChange={(open) =>
                               setOpenRatingItemId(open ? item.id : null)
@@ -557,6 +589,7 @@ export function AnimeListClient({
         onClose={() => setShowAddDialog(false)}
         onAdd={handleAdd}
         existingTmdbIds={existingTmdbIds}
+        scoreMap={recScoreMap}
       />
 
       <ImportAnimeDialog

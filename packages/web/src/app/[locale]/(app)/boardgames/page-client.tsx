@@ -30,6 +30,7 @@ import {
   ChartPie,
   GearSix,
   ArrowsClockwise,
+  TrashSimple,
 } from "@phosphor-icons/react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
@@ -49,13 +50,16 @@ import {
   addBoardgameToList,
   removeBoardgameFromList,
   updateBoardgameRating,
+  updateBoardgameNotes,
   reorderBoardgameListItems,
   updateBoardgameListDescription,
+  clearBoardgameList,
   getBoardgameListItemsPage,
   updateBoardgameListSettings,
   syncFromBGG,
   type BoardgameItem,
 } from "./actions";
+import { getBoardgameRecommendations } from "../explore/actions";
 import { addRecentList } from "@/lib/recent-lists";
 
 type BoardgamesListClientProps = {
@@ -95,6 +99,11 @@ export function BoardgamesListClient({
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showSyncDialog, setShowSyncDialog] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [recScoreMap, setRecScoreMap] = useState<Map<number, number>>(
+    new Map(),
+  );
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
   const [items, setItems] = useState<BoardgameItem[]>(initialItems);
 
   // Track visit in sidebar recenti
@@ -205,6 +214,17 @@ export function BoardgamesListClient({
     return () => observer.disconnect();
   }, [hasMore, loadNextPage]);
 
+  useEffect(() => {
+    if (!showAddDialog) return;
+    getBoardgameRecommendations().then((recs) => {
+      const map = new Map<number, number>();
+      for (const r of recs) {
+        if (r.bgg_id !== null) map.set(r.bgg_id, r.score);
+      }
+      setRecScoreMap(map);
+    });
+  }, [showAddDialog]);
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -297,6 +317,18 @@ export function BoardgamesListClient({
     [startTransition],
   );
 
+  const handleBoardgameNotesChange = useCallback(
+    (itemId: string, notes: string) => {
+      setItems((prev) =>
+        prev.map((item) => (item.id === itemId ? { ...item, notes } : item)),
+      );
+      startTransition(async () => {
+        await updateBoardgameNotes(itemId, notes);
+      });
+    },
+    [startTransition],
+  );
+
   const handleSync = useCallback(
     async (bggUsername: string, mode: "merge" | "replace") => {
       const result = await syncFromBGG(boardgameListId, bggUsername, mode);
@@ -346,6 +378,15 @@ export function BoardgamesListClient({
             </button>
             {items.length > 0 && (
               <button
+                onClick={() => setShowClearConfirm(true)}
+                className="hidden items-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:border-error/50 hover:bg-error/5 hover:text-error sm:flex"
+              >
+                <TrashSimple size={14} />
+                {t("clearList")}
+              </button>
+            )}
+            {items.length > 0 && (
+              <button
                 onClick={() => setShowAddDialog(true)}
                 className="hidden items-center gap-1.5 rounded-md bg-accent px-3 py-2 text-xs font-medium text-black transition-colors hover:bg-accent-hover sm:flex"
               >
@@ -359,6 +400,12 @@ export function BoardgamesListClient({
         {/* Mobile-only buttons below title */}
         {items.length > 0 && (
           <div className="mt-3 flex items-center gap-2 sm:hidden">
+            <button
+              onClick={() => setShowClearConfirm(true)}
+              className="flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:border-error/50 hover:bg-error/5 hover:text-error"
+            >
+              <TrashSimple size={14} />
+            </button>
             <button
               onClick={() => setShowAddDialog(true)}
               className="flex items-center gap-1.5 rounded-md bg-accent px-3 py-2 text-xs font-medium text-black transition-colors hover:bg-accent-hover"
@@ -530,6 +577,10 @@ export function BoardgamesListClient({
                               handleRatingChange(item.id, rating)
                             }
                             onRemove={() => handleRemove(item.id)}
+                            notes={item.notes}
+                            onNotesChange={(notes) =>
+                              handleBoardgameNotesChange(item.id, notes)
+                            }
                             openMobileRating={openRatingItemId === item.id}
                             onMobileRatingChange={(open) =>
                               setOpenRatingItemId(open ? item.id : null)
@@ -560,6 +611,7 @@ export function BoardgamesListClient({
         onClose={() => setShowAddDialog(false)}
         onAdd={handleAdd}
         existingBggIds={existingBggIds}
+        scoreMap={recScoreMap}
       />
 
       <SyncBGGDialog
@@ -568,6 +620,40 @@ export function BoardgamesListClient({
         onSync={handleSync}
         savedBggUsername={bggUsername}
       />
+
+      {showClearConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="relative w-full sm:mx-4 sm:max-w-sm rounded-lg border border-border bg-bg-surface p-6">
+            <h2 className="mb-2 text-base font-semibold text-text-primary">
+              {t("clearListConfirmTitle")}
+            </h2>
+            <p className="mb-6 text-sm text-text-secondary">
+              {t("clearListConfirmDescription", { count: items.length })}
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                className="rounded-md px-4 py-2 text-sm text-text-secondary hover:text-text-primary"
+              >
+                {t("clearListCancel")}
+              </button>
+              <button
+                disabled={isClearing}
+                onClick={async () => {
+                  setIsClearing(true);
+                  setShowClearConfirm(false);
+                  await clearBoardgameList();
+                  setItems([]);
+                  setIsClearing(false);
+                }}
+                className="rounded-md bg-error px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-error/90 disabled:opacity-50"
+              >
+                {t("clearListConfirm")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {listSettings && profileVisibility && (
         <ListSettingsModal

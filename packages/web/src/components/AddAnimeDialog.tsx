@@ -20,6 +20,7 @@ type AddAnimeDialogProps = {
   onClose: () => void;
   onAdd: (anime: TMDBAnimeResult) => void;
   existingTmdbIds?: number[];
+  scoreMap?: Map<number, number>;
 };
 
 export function AddAnimeDialog({
@@ -27,6 +28,7 @@ export function AddAnimeDialog({
   onClose,
   onAdd,
   existingTmdbIds = [],
+  scoreMap,
 }: AddAnimeDialogProps) {
   const t = useTranslations("anime");
   const [results, setResults] = useState<TMDBAnimeResult[]>([]);
@@ -126,6 +128,12 @@ export function AddAnimeDialog({
                       {anime.first_air_date?.slice(0, 4) || "Unknown"}
                     </p>
                   </div>
+
+                  {scoreMap?.has(anime.tmdb_id) && (
+                    <span className="shrink-0 rounded-sm bg-accent-muted border border-accent/30 px-1.5 py-0.5 text-xs font-mono font-semibold text-accent tabular-nums">
+                      {scoreMap.get(anime.tmdb_id)}%
+                    </span>
+                  )}
 
                   {isAdded ? (
                     <span className="text-xs text-text-muted">

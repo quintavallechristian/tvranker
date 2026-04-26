@@ -312,6 +312,23 @@ export async function updateAnimeRating(itemId: string, rating: number) {
   revalidatePath("/anime");
 }
 
+export async function updateAnimeNotes(itemId: string, notes: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { error } = await supabase
+    .from("anime_list_items")
+    .update({ notes })
+    .eq("id", itemId);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/anime");
+}
+
 export async function reorderAnimeListItems(itemIds: string[]) {
   const supabase = await createClient();
   const {

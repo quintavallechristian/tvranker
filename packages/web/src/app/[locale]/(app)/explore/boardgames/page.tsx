@@ -15,6 +15,10 @@ import {
   ArrowLeft,
 } from "@phosphor-icons/react";
 import {
+  getBoardgameRecommendations,
+  type RecommendedBoardgame,
+} from "../actions";
+import {
   getPopularBoardgames,
   addBggBoardgameToMyList,
   type PopularBoardgame,
@@ -30,10 +34,14 @@ export default function ExploreBoardgamesPage() {
   const t = useTranslations("explore");
   const [results, setResults] = useState<BoardgameResult[]>([]);
   const [searched, setSearched] = useState(false);
+  const [recommendations, setRecommendations] = useState<
+    RecommendedBoardgame[]
+  >([]);
+  const [recsLoading, setRecsLoading] = useState(true);
   const [popularBoardgames, setPopularBoardgames] = useState<
     PopularBoardgame[]
   >([]);
-  const [popularLoading, setPopularLoading] = useState(true);
+  const [popularLoading, setPopularLoading] = useState(false);
   const [addedBoardgameIds, setAddedBoardgameIds] = useState<Set<string>>(
     new Set(),
   );
@@ -53,13 +61,26 @@ export default function ExploreBoardgamesPage() {
 
   useEffect(() => {
     let cancelled = false;
-    getPopularBoardgames()
-      .then((bgs) => {
-        if (!cancelled) setPopularBoardgames(bgs);
+    getBoardgameRecommendations()
+      .then((recs) => {
+        if (!cancelled) {
+          setRecommendations(recs);
+          if (recs.length === 0) {
+            setPopularLoading(true);
+            getPopularBoardgames()
+              .then((bgs) => {
+                if (!cancelled) setPopularBoardgames(bgs);
+              })
+              .catch(() => {})
+              .finally(() => {
+                if (!cancelled) setPopularLoading(false);
+              });
+          }
+        }
       })
       .catch(() => {})
       .finally(() => {
-        if (!cancelled) setPopularLoading(false);
+        if (!cancelled) setRecsLoading(false);
       });
     return () => {
       cancelled = true;
@@ -194,118 +215,226 @@ export default function ExploreBoardgamesPage() {
       {!searched && (
         <div>
           <h2 className="mb-4 text-sm font-semibold text-text-secondary">
-            {t("popularBoardgamesTitle")}
+            {recsLoading || (!recsLoading && recommendations.length > 0)
+              ? t("suggestedTitle")
+              : t("popularBoardgamesTitle")}
           </h2>
 
-          {popularLoading && (
+          {(recsLoading || popularLoading) && recommendations.length === 0 && (
             <div className="flex items-center justify-center gap-2 py-8">
               <SpinnerGap size={16} className="animate-spin text-text-muted" />
               <p className="text-xs text-text-muted">{t("suggestedLoading")}</p>
             </div>
           )}
 
-          {!popularLoading && popularBoardgames.length === 0 && (
-            <EmptyState title={t("popularBoardgamesEmpty")} />
-          )}
+          {!recsLoading &&
+            recommendations.length === 0 &&
+            !popularLoading &&
+            popularBoardgames.length === 0 && (
+              <EmptyState title={t("popularBoardgamesEmpty")} />
+            )}
 
-          {!popularLoading && popularBoardgames.length > 0 && (
-            <>
-              <p className="mb-3 text-xs text-text-muted">
-                {t("popularBoardgamesFallback")}
-              </p>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                {popularBoardgames.map((bg) => {
-                  const isAdded = addedBoardgameIds.has(bg.id);
-                  return (
-                    <div
-                      key={bg.id}
-                      className="group relative overflow-hidden rounded-lg border border-border bg-bg-surface transition-colors hover:border-border-hover"
-                      onPointerEnter={(e) => {
-                        if (e.pointerType === "mouse")
-                          setActiveBoardgameId(bg.id);
-                      }}
-                      onPointerLeave={(e) => {
-                        if (e.pointerType === "mouse")
-                          setActiveBoardgameId(null);
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
+          {!recsLoading && recommendations.length > 0 && (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+              {recommendations.map((bg) => {
+                const isAdded = addedBoardgameIds.has(bg.id);
+                return (
+                  <div
+                    key={bg.id}
+                    className="group relative overflow-hidden rounded-lg border border-border bg-bg-surface transition-colors hover:border-border-hover"
+                    onPointerEnter={(e) => {
+                      if (e.pointerType === "mouse")
                         setActiveBoardgameId(bg.id);
-                      }}
-                    >
-                      <div className="relative aspect-square w-full bg-bg-elevated">
-                        {bg.thumbnail_url ? (
-                          <Image
-                            src={bg.thumbnail_url}
-                            alt={bg.title}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 640px) 50vw, 17vw"
-                            unoptimized
+                    }}
+                    onPointerLeave={(e) => {
+                      if (e.pointerType === "mouse") setActiveBoardgameId(null);
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveBoardgameId(bg.id);
+                    }}
+                  >
+                    <div className="absolute right-2 top-2 z-10 flex items-center justify-center rounded-sm bg-bg-primary/80 px-1.5 py-0.5 font-mono text-xs font-bold tabular-nums text-accent backdrop-blur-sm">
+                      {bg.score}%
+                    </div>
+                    <div className="relative aspect-square w-full bg-bg-elevated">
+                      {bg.thumbnail_url ? (
+                        <Image
+                          src={bg.thumbnail_url}
+                          alt={bg.title}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 640px) 50vw, 17vw"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center">
+                          <PuzzlePiece size={28} className="text-text-faint" />
+                        </div>
+                      )}
+                      <div
+                        className={`absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-black/70 transition-opacity ${activeBoardgameId === bg.id || isAdded ? "opacity-100" : "pointer-events-none opacity-0"}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveBoardgameId(null);
+                        }}
+                      >
+                        {isAdded ? (
+                          <Check
+                            size={24}
+                            weight="bold"
+                            className="text-accent"
                           />
                         ) : (
-                          <div className="flex h-full items-center justify-center">
-                            <PuzzlePiece
-                              size={28}
-                              className="text-text-faint"
-                            />
-                          </div>
+                          <>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddPopularBoardgame({
+                                  id: bg.id,
+                                  bgg_id: bg.bgg_id,
+                                  title: bg.title,
+                                  thumbnail_url: bg.thumbnail_url,
+                                  year_published: bg.year_published,
+                                  description: bg.description,
+                                  added_count: bg.recommendedBy,
+                                });
+                              }}
+                              className="flex items-center gap-1.5 rounded-full border border-white/40 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-white/25"
+                            >
+                              <Plus size={13} weight="bold" />
+                              {t("addToList")}
+                            </button>
+                            <Link
+                              href={`/boardgames/${bg.id}`}
+                              className="flex items-center gap-1.5 rounded-full border border-white/20 bg-black/40 px-3 py-1.5 text-xs font-medium text-white/80 transition-colors hover:bg-black/60"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <ArrowRight size={13} weight="bold" />
+                              {t("details")}
+                            </Link>
+                          </>
                         )}
-                        <div
-                          className={`absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-black/70 transition-opacity ${activeBoardgameId === bg.id || isAdded ? "opacity-100" : "pointer-events-none opacity-0"}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setActiveBoardgameId(null);
-                          }}
-                        >
-                          {isAdded ? (
-                            <Check
-                              size={24}
-                              weight="bold"
-                              className="text-accent"
-                            />
-                          ) : (
-                            <>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleAddPopularBoardgame(bg);
-                                }}
-                                className="flex items-center gap-1.5 rounded-full border border-white/40 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-white/25"
-                              >
-                                <Plus size={13} weight="bold" />
-                                {t("addToList")}
-                              </button>
-                              <Link
-                                href={`/boardgames/${bg.id}`}
-                                className="flex items-center gap-1.5 rounded-full border border-white/20 bg-black/40 px-3 py-1.5 text-xs font-medium text-white/80 transition-colors hover:bg-black/60"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <ArrowRight size={13} weight="bold" />
-                                {t("details")}
-                              </Link>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                      <div className="p-2">
-                        <Link
-                          href={`/boardgames/${bg.id}`}
-                          className="block truncate text-xs font-medium text-text-primary transition-colors hover:text-accent"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {bg.title}
-                        </Link>
-                        <p className="mt-0.5 text-[10px] text-text-faint">
-                          {t("addedByCount", { count: bg.added_count })}
-                        </p>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            </>
+                    <div className="p-2">
+                      <Link
+                        href={`/boardgames/${bg.id}`}
+                        className="block truncate text-xs font-medium text-text-primary transition-colors hover:text-accent"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {bg.title}
+                      </Link>
+                      <p className="mt-0.5 text-[10px] text-text-faint">
+                        {t("recommendedBy", { count: bg.recommendedBy })}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
+
+          {!popularLoading &&
+            recommendations.length === 0 &&
+            popularBoardgames.length > 0 && (
+              <>
+                <p className="mb-3 text-xs text-text-muted">
+                  {t("popularBoardgamesFallback")}
+                </p>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                  {popularBoardgames.map((bg) => {
+                    const isAdded = addedBoardgameIds.has(bg.id);
+                    return (
+                      <div
+                        key={bg.id}
+                        className="group relative overflow-hidden rounded-lg border border-border bg-bg-surface transition-colors hover:border-border-hover"
+                        onPointerEnter={(e) => {
+                          if (e.pointerType === "mouse")
+                            setActiveBoardgameId(bg.id);
+                        }}
+                        onPointerLeave={(e) => {
+                          if (e.pointerType === "mouse")
+                            setActiveBoardgameId(null);
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveBoardgameId(bg.id);
+                        }}
+                      >
+                        <div className="relative aspect-square w-full bg-bg-elevated">
+                          {bg.thumbnail_url ? (
+                            <Image
+                              src={bg.thumbnail_url}
+                              alt={bg.title}
+                              fill
+                              className="object-cover"
+                              sizes="(max-width: 640px) 50vw, 17vw"
+                              unoptimized
+                            />
+                          ) : (
+                            <div className="flex h-full items-center justify-center">
+                              <PuzzlePiece
+                                size={28}
+                                className="text-text-faint"
+                              />
+                            </div>
+                          )}
+                          <div
+                            className={`absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-black/70 transition-opacity ${activeBoardgameId === bg.id || isAdded ? "opacity-100" : "pointer-events-none opacity-0"}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveBoardgameId(null);
+                            }}
+                          >
+                            {isAdded ? (
+                              <Check
+                                size={24}
+                                weight="bold"
+                                className="text-accent"
+                              />
+                            ) : (
+                              <>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAddPopularBoardgame(bg);
+                                  }}
+                                  className="flex items-center gap-1.5 rounded-full border border-white/40 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-white/25"
+                                >
+                                  <Plus size={13} weight="bold" />
+                                  {t("addToList")}
+                                </button>
+                                <Link
+                                  href={`/boardgames/${bg.id}`}
+                                  className="flex items-center gap-1.5 rounded-full border border-white/20 bg-black/40 px-3 py-1.5 text-xs font-medium text-white/80 transition-colors hover:bg-black/60"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <ArrowRight size={13} weight="bold" />
+                                  {t("details")}
+                                </Link>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        <div className="p-2">
+                          <Link
+                            href={`/boardgames/${bg.id}`}
+                            className="block truncate text-xs font-medium text-text-primary transition-colors hover:text-accent"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {bg.title}
+                          </Link>
+                          <p className="mt-0.5 text-[10px] text-text-faint">
+                            {t("addedByCount", { count: bg.added_count })}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
         </div>
       )}
     </div>

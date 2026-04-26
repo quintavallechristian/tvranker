@@ -127,7 +127,7 @@ export function MovieDetailClient({
       {/* Main layout */}
       <div className="flex flex-col gap-6 sm:flex-row sm:gap-8">
         {/* Poster */}
-        <div className="relative aspect-[2/3] w-full shrink-0 self-start overflow-hidden rounded-lg border border-border bg-bg-elevated sm:w-44">
+        <div className="relative aspect-2/3 w-full shrink-0 self-start overflow-hidden rounded-lg border border-border bg-bg-elevated sm:w-44">
           {posterUrl ? (
             <Image
               src={posterUrl}
@@ -368,7 +368,7 @@ export function MovieDetailClient({
                     {publicLists.map((list) => (
                       <Link
                         key={list.id}
-                        href={`/users/${list.owner.username}`}
+                        href={`/movies/lists/${list.id}`}
                         className="flex items-center justify-between rounded-md border border-border bg-bg-surface px-3 py-2.5 transition-colors hover:border-border-hover hover:bg-bg-elevated"
                       >
                         <div className="flex min-w-0 items-center gap-2.5">

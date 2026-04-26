@@ -20,6 +20,7 @@ type AddMovieDialogProps = {
   onClose: () => void;
   onAdd: (movie: TMDBMovieResult) => void;
   existingTmdbIds?: number[];
+  scoreMap?: Map<number, number>;
 };
 
 export function AddMovieDialog({
@@ -27,6 +28,7 @@ export function AddMovieDialog({
   onClose,
   onAdd,
   existingTmdbIds = [],
+  scoreMap,
 }: AddMovieDialogProps) {
   const t = useTranslations("movies");
   const [results, setResults] = useState<TMDBMovieResult[]>([]);
@@ -126,6 +128,12 @@ export function AddMovieDialog({
                       {movie.release_date?.slice(0, 4) || "Unknown"}
                     </p>
                   </div>
+
+                  {scoreMap?.has(movie.tmdb_id) && (
+                    <span className="shrink-0 rounded-sm bg-accent-muted border border-accent/30 px-1.5 py-0.5 text-xs font-mono font-semibold text-accent tabular-nums">
+                      {scoreMap.get(movie.tmdb_id)}%
+                    </span>
+                  )}
 
                   {isAdded ? (
                     <span className="text-xs text-text-muted">

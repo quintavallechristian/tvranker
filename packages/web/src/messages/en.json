@@ -205,7 +205,15 @@
     "totalGames": "Total games",
     "ratedGames": "Rated",
     "gamesCount": "games",
-    "loadingMore": "Loading more..."
+    "loadingMore": "Loading more...",
+    "longestGame": "Longest game",
+    "longestGameByYear": "Longest game by year",
+    "longestGameByYearTitle": "By release year",
+    "clearList": "Clear list",
+    "clearListConfirmTitle": "Clear game list?",
+    "clearListConfirmDescription": "This will permanently delete all {count} games from your list. This action cannot be undone.",
+    "clearListConfirm": "Clear",
+    "clearListCancel": "Cancel"
   },
   "boardgames": {
     "title": "My Boardgames",
@@ -242,7 +250,12 @@
     "syncSummary": "{added} added, {updated} updated, {skipped} skipped",
     "longestBoardgame": "Most played boardgame",
     "longestBoardgameByYear": "Most played by year",
-    "longestBoardgameByYearTitle": "By release year"
+    "longestBoardgameByYearTitle": "By release year",
+    "clearList": "Clear list",
+    "clearListConfirmTitle": "Clear boardgame list?",
+    "clearListConfirmDescription": "This will permanently delete all {count} boardgames from your list. This action cannot be undone.",
+    "clearListConfirm": "Clear",
+    "clearListCancel": "Cancel"
   },
   "anime": {
     "title": "My Anime",
@@ -701,6 +714,32 @@
     "readMore": "Read more",
     "readLess": "Read less"
   },
+  "gameDetail": {
+    "overview": "Overview",
+    "releaseYear": "Released",
+    "platforms": "Platforms",
+    "inLists": "{count, plural, =1 {In 1 list} other {In # lists}}",
+    "avgRating": "Average user rating",
+    "noOverview": "No description available yet.",
+    "publicListsTitle": "Public lists with this game",
+    "usersWithThisGame": "Users with this game",
+    "noPublicLists": "No public lists include this game yet.",
+    "analyticsTitle": "Community Analytics",
+    "ratedBy": "Rated by",
+    "ratingDistribution": "Rating distribution",
+    "noRatings": "No ratings yet",
+    "addedOverTime": "Added to lists over time",
+    "adds": "adds",
+    "users": "users",
+    "tabInfo": "Info",
+    "tabStats": "Statistics",
+    "addToList": "Add to my list",
+    "inMyList": "In my list",
+    "myRating": "My rating",
+    "viewOnIgdb": "View on IGDB",
+    "readMore": "Read more",
+    "readLess": "Read less"
+  },
   "profile": {
     "title": "Profile",
     "editProfile": "Edit Profile",
@@ -796,11 +835,11 @@
     },
     "similarity": {
       "title": "How do similarity, compatibility, and affinity work?",
-      "body": "The recommender system uses three distinct scores:\n\n**Similarity (0–100%)** — Measures how similar two lists are. Calculated by combining three factors:\n\n- **Overlap** — How many items you have in common, relative to the smaller list. If you share 8 out of 10 shows, the overlap is 80%.\n- **Rating agreement** — For items both users have rated, how close are the ratings? A 1-point difference on a 1–10 scale is barely noticeable, while a 9-point gap means total disagreement.\n- **Position agreement** — How similarly you rank items in your list.\n\nFormula: `similarity = overlap × (50% rating closeness + 50% position closeness) × 100`\n\n**Compatibility (0–100%)** — Measures how similar two profiles are overall. It's the average similarity across all lists that both profiles have actually compiled (non-empty). If one user hasn't built their movie list yet, only the show list similarity counts.\n\n**Affinity (0–100%)** — Measures how well a specific show or movie matches a given profile. Used by the recommendations engine to score candidate titles based on how similar neighbours rate and rank them."
+      "body": "The recommender system uses three distinct scores across **shows, movies, anime, games, and boardgames**:\n\n**Similarity (0–100%)** — Measures how similar two lists are. Calculated by combining three factors:\n\n- **Overlap** — How many items you have in common, relative to the smaller list.\n- **Rating agreement** — For items both users have rated, how close those ratings are.\n- **Position agreement** — How similarly you rank items in your list.\n\nFormula: `similarity = overlap × (50% rating closeness + 50% position closeness) × 100`\n\n**Compatibility (0–100%)** — Measures how similar two profiles are overall. It's the average similarity across all list topics both profiles have actually compiled (non-empty).\n\n**Affinity (0–100%)** — Measures how well a specific item matches your profile. Used by the recommendations engine to score candidate titles based on how similar neighbours rate and rank them."
     },
     "recommendations": {
-      "title": "How do show recommendations work?",
-      "body": "The **Suggested for you** section on the Explore page uses collaborative filtering — the same technique used by Netflix and Spotify.\n\nHere's how it works:\n\n**1. Find compatible users** — We compare your list with all public lists using the similarity algorithm. The top 20 most compatible users become your \"neighbors\".\n\n**2. Score candidate shows by affinity** — For each show your neighbors have that you don't, we calculate an affinity score based on how compatible the neighbor is with you and how highly they value that show (via rating or list position).\n\n**3. Rank and suggest** — The 10 shows with the highest affinity scores are shown as recommendations.\n\nThe more shows you add and rate, the better your recommendations become. Shows that multiple compatible users agree on will score higher than shows recommended by a single user."
+      "title": "How do recommendations work?",
+      "body": "The **Suggested for you** sections in Explore use collaborative filtering for all main topics: **shows, movies, anime, games, and boardgames**.\n\nHere's how it works:\n\n**1. Find compatible users** — We compare your lists with public lists using the similarity algorithm. The most compatible users become your neighbors.\n\n**2. Score candidate titles by affinity** — For each title your neighbors have and you don't, we calculate an affinity score based on neighbor compatibility plus how highly they value that title (rating and/or list position).\n\n**3. Rank and suggest** — Titles with the highest affinity scores are shown first.\n\nThe more you add and rate, the better recommendations become. If you don't have enough data yet, Explore falls back to popular community picks."
     }
   },
   "rankings": {

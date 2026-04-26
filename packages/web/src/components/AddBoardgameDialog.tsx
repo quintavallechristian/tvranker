@@ -17,6 +17,7 @@ type AddBoardgameDialogProps = {
   onClose: () => void;
   onAdd: (boardgame: BGGBoardgameResult) => void;
   existingBggIds?: number[];
+  scoreMap?: Map<number, number>;
 };
 
 export function AddBoardgameDialog({
@@ -24,6 +25,7 @@ export function AddBoardgameDialog({
   onClose,
   onAdd,
   existingBggIds = [],
+  scoreMap,
 }: AddBoardgameDialogProps) {
   const t = useTranslations("boardgames");
   const [results, setResults] = useState<BGGBoardgameResult[]>([]);
@@ -108,6 +110,12 @@ export function AddBoardgameDialog({
                       {bg.year_published ?? "Unknown"}
                     </p>
                   </div>
+
+                  {scoreMap?.has(bg.bgg_id) && (
+                    <span className="shrink-0 rounded-sm bg-accent-muted border border-accent/30 px-1.5 py-0.5 text-xs font-mono font-semibold text-accent tabular-nums">
+                      {scoreMap.get(bg.bgg_id)}%
+                    </span>
+                  )}
 
                   {isAdded ? (
                     <span className="text-xs text-text-muted">

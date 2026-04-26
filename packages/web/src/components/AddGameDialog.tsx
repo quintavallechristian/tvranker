@@ -20,6 +20,7 @@ type AddGameDialogProps = {
   onClose: () => void;
   onAdd: (game: IGDBGameResult) => void;
   existingIgdbIds?: number[];
+  scoreMap?: Map<number, number>;
 };
 
 export function AddGameDialog({
@@ -27,6 +28,7 @@ export function AddGameDialog({
   onClose,
   onAdd,
   existingIgdbIds = [],
+  scoreMap,
 }: AddGameDialogProps) {
   const t = useTranslations("games");
   const [results, setResults] = useState<IGDBGameResult[]>([]);
@@ -130,6 +132,12 @@ export function AddGameDialog({
                       )}
                     </p>
                   </div>
+
+                  {scoreMap?.has(game.igdb_id) && (
+                    <span className="shrink-0 rounded-sm bg-accent-muted border border-accent/30 px-1.5 py-0.5 text-xs font-mono font-semibold text-accent tabular-nums">
+                      {scoreMap.get(game.igdb_id)}%
+                    </span>
+                  )}
 
                   {isAdded ? (
                     <span className="text-xs text-text-muted">
