@@ -212,7 +212,7 @@ export function AnimeDetailClient({
                 </div>
               )}
             {/* Recommendation score badge */}
-            {animeScore !== null && animeScore !== undefined && (
+            {animeScore !== null && animeScore !== undefined && !inList && (
               <div className="inline-flex items-center rounded-md border border-accent/30 bg-accent/10 px-2.5 py-1.5 text-xs font-mono font-bold text-accent tabular-nums">
                 {animeScore}%
               </div>

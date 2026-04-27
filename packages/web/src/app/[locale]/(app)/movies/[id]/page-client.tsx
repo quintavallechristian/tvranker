@@ -210,7 +210,7 @@ export function MovieDetailClient({
                 </div>
               )}
             {/* Recommendation score badge */}
-            {movieScore !== null && movieScore !== undefined && (
+            {movieScore !== null && movieScore !== undefined && !inList && (
               <div className="inline-flex items-center rounded-md border border-accent/30 bg-accent/10 px-2.5 py-1.5 text-xs font-mono font-bold text-accent tabular-nums">
                 {movieScore}%
               </div>

@@ -268,7 +268,7 @@ export function ShowDetailClient({
                 </div>
               )}
             {/* Recommendation score badge */}
-            {showScore !== null && showScore !== undefined && (
+            {showScore !== null && showScore !== undefined && !inList && (
               <div className="inline-flex items-center rounded-md border border-accent/30 bg-accent/10 px-2.5 py-1.5 text-xs font-mono font-bold text-accent tabular-nums">
                 {showScore}%
               </div>
